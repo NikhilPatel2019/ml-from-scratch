@@ -134,6 +134,25 @@ a great deal.
 - Chris Olah's blog — https://colah.github.io — especially *Understanding LSTM Networks*
 - *Deep Learning*, Goodfellow, Bengio and Courville — https://www.deeplearningbook.org — a reference to consult, not to read cover to cover
 
+**Interactive**
+- MLU-Explain, Amazon's Machine Learning University — https://mlu-explain.github.io — sixteen interactive visual essays. Nearly every one maps onto a Phase 1 lesson: linear and logistic regression, decision trees, random forests, ROC and AUC, precision and recall, cross-validation, train/test/validation splits, the bias–variance tradeoff, double descent. Read the matching essay the day we cover the topic.
+
+**Phase 3 depth (LLMs)**
+- Sebastian Raschka, *Build a Large Language Model (From Scratch)* — https://sebastianraschka.com/llms-from-scratch/ — plus the author's own chapter-by-chapter live-coding playlist. The closest thing in print to what Phase 3 does.
+- Vizuara, *Building LLMs from Scratch* — https://www.youtube.com/@vizuara — Dr. Raj Dandekar (MIT PhD) lecturing through Raschka's book. Visual intuition first, then the maths, then the code.
+- Stanford CS336, *Language Modeling from Scratch* — the most serious course on this list: tokeniser, architecture, training, systems and inference, built end to end. Genuinely hard, and the right target *after* Phase 2. Do not start here.
+
+**Applied AI, Phase 3–4**
+- Chip Huyen, *AI Engineering: Building Applications with Foundation Models* (2025) — https://github.com/chiphuyen/aie-book — evaluation, dataset and prompt engineering, RAG, agents, finetuning, inference cost and latency. The best single reference for building *with* models rather than building them.
+- `jamwithai/production-agentic-rag-course` — https://github.com/jamwithai/production-agentic-rag-course — a seven-week production RAG build (FastAPI, Postgres, OpenSearch, Airflow, Langfuse, LangGraph). Notably teaches BM25 keyword search *before* embeddings, which is the right order and rarely done.
+- `FareedKhan-dev/all-agentic-architectures` — https://github.com/FareedKhan-dev/all-agentic-architectures — 35 agent patterns as runnable code. A catalogue for lesson 3.12, not a place to learn from cold.
+
 **Practice**
 - Kaggle Learn and competitions — https://www.kaggle.com/learn
 - Papers with Code — https://paperswithcode.com
+
+**A second voice on Phases 0–1, if you want one**
+- Andrew Ng, *Machine Learning Specialization* (DeepLearning.AI) — https://www.deeplearning.ai/specializations/machine-learning — three courses, ~95 hours, the most famous ML course there is, and genuinely good. It covers roughly the same ground as our Phases 0–1 but from the opposite direction: intuition and library usage first, mechanism mostly left inside the framework, exercises largely fill-in-the-blank. Useful as a *parallel* explanation. It is not a substitute for building the thing yourself, which is the whole premise of this repository.
+
+**Adjacent, and not on this path**
+- NPTEL, *Artificial Intelligence: Search Methods for Problem Solving* — Prof. Deepak Khemani, IIT Madras — https://onlinecourses.nptel.ac.in/noc26_cs182/ — classical symbolic AI: state-space search, A*, minimax, constraint satisfaction. Excellent, and a genuinely different subject from machine learning — no statistics, no gradients, no data. Worth taking one day for the breadth. It will not help with anything in this roadmap.
