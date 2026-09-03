@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ml-from-scratch"
+version = "0.1.0"
+description = "A ground-up machine learning curriculum for engineers with no maths background"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["machine-learning", "education", "numpy", "curriculum", "from-scratch"]
+
+dependencies = [
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "scipy>=1.11",
+    "pandas>=2.0",
+    "scikit-learn>=1.4",
+]
+
+[project.optional-dependencies]
+# Phase 2 onwards. Installed separately because torch is a large download.
+deep = [
+    "torch>=2.2",
+    "torchvision>=0.17",
+]
+notebook = [
+    "jupyterlab>=4.0",
+    "ipykernel>=6.29",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "jupyterlab>=4.0",
+    "ipykernel>=6.29",
+]
+
+[tool.setuptools]
+packages = ["mlfs"]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "00-foundations",
+    "01-classical-ml",
+    "02-deep-learning",
+    "03-transformers",
+    "04-production",
+]
+python_files = ["test_exercises.py"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+# E402: lesson tests deliberately adjust sys.path before importing exercises.
+# E501: prose in docstrings and teaching comments may run long.
+ignore = ["E402", "E501"]

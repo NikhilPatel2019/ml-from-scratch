@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+data/
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code installer, not part of this project
+install.cmd
