@@ -1,0 +1,1207 @@
+<title>ML From Scratch</title>
+<meta name="description" content="A ground-up machine learning curriculum for engineers with no maths background.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+<style>
+/* ---------- tokens: complete light palette on bare :root ---------- */
+:root {
+  --paper:      #F6F7F4;
+  --surface:    #FFFFFF;
+  --surface-2:  #EFF1EC;
+  --grid:       rgba(22, 32, 43, 0.055);
+  --ink:        #16202B;
+  --ink-2:      #4A5A68;
+  --ink-3:      #7C8A95;
+  --rule:       #DCE1DC;
+  --rule-firm:  #C3CBC4;
+  --accent:     #0E6B78;
+  --accent-ink: #0A505A;
+  --accent-wash:#E1EFF0;
+  --done:       #2E7D52;
+  --done-wash:  #E2F0E8;
+  --active:     #A9660F;
+  --active-wash:#F6EBDB;
+  --shadow:     0 1px 2px rgba(22,32,43,.05), 0 8px 24px -12px rgba(22,32,43,.18);
+  --shadow-sm:  0 1px 2px rgba(22,32,43,.06);
+
+  --f-display: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+  --f-body: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas, monospace;
+
+  --topbar-h: 57px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:      #10171E;
+    --surface:    #17212B;
+    --surface-2:  #1D2933;
+    --grid:       rgba(190, 214, 226, 0.05);
+    --ink:        #E4EAEE;
+    --ink-2:      #A2B2BE;
+    --ink-3:      #71858F;
+    --rule:       #26333E;
+    --rule-firm:  #384956;
+    --accent:     #4FC3D4;
+    --accent-ink: #7FD8E5;
+    --accent-wash:#12303A;
+    --done:       #5CB884;
+    --done-wash:  #142E22;
+    --active:     #D9A040;
+    --active-wash:#2E2413;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+    --shadow-sm:  0 1px 2px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:      #10171E;
+  --surface:    #17212B;
+  --surface-2:  #1D2933;
+  --grid:       rgba(190, 214, 226, 0.05);
+  --ink:        #E4EAEE;
+  --ink-2:      #A2B2BE;
+  --ink-3:      #71858F;
+  --rule:       #26333E;
+  --rule-firm:  #384956;
+  --accent:     #4FC3D4;
+  --accent-ink: #7FD8E5;
+  --accent-wash:#12303A;
+  --done:       #5CB884;
+  --done-wash:  #142E22;
+  --active:     #D9A040;
+  --active-wash:#2E2413;
+  --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 23px 23px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+h1, h2, h3, h4 { font-family: var(--f-display); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.22; }
+
+code, kbd { font-family: var(--f-mono); }
+
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+}
+
+/* ---------- topbar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  height: var(--topbar-h);
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 20px;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+}
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { font-family: var(--f-display); font-size: 19px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+.brand-sub { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+
+.topstat { display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.topstat b { color: var(--ink); font-weight: 600; }
+.minibar { width: 84px; height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+.minibar > i { display: block; height: 100%; background: var(--done); border-radius: 3px; transition: width .35s ease; }
+
+.iconbtn {
+  appearance: none; border: 1px solid var(--rule-firm); background: var(--surface);
+  color: var(--ink-2); border-radius: 7px; height: 32px; padding: 0 11px;
+  font-family: var(--f-mono); font-size: 12px; cursor: pointer; display: inline-flex;
+  align-items: center; gap: 6px; transition: border-color .15s, color .15s;
+}
+.iconbtn:hover { color: var(--ink); border-color: var(--ink-3); }
+
+/* ---------- shell ---------- */
+.shell {
+  display: grid;
+  grid-template-columns: 306px minmax(0, 1fr);
+  gap: 0;
+  max-width: 1460px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ---------- rail ---------- */
+.rail {
+  position: sticky; top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+  border-right: 1px solid var(--rule);
+  padding: 20px 8px 60px 20px;
+  scrollbar-width: thin;
+}
+.rail-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 8px 12px; }
+
+.phase-block { margin-bottom: 6px; }
+.phase-btn {
+  width: 100%; display: flex; align-items: center; gap: 9px;
+  background: none; border: 0; padding: 8px; border-radius: 8px;
+  cursor: pointer; text-align: left; color: var(--ink); font-family: inherit;
+}
+.phase-btn:hover { background: var(--surface-2); }
+.phase-num {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 600;
+  width: 21px; height: 21px; flex: none; border-radius: 5px;
+  display: grid; place-items: center;
+  background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule);
+}
+.phase-name { font-size: 13.5px; font-weight: 600; flex: 1; min-width: 0; letter-spacing: -.005em; }
+.phase-count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.chev { width: 9px; height: 9px; border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3); transform: rotate(45deg); margin-right: 3px; transition: transform .18s; flex: none; }
+.phase-block.collapsed .chev { transform: rotate(-45deg); }
+.phase-block.collapsed .lesson-list { display: none; }
+
+.phase-progress { height: 3px; border-radius: 2px; background: var(--rule); margin: 0 8px 8px; overflow: hidden; }
+.phase-progress > i { display: block; height: 100%; background: var(--done); transition: width .35s ease; }
+
+.lesson-list { list-style: none; margin: 0 0 10px; padding: 0 0 0 6px; display: flex; flex-direction: column; gap: 1px; }
+.lesson-row { display: flex; align-items: flex-start; gap: 7px; border-radius: 7px; padding: 1px 4px 1px 2px; }
+.lesson-row:hover { background: var(--surface-2); }
+.lesson-row.current { background: var(--accent-wash); }
+
+.tickbox {
+  appearance: none; flex: none; width: 15px; height: 15px; margin: 8px 0 0;
+  border: 1.5px solid var(--rule-firm); border-radius: 4px; background: var(--surface);
+  cursor: pointer; position: relative; transition: background .15s, border-color .15s;
+}
+.tickbox:hover { border-color: var(--done); }
+.tickbox:checked { background: var(--done); border-color: var(--done); }
+.tickbox:checked::after {
+  content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(42deg);
+}
+.tickbox:disabled { cursor: not-allowed; opacity: .45; }
+
+.lesson-link {
+  flex: 1; min-width: 0; display: flex; gap: 8px; align-items: baseline;
+  background: none; border: 0; padding: 6px 4px; cursor: pointer;
+  font-family: inherit; font-size: 13px; color: var(--ink-2); text-align: left; line-height: 1.42;
+}
+.lesson-row.current .lesson-link { color: var(--ink); font-weight: 500; }
+.lesson-link:hover { color: var(--ink); }
+.lid { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); flex: none; width: 26px; font-variant-numeric: tabular-nums; }
+.lesson-row.current .lid { color: var(--accent); }
+.lesson-row.is-done .ltitle { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--rule-firm); }
+.dot-ready { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex: none; align-self: center; }
+
+/* ---------- pane ---------- */
+.pane { padding: 34px 40px 100px; min-width: 0; }
+.wrap { max-width: 760px; }
+
+/* hero */
+.hero { margin-bottom: 34px; }
+.hero h1 { font-size: clamp(34px, 5vw, 52px); letter-spacing: -.02em; margin: 10px 0 0; }
+.hero .lede { font-size: 18px; color: var(--ink-2); margin: 14px 0 0; max-width: 60ch; line-height: 1.55; }
+
+/* the ruler: all 55 lessons, phase widths to scale */
+.ruler-card {
+  margin: 30px 0 0; padding: 22px 24px 18px;
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 12px; box-shadow: var(--shadow);
+}
+.ruler-top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.bignum { font-family: var(--f-mono); font-size: 30px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.bignum span { color: var(--ink-3); font-size: 17px; font-weight: 400; }
+.ruler { display: flex; gap: 10px; align-items: flex-end; overflow-x: auto; padding-bottom: 2px; }
+.rgroup { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.ticks { display: flex; gap: 2px; }
+.tick { height: 30px; width: 4px; border-radius: 1.5px; background: var(--rule); transition: background .25s; }
+.tick[data-state="done"]  { background: var(--done); }
+.tick[data-state="ready"] { background: var(--accent); }
+.rlabel {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 500; color: var(--ink-3);
+  padding-top: 5px; border-top: 1px solid var(--rule-firm);
+  font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden;
+}
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+.legend i { display: inline-block; width: 4px; height: 11px; border-radius: 1.5px; margin-right: 6px; vertical-align: -1px; }
+
+/* next-up */
+.nextup {
+  display: flex; gap: 16px; align-items: center; margin-top: 22px; padding: 16px 20px;
+  background: var(--accent-wash); border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  border-radius: 11px;
+}
+.nextup .body { flex: 1; min-width: 0; }
+.nextup .t { font-weight: 600; font-size: 15px; }
+.nextup .s { font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }
+.btn {
+  appearance: none; border: 0; border-radius: 8px; background: var(--accent); color: #fff;
+  font-family: var(--f-body); font-size: 13.5px; font-weight: 600; padding: 9px 16px;
+  cursor: pointer; white-space: nowrap; transition: filter .15s;
+}
+:root[data-theme="dark"] .btn, :root:not([data-theme="light"]) .btn { color: #08222A; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn { color: #fff; } }
+.btn:hover { filter: brightness(1.08); }
+
+/* steps */
+.section { margin-top: 52px; }
+.section > h2 { font-size: 25px; letter-spacing: -.015em; }
+.section > .sub { color: var(--ink-2); margin-top: 8px; font-size: 15.5px; max-width: 62ch; }
+
+.steps { display: grid; gap: 1px; margin-top: 22px; background: var(--rule); border: 1px solid var(--rule); border-radius: 11px; overflow: hidden; }
+.step { display: flex; gap: 16px; padding: 18px 20px; background: var(--surface); align-items: flex-start; }
+.step-n { font-family: var(--f-mono); font-size: 12px; font-weight: 600; color: var(--accent); flex: none; width: 22px; padding-top: 2px; }
+.step h3 { font-family: var(--f-body); font-size: 14.5px; font-weight: 600; }
+.step p { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+
+/* phase cards */
+.phase-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 14px; margin-top: 22px; }
+.pcard {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 11px;
+  padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 9px;
+  cursor: pointer; text-align: left; font-family: inherit; color: inherit;
+  transition: border-color .15s, transform .15s;
+}
+.pcard:hover { border-color: var(--rule-firm); transform: translateY(-1px); }
+.pcard-top { display: flex; align-items: center; gap: 9px; }
+.pcard h3 { font-family: var(--f-display); font-size: 17.5px; flex: 1; }
+.pcard p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+.pcard .meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--rule); margin-top: auto; font-variant-numeric: tabular-nums; }
+
+/* ---------- lesson view ---------- */
+.lesson-head { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 30px; }
+.crumbs { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 13px; }
+.chip {
+  font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .05em;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
+  background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule);
+}
+.chip.ready { background: var(--accent-wash); color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 32%, transparent); }
+.chip.done  { background: var(--done-wash); color: var(--done); border-color: color-mix(in srgb, var(--done) 32%, transparent); }
+.chip.plan  { color: var(--ink-3); }
+.lesson-head h1 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.02em; }
+.lesson-head .lede { font-size: 17px; color: var(--ink-2); margin-top: 12px; max-width: 60ch; }
+
+.prose { font-size: 16.5px; line-height: 1.72; color: var(--ink); }
+.prose > * + * { margin-top: 1.1em; }
+.prose h2 {
+  font-size: 24px; margin-top: 2.2em; padding-top: .9em; border-top: 1px solid var(--rule);
+  letter-spacing: -.015em;
+}
+.prose h3 { font-size: 18.5px; margin-top: 1.9em; font-family: var(--f-body); font-weight: 600; }
+.prose p { margin-block: 0; max-width: 66ch; }
+.prose strong { font-weight: 600; }
+.prose em { font-style: italic; }
+.prose ul, .prose ol { max-width: 64ch; padding-left: 1.3em; margin-block: 0; }
+.prose li + li { margin-top: .45em; }
+.prose code:not(pre code) {
+  font-size: .875em; background: var(--surface-2); padding: 1.5px 5px;
+  border-radius: 4px; border: 1px solid var(--rule); color: var(--accent-ink);
+}
+.prose blockquote {
+  margin: 1.4em 0; padding: 2px 0 2px 18px; border-left: 2px solid var(--accent);
+  color: var(--ink-2); font-style: italic;
+}
+.prose hr { border: 0; border-top: 1px solid var(--rule); margin: 2.2em 0; }
+
+/* code */
+pre {
+  margin: 0; background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 10px; padding: 15px 17px; overflow-x: auto;
+  font-size: 13.5px; line-height: 1.62; box-shadow: var(--shadow-sm);
+}
+pre code { font-family: var(--f-mono); color: var(--ink); background: none; }
+.codeblock { margin-top: 1.2em; }
+.codeblock .cap {
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
+  letter-spacing: .05em; text-transform: uppercase; margin-bottom: 7px;
+}
+
+/* highlight.js, themed through our tokens so both schemes read */
+.hljs-keyword, .hljs-built_in { color: var(--accent-ink); font-weight: 500; }
+.hljs-string, .hljs-meta .hljs-string { color: var(--done); }
+.hljs-number, .hljs-literal { color: var(--active); }
+.hljs-comment { color: var(--ink-3); font-style: italic; }
+.hljs-title, .hljs-title.function_ { color: var(--ink); font-weight: 600; }
+.hljs-params { color: var(--ink-2); }
+.hljs-attr, .hljs-variable { color: var(--ink); }
+
+/* tables */
+.tablewrap { overflow-x: auto; margin-top: 1.3em; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 10px 15px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 500; background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* callout */
+.callout {
+  margin-top: 1.4em; padding: 16px 19px; border-radius: 10px;
+  background: var(--active-wash); border: 1px solid color-mix(in srgb, var(--active) 30%, transparent);
+  font-size: 15px; line-height: 1.62;
+}
+.callout .lbl { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--active); display: block; margin-bottom: 5px; font-weight: 600; }
+.callout p { margin: 0; max-width: 64ch; }
+.callout p + p { margin-top: .7em; }
+
+/* ascii figure */
+.figure {
+  margin-top: 1.3em; padding: 18px 20px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--rule); overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+.figure pre { border: 0; padding: 0; background: none; box-shadow: none; font-size: 13.5px; color: var(--ink-2); }
+
+/* planned-lesson placeholder */
+.placeholder {
+  margin-top: 26px; padding: 30px 28px; border-radius: 12px;
+  border: 1px dashed var(--rule-firm); background: var(--surface);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.placeholder h3 { font-family: var(--f-body); font-size: 15px; font-weight: 600; }
+.placeholder p { margin: 0; color: var(--ink-2); font-size: 14.5px; max-width: 60ch; }
+
+/* footer */
+.foot { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--ink-3); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.linkbtn:hover { color: var(--ink-2); }
+
+/* mobile */
+.railtoggle { display: none; }
+@media (max-width: 940px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); padding: 14px 18px 20px; }
+  .rail[hidden] { display: none !important; }
+  .railtoggle { display: inline-flex; }
+  .pane { padding: 26px 20px 80px; }
+  .brand-sub { display: none; }
+}
+@media (max-width: 560px) {
+  .topstat .words { display: none; }
+  .prose { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">ML From Scratch</span>
+    <span class="brand-sub">foundations &rarr; transformers</span>
+  </div>
+  <div class="topstat">
+    <span class="words">lessons complete</span>
+    <b id="stat-count" class="mono">0/55</b>
+    <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
+  </div>
+  <button class="iconbtn railtoggle" id="railtoggle" aria-expanded="false">Curriculum</button>
+</header>
+
+<div class="shell">
+  <aside class="rail" id="rail">
+    <div class="rail-head">
+      <span class="eyebrow">Curriculum</span>
+      <span class="eyebrow" id="rail-total">55 lessons</span>
+    </div>
+    <nav id="rail-nav"></nav>
+  </aside>
+
+  <main class="pane" id="pane"></main>
+</div>
+
+<!-- ================= curriculum data ================= -->
+<script type="application/json" id="curriculum-data">
+{
+  "phases": [
+    { "id":"p0","number":0,"title":"Foundations","subtitle":"the maths, built in code",
+      "blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.",
+      "milestone":"Minimise a function you have never seen before, from scratch, and explain every line.",
+      "lessons":[
+        {"id":"0.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available"},
+        {"id":"0.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned"},
+        {"id":"0.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned"},
+        {"id":"0.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned"},
+        {"id":"0.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned"},
+        {"id":"0.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned"},
+        {"id":"0.7","title":"Derivative rules","summary":"Power, product and quotient rules, and the handful of derivatives you will actually reuse forever.","status":"planned"},
+        {"id":"0.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned"},
+        {"id":"0.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned"},
+        {"id":"0.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned"},
+        {"id":"0.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance: the language uncertainty is written in.","status":"planned"},
+        {"id":"0.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned"},
+        {"id":"0.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned"}
+      ]},
+    { "id":"p1","number":1,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see",
+      "blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.",
+      "milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.",
+      "lessons":[
+        {"id":"1.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this curriculum: data, model, loss, optimiser.","status":"planned"},
+        {"id":"1.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned"},
+        {"id":"1.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned"},
+        {"id":"1.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss: classification from first principles.","status":"planned"},
+        {"id":"1.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned"},
+        {"id":"1.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned"},
+        {"id":"1.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned"},
+        {"id":"1.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned"},
+        {"id":"1.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM: still the champions on tabular data.","status":"planned"},
+        {"id":"1.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage: the number one bug in real-world machine learning.","status":"planned"},
+        {"id":"1.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned"},
+        {"id":"1.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 0 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned"},
+        {"id":"1.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned"}
+      ]},
+    { "id":"p2","number":2,"title":"Deep Learning","subtitle":"build the engine before you drive it",
+      "blurb":"You will write your own automatic differentiation engine, roughly 150 lines that explain the whole of PyTorch, and train a network on it before touching a framework.",
+      "milestone":"An autograd engine you wrote yourself, training a network you designed yourself.",
+      "lessons":[
+        {"id":"2.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned"},
+        {"id":"2.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned"},
+        {"id":"2.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned"},
+        {"id":"2.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned"},
+        {"id":"2.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned"},
+        {"id":"2.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop, now with nothing left to take on faith.","status":"planned"},
+        {"id":"2.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam, and precisely what problem each one was invented to fix.","status":"planned"},
+        {"id":"2.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned"},
+        {"id":"2.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation: keeping a large model honest.","status":"planned"},
+        {"id":"2.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned"},
+        {"id":"2.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned"},
+        {"id":"2.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned"},
+        {"id":"2.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned"},
+        {"id":"2.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing: the engineering that makes big models possible.","status":"planned"}
+      ]},
+    { "id":"p3","number":3,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT",
+      "blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.",
+      "milestone":"A working GPT you wrote yourself, generating text.",
+      "lessons":[
+        {"id":"3.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned"},
+        {"id":"3.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned"},
+        {"id":"3.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned"},
+        {"id":"3.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned"},
+        {"id":"3.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned"},
+        {"id":"3.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned"},
+        {"id":"3.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning: adapting a model you did not train.","status":"planned"},
+        {"id":"3.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned"},
+        {"id":"3.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned"},
+        {"id":"3.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted, and where lesson 0.1 comes back around.","status":"planned"},
+        {"id":"3.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned"},
+        {"id":"3.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned"}
+      ]},
+    { "id":"p4","number":4,"title":"Production and Specialisation","subtitle":"models that survive contact with users",
+      "blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.",
+      "milestone":"A model you built, deployed, monitored, and can reason about when it degrades.",
+      "lessons":[
+        {"id":"4.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned"},
+        {"id":"4.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned"},
+        {"id":"4.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned"}
+      ]}
+  ]
+}
+</script>
+
+<!-- ================= lesson 0.1 ================= -->
+<template id="lesson-0.1">
+<div class="prose">
+
+<h2>Why we start here</h2>
+
+<p>Strip away every buzzword and machine learning is three claims:</p>
+
+<ol>
+  <li><strong>Anything can be turned into a list of numbers.</strong> A house, a customer, a photograph, the word "banana".</li>
+  <li><strong>Once things are lists of numbers, "similar" and "different" become arithmetic</strong> — and arithmetic is something a computer does a trillion times a second.</li>
+  <li><strong>A model is a large pile of numbers that you adjust until its outputs stop being wrong.</strong></li>
+</ol>
+
+<p>Phase 0 makes claims 1 and 2 concrete. Today is claim 1, plus the single operation that claim 2 rests on.</p>
+
+<p>That operation is the <strong>dot product</strong>. To be precise about how central it is: a neuron in a neural network is a dot product followed by one simple function. Attention — the mechanism behind every modern large language model — is dot products. Semantic search is dot products. When a model has 175 billion parameters and needs a GPU cluster, what that hardware is doing, almost exclusively, is dot products.</p>
+
+<p>There is no second idea in this field of comparable importance. You will implement it today in about four lines.</p>
+
+<h2>The Python you need</h2>
+
+<p>If you already program, only the deltas matter:</p>
+
+<div class="codeblock">
+<div class="cap">Python, for people who already program</div>
+<pre><code class="language-python">xs = [1, 2, 3]              # list: dynamically sized, heterogeneous, indexed from 0
+xs[-1]                      # 3  — negative indices count from the end
+xs[0:2]                     # [1, 2] — slice, end-exclusive
+len(xs)                     # 3
+
+def f(a: list[float]) -> float:   # type hints exist but are NOT enforced.
+    return a[0]                   # they are documentation; the runtime ignores them.
+
+d = {"a": 1, "b": 2}        # dict
+for k in d: ...             # iterates KEYS, not pairs
+for x in xs: ...            # no index — this is the idiomatic loop
+for i in range(len(xs)): .. # only when you genuinely need the index
+
+total = 0.0                 # no declarations, no type, no semicolon
+raise ValueError("nope")    # exceptions: raise, not throw</code></pre>
+</div>
+
+<p>Three gotchas that will bite you:</p>
+
+<ul>
+  <li><strong>Indentation is syntax.</strong> Four spaces. A misindented line is a different program, not a style violation.</li>
+  <li><strong><code>/</code> is always float division.</strong> <code>5 / 2 == 2.5</code>. Integer division is <code>//</code>.</li>
+  <li><strong><code>**</code> is exponentiation.</strong> <code>x ** 0.5</code> is a square root.</li>
+</ul>
+
+<h2>A vector is a list of numbers</h2>
+
+<p>Genuinely — that is the whole definition. <code>[3, 4]</code> is a vector. <code>[0.2, -1.7, 0.0, 5.5]</code> is a vector. In code it is an array.</p>
+
+<p>The word sounds intimidating because physics teaches it as "magnitude and direction, drawn as an arrow". Set the arrows aside for now. <strong>A vector is an ordered list of numbers where each position means something fixed.</strong></p>
+
+<p>The interesting half is the second one — <em>each position means something fixed</em>. That is what turns a list into a representation:</p>
+
+<div class="codeblock">
+<pre><code class="language-python">house    = [1500, 3, 12]     # [square feet, bedrooms, age in years]
+another  = [1600, 3, 10]
+mansion  = [8000, 7,  2]</code></pre>
+</div>
+
+<p>Position 0 is <em>always</em> square footage. Position 1 is <em>always</em> bedrooms. Now these three lists are comparable, and "is this house like that house" has become a maths problem.</p>
+
+<p>That is the entire trick, and every ML system is built on it. Deciding what goes in each position used to be a job title — <em>feature engineering</em>, covered in lesson 1.10. The revolution of deep learning is that networks now <strong>learn</strong> what the positions should mean instead of you specifying them.</p>
+
+<p><strong>Dimensions</strong> just means "how many numbers are in the list". The house vector is 3-dimensional. Sentence embeddings in a modern LLM are typically 768 to 4096-dimensional. You cannot picture 4096 dimensions and you should stop trying — but every operation you learn in 2D works <em>identically</em> in 4096D, unchanged. That is the gift: intuition is built cheaply in two dimensions and then transfers for free.</p>
+
+<h2>The dot product</h2>
+
+<p>Take two vectors of the same length. Multiply them position by position. Add up the results. One number falls out.</p>
+
+<div class="figure">
+<pre>a = [1, 2, 3]
+b = [4, 5, 6]
+
+a · b  =  (1×4) + (2×5) + (3×6)
+       =    4   +   10  +   18
+       =   32</pre>
+</div>
+
+<p>That is the entire operation. As an algorithm: <em>walk both lists together, multiply each pair, accumulate the total.</em></p>
+
+<h3>What the number means</h3>
+
+<p>This is the part that matters, and where most people's understanding stays shallow.</p>
+
+<p>The dot product measures <strong>agreement</strong>. Look at what happens to each term in the sum:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Signs</th><th>Contribution</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr><td>both positive</td><td>positive</td><td>they agree</td></tr>
+    <tr><td>both negative</td><td>positive</td><td>they agree, in the other direction</td></tr>
+    <tr><td>one of each</td><td>negative</td><td>they disagree</td></tr>
+    <tr><td>either is zero</td><td>nothing</td><td>no opinion</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>So the total answers: <strong>across all these dimensions, do these two vectors tend to go the same way?</strong></p>
+
+<div class="figure">
+<pre>[1, 0] · [ 1, 0]  =   1     same direction
+[1, 0] · [ 0, 1]  =   0     perpendicular — completely unrelated
+[1, 0] · [-1, 0]  =  -1     opposite</pre>
+</div>
+
+<p>That middle case deserves a pause. A dot product of <strong>zero means "these two things have nothing to say about each other"</strong>. In geometry that is a right angle. In machine learning it is "unrelated concepts". Same fact, two vocabularies.</p>
+
+<h3>Why this is the atom of the field</h3>
+
+<p>A neuron in a neural network does exactly this:</p>
+
+<div class="figure">
+<pre>output = activation( inputs · weights + bias )</pre>
+</div>
+
+<p>The weights are a vector the network learned. The dot product asks <em>"how much does this input agree with the pattern I have learned to look for?"</em> A high number means "strong match — fire".</p>
+
+<p>That is what a neuron <strong>is</strong>. Everything else in deep learning — layers, depth, attention, transformers — is about arranging billions of these agreement checks so that useful patterns emerge. When you build a network from scratch in Phase 2, you will be stacking today's function.</p>
+
+<h2>The flaw, and the fix</h2>
+
+<p>The dot product has a bug as a similarity measure: <strong>it is inflated by magnitude.</strong></p>
+
+<div class="figure">
+<pre>[1, 0] · [100, 0]  =  100
+[1, 0] · [  1, 0]  =    1</pre>
+</div>
+
+<p>Both pairs point in <em>precisely</em> the same direction. The first scores 100× higher purely because one vector is bigger. If those were documents, a long document would beat a short one on every query regardless of topic. Not what you want.</p>
+
+<p>The fix is to divide out the magnitudes. The <strong>magnitude</strong> (also called length, or norm) is Pythagoras extended to any number of dimensions — square everything, sum, take the root:</p>
+
+<div class="figure">
+<pre>|[3, 4]|  =  √(3² + 4²)  =  √25  =  5</pre>
+</div>
+
+<p>Divide the dot product by both magnitudes and you get <strong>cosine similarity</strong>:</p>
+
+<div class="figure">
+<pre>cos_sim(a, b)  =  (a · b) / (|a| × |b|)</pre>
+</div>
+
+<p>The answer is now always between −1 and 1, and magnitude is gone. Only <em>direction</em> survives:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1.0</td><td>identical direction</td></tr>
+    <tr><td class="num">0.7</td><td>strongly related</td></tr>
+    <tr><td class="num">0.0</td><td>unrelated, perpendicular</td></tr>
+    <tr><td class="num">−1.0</td><td>opposite</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>This function is how semantic search works, how RAG retrieves documents, how "customers who liked X also liked Y" works, and how a vector database ranks results. Four lines of arithmetic — exercise 6.</p>
+
+<h2>Why NumPy exists</h2>
+
+<p>Python is slow: every list element is a boxed object with type checks on every operation. NumPy stores arrays as raw contiguous memory and pushes the loop down into compiled C, applying one instruction across many values at once.</p>
+
+<div class="codeblock">
+<div class="cap">The vectorised mental model</div>
+<pre><code class="language-python">import numpy as np
+
+a = np.array([1.0, 2.0, 3.0])
+b = np.array([4.0, 5.0, 6.0])
+
+a + b        # array([5., 7., 9.])   elementwise, no loop
+a * b        # array([4., 10., 18.]) elementwise multiply, NOT matrix multiply
+a * 2        # array([2., 4., 6.])   the scalar broadcasts across the array
+a.sum()      # 6.0
+a.shape      # (3,)  — check this when confused. always.</code></pre>
+</div>
+
+<p>The mental shift, and it is a real one coming from imperative code: <strong>stop thinking "for each element, do X". Start thinking "apply X to the whole array".</strong></p>
+
+<div class="callout">
+  <span class="lbl">The most common beginner mistake</span>
+  <p>Writing a Python <code>for</code> loop over a NumPy array costs roughly 200× in speed. The tests in this lesson reject it outright. Once all seven pass, run the benchmark and see the gap on your own machine.</p>
+</div>
+
+<h2>Your work</h2>
+
+<p>Seven functions, in <code>00-foundations/01-vectors/exercises.py</code>. The tests check <em>how</em> you solved it, not only the answer: exercises 1 and 3 reject NumPy so you implement the mechanism yourself, and exercises 2 and 4–7 reject <code>for</code> loops so you learn to think in arrays.</p>
+
+<div class="codeblock">
+<div class="cap">exercises.py — the file you edit</div>
+<pre><code class="language-python">def dot_loop(a: list[float], b: list[float]) -> float:
+    """EXERCISE 1 — the dot product, by hand.
+
+    Multiply two equal-length lists element by element, then add up the results.
+
+        dot_loop([1, 2, 3], [4, 5, 6])  ->  1*4 + 2*5 + 3*6  ->  32
+
+    Plain Python only. Raise ValueError if the lengths differ.
+    """
+    raise NotImplementedError("exercise 1")
+
+
+def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    """EXERCISE 6 — cosine similarity.
+
+    The dot product of two vectors, divided by the product of their magnitudes.
+    Produces a number from -1 to 1 answering: "do these two vectors point the
+    same way?"
+
+    This one function is how every semantic search engine, every RAG system and
+    every recommendation engine you have used decides two things are similar.
+    You are about to write it in one line.
+    """
+    raise NotImplementedError("exercise 6")</code></pre>
+</div>
+
+<p>Run this until all seven pass:</p>
+
+<div class="codeblock">
+<div class="cap">terminal</div>
+<pre><code>python progress.py 0.1</code></pre>
+</div>
+
+<p>Exercise 7 is a working semantic search engine in about two lines. It is a toy, but the mechanism is not — swap the hand-written vectors for real embeddings and that function is a production retrieval system.</p>
+
+<h2>What to watch</h2>
+
+<p>Ordered. Do not binge the playlist — one idea, then code it.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>When</th><th>What</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="num">before</td>
+      <td><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">3Blue1Brown, <em>Essence of Linear Algebra</em> ch. 1 — "Vectors"</a> <span class="num">~10 min</span></td>
+      <td>The geometric picture deliberately withheld above. Watch for the three views of a vector; you already have the CS one.</td>
+    </tr>
+    <tr>
+      <td class="num">before</td>
+      <td><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">ch. 2 — "Linear combinations, span, and basis vectors"</a> <span class="num">~10 min</span></td>
+      <td>Why the numbers in a vector are coordinates. Pays off in 0.4, and hugely in 1.12.</td>
+    </tr>
+    <tr>
+      <td class="num">before</td>
+      <td><a href="https://github.com/KeithGalli/NumPy">Keith Galli, <em>Complete Python NumPy Tutorial</em></a> <span class="num">~1 hr</span></td>
+      <td>Purely practical. Type along with the notebook. You can stop after reshaping.</td>
+    </tr>
+    <tr>
+      <td class="num">after</td>
+      <td><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">ch. 9 — "Dot products and duality"</a> <span class="num">~14 min</span></td>
+      <td>Only once your code passes. The second half, on duality, is genuinely hard and not needed yet — losing the thread there is expected.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <span class="lbl">This matters more than the list</span>
+  <p><strong>Watching is not learning.</strong> A 3Blue1Brown video produces a powerful sensation of understanding, because the animation performs the hard cognitive work on your behalf. That sensation is not the same as being able to reproduce the idea, and the gap between them is where most self-taught attempts die — people watch fifty hours of excellent video, feel educated, and cannot write twenty lines of NumPy.</p>
+  <p>The test after each video: close the tab and explain the idea out loud without the animation. Budget roughly 20% of your time on video and 80% on the exercises.</p>
+</div>
+
+<h2>Check yourself</h2>
+
+<p>You have finished this lesson when you can answer these without looking anything up:</p>
+
+<ul>
+  <li>What does a dot product of zero tell you about two vectors?</li>
+  <li>Why divide by the magnitudes to get cosine similarity — what does it fix?</li>
+  <li>Why is a NumPy operation so much faster than the equivalent Python loop? ("NumPy is optimised" is not the answer.)</li>
+  <li>Where does a neuron use the function you wrote today?</li>
+</ul>
+
+</div>
+</template>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORE_KEY = "mlfs:progress:v1";
+  var data = JSON.parse(document.getElementById("curriculum-data").textContent);
+  var phases = data.phases;
+  var allLessons = [];
+  phases.forEach(function (p) {
+    p.lessons.forEach(function (l) { l.phase = p; allLessons.push(l); });
+  });
+  var TOTAL = allLessons.length;
+
+  /* ---------- persistence (per viewer, per device) ---------- */
+  function loadDone() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return {};
+      var arr = JSON.parse(raw);
+      var out = {};
+      if (Array.isArray(arr)) arr.forEach(function (id) { out[id] = true; });
+      return out;
+    } catch (e) { return {}; }
+  }
+  function saveDone() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(Object.keys(done))); } catch (e) {}
+  }
+  var done = loadDone();
+
+  var view = { kind: "overview", id: null };
+
+  /* ---------- helpers ---------- */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function lessonById(id) {
+    for (var i = 0; i < allLessons.length; i++) if (allLessons[i].id === id) return allLessons[i];
+    return null;
+  }
+  function phaseDone(p) {
+    return p.lessons.filter(function (l) { return done[l.id]; }).length;
+  }
+  function totalDone() { return Object.keys(done).length; }
+  function nextLesson() {
+    for (var i = 0; i < allLessons.length; i++) {
+      if (allLessons[i].status === "available" && !done[allLessons[i].id]) return allLessons[i];
+    }
+    for (var j = 0; j < allLessons.length; j++) if (!done[allLessons[j].id]) return allLessons[j];
+    return null;
+  }
+  function highlight(scope) {
+    if (typeof hljs === "undefined") return;
+    scope.querySelectorAll("pre code").forEach(function (b) {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+
+  /* ---------- rail ---------- */
+  var railNav = document.getElementById("rail-nav");
+  var collapsed = {};
+
+  function buildRail() {
+    railNav.textContent = "";
+    phases.forEach(function (p) {
+      var block = el("div", "phase-block" + (collapsed[p.id] ? " collapsed" : ""));
+
+      var btn = el("button", "phase-btn");
+      btn.type = "button";
+      btn.setAttribute("aria-expanded", collapsed[p.id] ? "false" : "true");
+      var chev = el("span", "chev");
+      btn.appendChild(chev);
+      btn.appendChild(el("span", "phase-num", String(p.number)));
+      btn.appendChild(el("span", "phase-name", p.title));
+      btn.appendChild(el("span", "phase-count", phaseDone(p) + "/" + p.lessons.length));
+      btn.addEventListener("click", function () {
+        collapsed[p.id] = !collapsed[p.id];
+        buildRail();
+      });
+      block.appendChild(btn);
+
+      var prog = el("div", "phase-progress");
+      var fill = el("i");
+      fill.style.width = (p.lessons.length ? phaseDone(p) / p.lessons.length * 100 : 0) + "%";
+      prog.appendChild(fill);
+      block.appendChild(prog);
+
+      var list = el("ul", "lesson-list");
+      p.lessons.forEach(function (l) {
+        var row = el("li", "lesson-row" +
+          (view.kind === "lesson" && view.id === l.id ? " current" : "") +
+          (done[l.id] ? " is-done" : ""));
+
+        var box = el("input", "tickbox");
+        box.type = "checkbox";
+        box.checked = !!done[l.id];
+        box.setAttribute("aria-label", "Mark lesson " + l.id + " complete");
+        box.addEventListener("change", function () {
+          if (box.checked) { done[l.id] = true; } else { delete done[l.id]; }
+          saveDone();
+          render();
+        });
+        row.appendChild(box);
+
+        var link = el("button", "lesson-link");
+        link.type = "button";
+        link.appendChild(el("span", "lid", l.id));
+        var t = el("span", "ltitle", l.title);
+        link.appendChild(t);
+        if (l.status === "available") link.appendChild(el("span", "dot-ready"));
+        link.addEventListener("click", function () {
+          view = { kind: "lesson", id: l.id };
+          render();
+          document.getElementById("pane").scrollIntoView({ block: "start" });
+        });
+        row.appendChild(link);
+
+        list.appendChild(row);
+      });
+      block.appendChild(list);
+      railNav.appendChild(block);
+    });
+  }
+
+  /* ---------- overview ---------- */
+  function buildOverview() {
+    var wrap = el("div", "wrap");
+
+    var hero = el("div", "hero");
+    hero.appendChild(el("div", "eyebrow", "55 lessons · 5 phases · no prior maths"));
+    var h1 = el("h1", null, "Learn machine learning by building it");
+    hero.appendChild(h1);
+    hero.appendChild(el("p", "lede",
+      "A ground-up curriculum for engineers whose maths is rusty, weak or absent. " +
+      "Every idea is built once by hand before you are allowed the library that does it for you."));
+    wrap.appendChild(hero);
+
+    /* the ruler */
+    var card = el("div", "ruler-card");
+    var top = el("div", "ruler-top");
+    var nDone = totalDone();
+    var big = el("div", "bignum");
+    big.appendChild(document.createTextNode(nDone + " "));
+    var of = el("span", null, "/ " + TOTAL + " lessons complete");
+    big.appendChild(of);
+    top.appendChild(big);
+    top.appendChild(el("div", "eyebrow", "phases 0–4, drawn to scale"));
+    card.appendChild(top);
+
+    var ruler = el("div", "ruler");
+    phases.forEach(function (p) {
+      var g = el("div", "rgroup");
+      g.style.flex = p.lessons.length + " 1 0";
+      var ticks = el("div", "ticks");
+      p.lessons.forEach(function (l) {
+        var t = el("span", "tick");
+        t.setAttribute("data-state", done[l.id] ? "done" : (l.status === "available" ? "ready" : "planned"));
+        t.title = l.id + " — " + l.title;
+        ticks.appendChild(t);
+      });
+      g.appendChild(ticks);
+      var lab = el("div", "rlabel", String(p.number));
+      lab.title = "Phase " + p.number + " · " + p.title + " (" + p.lessons.length + " lessons)";
+      g.appendChild(lab);
+      ruler.appendChild(g);
+    });
+    card.appendChild(ruler);
+
+    var legend = el("div", "legend");
+    [["done", "complete", "var(--done)"], ["ready", "written and ready", "var(--accent)"], ["planned", "still to be written", "var(--rule)"]]
+      .forEach(function (row) {
+        var s = el("span");
+        var i = el("i");
+        i.style.background = row[2];
+        s.appendChild(i);
+        s.appendChild(document.createTextNode(row[1]));
+        legend.appendChild(s);
+      });
+    card.appendChild(legend);
+    wrap.appendChild(card);
+
+    /* next up */
+    var nxt = nextLesson();
+    if (nxt) {
+      var nu = el("div", "nextup");
+      var body = el("div", "body");
+      body.appendChild(el("div", "t", "Next up — " + nxt.id + " · " + nxt.title));
+      body.appendChild(el("div", "s", nxt.summary));
+      nu.appendChild(body);
+      var go = el("button", "btn", nxt.status === "available" ? "Open lesson" : "Preview");
+      go.type = "button";
+      go.addEventListener("click", function () { view = { kind: "lesson", id: nxt.id }; render(); });
+      nu.appendChild(go);
+      wrap.appendChild(nu);
+    }
+
+    /* how it works */
+    var s1 = el("div", "section");
+    s1.appendChild(el("h2", null, "How this works"));
+    s1.appendChild(el("p", "sub",
+      "This page is the curriculum and your progress. The code lives in a repository on your machine, " +
+      "because writing it is the part that actually teaches you."));
+
+    var steps = el("div", "steps");
+    [
+      ["01", "Read the lesson here", "Each lesson explains the idea from nothing, in plain language, with the maths introduced only at the moment it becomes necessary to explain something."],
+      ["02", "Write the code in the repo", "Every lesson ships function stubs and a test suite. You implement the stubs. Nobody hands you the answer — recognising correct code is a different skill from producing it, and only one of them transfers."],
+      ["03", "Run the tests", "python progress.py 0.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
+      ["04", "Tick it off", "Progress here is self-reported and stored in this browser. Progress in the repo is measured by passing tests, which is the definition worth trusting."]
+    ].forEach(function (row) {
+      var st = el("div", "step");
+      st.appendChild(el("div", "step-n", row[0]));
+      var b = el("div");
+      b.appendChild(el("h3", null, row[1]));
+      b.appendChild(el("p", null, row[2]));
+      st.appendChild(b);
+      steps.appendChild(st);
+    });
+    s1.appendChild(steps);
+    wrap.appendChild(s1);
+
+    /* phases */
+    var s2 = el("div", "section");
+    s2.appendChild(el("h2", null, "The five phases"));
+    s2.appendChild(el("p", "sub", "Ordered so that each phase assumes exactly what came before it, and nothing more."));
+    var cards = el("div", "phase-cards");
+    phases.forEach(function (p) {
+      var c = el("button", "pcard");
+      c.type = "button";
+      var top2 = el("div", "pcard-top");
+      top2.appendChild(el("span", "phase-num", String(p.number)));
+      top2.appendChild(el("h3", null, p.title));
+      c.appendChild(top2);
+      c.appendChild(el("p", null, p.blurb));
+      var meta = el("div", "meta");
+      meta.appendChild(el("span", null, p.lessons.length + " lessons"));
+      meta.appendChild(el("span", null, phaseDone(p) + " complete"));
+      c.appendChild(meta);
+      c.addEventListener("click", function () {
+        collapsed[p.id] = false;
+        view = { kind: "lesson", id: p.lessons[0].id };
+        render();
+      });
+      cards.appendChild(c);
+    });
+    s2.appendChild(cards);
+    wrap.appendChild(s2);
+
+    /* repo */
+    var s3 = el("div", "section");
+    s3.appendChild(el("h2", null, "Where the code lives"));
+    s3.appendChild(el("p", "sub",
+      "In-browser Python is deliberately not offered here. You learn the toolchain by using it — a real virtual environment, a real test runner, a real terminal."));
+    var cb = el("div", "codeblock");
+    cb.style.marginTop = "20px";
+    var cap = el("div", "cap", "getting set up");
+    cb.appendChild(cap);
+    var pre = el("pre");
+    var code = el("code");
+    code.textContent =
+      "python -m venv .venv\n" +
+      "pip install -e \".[dev]\"\n\n" +
+      "python progress.py        # the dashboard: where you stand\n" +
+      "python progress.py 0.1    # run one lesson's tests";
+    pre.appendChild(code);
+    cb.appendChild(pre);
+    s3.appendChild(cb);
+    wrap.appendChild(s3);
+
+    return wrap;
+  }
+
+  /* ---------- lesson view ---------- */
+  function buildLesson(l) {
+    var wrap = el("div", "wrap");
+
+    var head = el("div", "lesson-head");
+    var crumbs = el("div", "crumbs");
+    crumbs.appendChild(el("span", "chip", "Phase " + l.phase.number + " · " + l.phase.title));
+    if (done[l.id]) crumbs.appendChild(el("span", "chip done", "Complete"));
+    else if (l.status === "available") crumbs.appendChild(el("span", "chip ready", "Ready"));
+    else crumbs.appendChild(el("span", "chip plan", "Not written yet"));
+    head.appendChild(crumbs);
+    head.appendChild(el("h1", null, l.id + " — " + l.title));
+    head.appendChild(el("p", "lede", l.summary));
+    wrap.appendChild(head);
+
+    var tpl = document.getElementById("lesson-" + l.id);
+    if (tpl) {
+      var content = tpl.content.cloneNode(true);
+      wrap.appendChild(content);
+      highlight(wrap);
+
+      var mark = el("div", "nextup");
+      mark.style.marginTop = "44px";
+      var mb = el("div", "body");
+      mb.appendChild(el("div", "t", done[l.id] ? "Marked complete" : "Finished this lesson?"));
+      mb.appendChild(el("div", "s", done[l.id]
+        ? "You can untick it in the curriculum rail if you want another pass."
+        : "Tick it off once the tests pass and you can answer the questions above without looking them up."));
+      mark.appendChild(mb);
+      var mbtn = el("button", "btn", done[l.id] ? "Mark as not done" : "Mark complete");
+      mbtn.type = "button";
+      mbtn.addEventListener("click", function () {
+        if (done[l.id]) { delete done[l.id]; } else { done[l.id] = true; }
+        saveDone();
+        render();
+      });
+      mark.appendChild(mbtn);
+      wrap.appendChild(mark);
+    } else {
+      var ph = el("div", "placeholder");
+      ph.appendChild(el("div", "eyebrow", "Not written yet"));
+      ph.appendChild(el("h3", null, "This lesson is planned, not published."));
+      ph.appendChild(el("p", null,
+        "Lessons are written one at a time, in order, so that each one can assume exactly what came " +
+        "before it. Writing all fifty-five up front would produce a worse curriculum than writing each " +
+        "in response to how the previous one actually went."));
+      ph.appendChild(el("p", null, "When it exists, it will cover: " + l.summary.charAt(0).toLowerCase() + l.summary.slice(1)));
+      wrap.appendChild(ph);
+
+      var mile = el("div", "callout");
+      mile.style.marginTop = "24px";
+      mile.appendChild(el("span", "lbl", "Phase " + l.phase.number + " milestone"));
+      mile.appendChild(el("p", null, l.phase.milestone));
+      wrap.appendChild(mile);
+    }
+
+    var idx = allLessons.indexOf(l);
+    var foot = el("div", "foot");
+    var back = el("button", "linkbtn", "← Overview");
+    back.type = "button";
+    back.addEventListener("click", function () { view = { kind: "overview" }; render(); });
+    foot.appendChild(back);
+    if (idx + 1 < allLessons.length) {
+      var nx = allLessons[idx + 1];
+      var nb = el("button", "linkbtn", "Next: " + nx.id + " " + nx.title + " →");
+      nb.type = "button";
+      nb.addEventListener("click", function () { view = { kind: "lesson", id: nx.id }; render(); window.scrollTo(0, 0); });
+      foot.appendChild(nb);
+    }
+    wrap.appendChild(foot);
+
+    return wrap;
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    var pane = document.getElementById("pane");
+    pane.textContent = "";
+
+    if (view.kind === "lesson") {
+      var l = lessonById(view.id);
+      pane.appendChild(l ? buildLesson(l) : buildOverview());
+    } else {
+      pane.appendChild(buildOverview());
+
+      var foot = el("div", "foot");
+      var reset = el("button", "linkbtn", "Clear my progress");
+      reset.type = "button";
+      reset.addEventListener("click", function () {
+        if (window.confirm("Clear all ticked lessons on this device? This cannot be undone.")) {
+          done = {};
+          saveDone();
+          render();
+        }
+      });
+      foot.appendChild(el("span", null, "Progress is stored in this browser only — it is not shared, and it does not follow you to another device."));
+      foot.appendChild(reset);
+      pane.appendChild(foot);
+    }
+
+    var n = totalDone();
+    document.getElementById("stat-count").textContent = n + "/" + TOTAL;
+    document.getElementById("stat-bar").style.width = (n / TOTAL * 100) + "%";
+    buildRail();
+  }
+
+  /* mobile rail toggle */
+  var rail = document.getElementById("rail");
+  var toggle = document.getElementById("railtoggle");
+  function syncRail() {
+    if (window.matchMedia("(max-width: 940px)").matches) {
+      if (!toggle.dataset.init) { rail.hidden = true; toggle.dataset.init = "1"; }
+    } else {
+      rail.hidden = false;
+    }
+  }
+  toggle.addEventListener("click", function () {
+    rail.hidden = !rail.hidden;
+    toggle.setAttribute("aria-expanded", rail.hidden ? "false" : "true");
+  });
+  window.addEventListener("resize", syncRail);
+
+  syncRail();
+  render();
+})();
+</script>
