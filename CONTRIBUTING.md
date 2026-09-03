@@ -38,11 +38,44 @@ Exercises that must be solved a particular way should enforce it with `inspect.g
 3. Verify the tests fail cleanly as `TODO` on the untouched stubs, and pass on a correct solution kept *outside* the repository.
 4. Check `python progress.py` picks it up and the counts are right.
 
+## The website
+
+`site/index.html` is **generated — never edit it directly.** The source is split by
+concern and assembled by a build script:
+
+```
+site/src/head.html       fonts and CDN scripts
+site/src/shell.html      topbar and layout skeleton
+site/src/styles.css      design tokens, layout, widget styles
+site/src/app.js          routing, progress, the curriculum rail, the overview
+site/src/widgets.js      interactive lesson demos
+site/src/lessons/*.html  one file per lesson, named for its id
+site/build.py            assembles all of the above + curriculum.json
+```
+
+```bash
+python site/build.py
+```
+
+Curriculum data is read from `curriculum.json`, the same file `progress.py` uses, so
+the site and the dashboard cannot disagree about which lessons exist. The build fails
+if a lesson is marked `available` but has no content file, and CI fails if the
+committed `site/index.html` does not match a fresh build.
+
+**Adding an interactive demo.** Put `<div data-widget="name"></div>` in the lesson
+HTML and add a builder to `BUILDERS` in `widgets.js`. Widgets take all colour from
+CSS custom properties so they follow the page theme; inside SVG, use classes rather
+than `var()` in presentation attributes, which browsers do not reliably resolve.
+
+A demo has to teach something prose cannot. A picture of a concept is decoration; a
+control the reader can move until the number reaches zero is a lesson.
+
 ## Running things
 
 ```bash
 pip install -e ".[dev]"
 python progress.py          # dashboard
+python site/build.py        # rebuild the website
 pytest                      # same tests, pytest reporting
 ruff check .                # lint
 ```

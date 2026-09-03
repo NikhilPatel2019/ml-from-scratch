@@ -72,6 +72,22 @@ jobs:
       - name: Dashboard runs
         run: python progress.py
 
+      # site/index.html is generated. If someone edits it by hand, or edits the
+      # source and forgets to rebuild, the committed file stops matching its
+      # source — catch that here rather than shipping a stale page.
+      - name: Site is rebuilt from source
+        run: python site/build.py
+
+      - name: Site build is committed
+        shell: bash
+        run: |
+          if ! git diff --quiet -- site/index.html; then
+            echo "::error::site/index.html differs from a fresh build. Run: python site/build.py"
+            git --no-pager diff --stat -- site/index.html
+            exit 1
+          fi
+          echo "ok: committed build matches source"
+
       - name: Dashboard emits valid JSON
         shell: python {0}
         run: |
