@@ -13,3 +13,8 @@ data/
 
 # Claude Code installer, not part of this project
 install.cmd
+
+# Python build artifacts
+*.egg-info/
+build/
+dist/
