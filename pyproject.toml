@@ -36,17 +36,18 @@ dev = [
     "ipykernel>=6.29",
 ]
 
+# `progress` is the one command a learner runs day to day.
+[project.scripts]
+progress = "mlfs.cli:main"
+
 [tool.setuptools]
-packages = ["mlfs"]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
-testpaths = [
-    "00-foundations",
-    "01-classical-ml",
-    "02-deep-learning",
-    "03-transformers",
-    "04-production",
-]
+testpaths = ["lessons"]
 python_files = ["test_exercises.py"]
 addopts = "-q"
 

@@ -33,10 +33,10 @@ Exercises that must be solved a particular way should enforce it with `inspect.g
 
 ## Adding a lesson
 
-1. Add the entry to `curriculum.json` with `"status": "available"` and a `dir`.
-2. Create the directory with `README.md`, `exercises.py`, `test_exercises.py`, `watch.md` and `notes.md`.
+1. Add the entry to `lessons/curriculum.json` with `"status": "available"` and a `dir`.
+2. Create the directory under `lessons/<phase>/` with `README.md`, `exercises.py`, `test_exercises.py`, `watch.md` and `notes.md`.
 3. Verify the tests fail cleanly as `TODO` on the untouched stubs, and pass on a correct solution kept *outside* the repository.
-4. Check `python progress.py` picks it up and the counts are right.
+4. Check `progress` picks it up and the counts are right.
 
 ## The website
 
@@ -50,14 +50,14 @@ site/src/styles.css      design tokens, layout, widget styles
 site/src/app.js          routing, progress, the curriculum rail, the overview
 site/src/widgets.js      interactive lesson demos
 site/src/lessons/*.html  one file per lesson, named for its id
-site/build.py            assembles all of the above + curriculum.json
+site/build.py            assembles all of the above + lessons/curriculum.json
 ```
 
 ```bash
 python site/build.py
 ```
 
-Curriculum data is read from `curriculum.json`, the same file `progress.py` uses, so
+Curriculum data is read from `lessons/curriculum.json`, the same file the `progress` command uses, so
 the site and the dashboard cannot disagree about which lessons exist. The build fails
 if a lesson is marked `available` but has no content file, and CI fails if the
 committed `site/index.html` does not match a fresh build.
@@ -74,7 +74,7 @@ control the reader can move until the number reaches zero is a lesson.
 
 ```bash
 pip install -e ".[dev]"
-python progress.py          # dashboard
+progress          # dashboard
 python site/build.py        # rebuild the website
 pytest                      # same tests, pytest reporting
 ruff check .                # lint

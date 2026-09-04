@@ -2,7 +2,7 @@
   GENERATED FILE — do not edit.
 
   Source:  site/src/          (styles.css, app.js, widgets.js, lessons/*.html)
-  Data:    curriculum.json
+  Data:    lessons/curriculum.json
   Rebuild: python site/build.py
 -->
 
@@ -863,7 +863,7 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
 <h2>Your work</h2>
 
-<p>Seven functions, in <code>00-foundations/01-vectors/exercises.py</code>. The tests check <em>how</em> you solved it, not only the answer: exercises 1 and 3 reject NumPy so you implement the mechanism yourself, and exercises 2 and 4–7 reject <code>for</code> loops so you learn to think in arrays.</p>
+<p>Seven functions, in <code>lessons/00-foundations/01-vectors/exercises.py</code>. The tests check <em>how</em> you solved it, not only the answer: exercises 1 and 3 reject NumPy so you implement the mechanism yourself, and exercises 2 and 4–7 reject <code>for</code> loops so you learn to think in arrays.</p>
 
 <div class="codeblock">
 <div class="cap">exercises.py — the file you edit</div>
@@ -897,7 +897,7 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 
 <div class="codeblock">
 <div class="cap">terminal</div>
-<pre><code>python progress.py 0.1</code></pre>
+<pre><code>progress 0.1</code></pre>
 </div>
 
 <p>Exercise 7 is the search demo above, in about two lines. It is a toy only in its scale — swap the hand-written vectors for real embeddings and that function is a production retrieval system.</p>
@@ -1856,7 +1856,7 @@ var Widgets = (function () {
       ["02", "Write the code in the repo",
         "Every lesson ships function stubs and a test suite. You implement the stubs. Nobody hands you the answer — recognising correct code is a different skill from producing it, and only one of them transfers."],
       ["03", "Run the tests",
-        "python progress.py 0.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
+        "progress 0.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
       ["04", "Tick it off",
         "Progress here is self-reported and stored in this browser. Progress in the repo is measured by passing tests, which is the definition worth trusting."]
     ].forEach(function (row) {
@@ -1907,8 +1907,8 @@ var Widgets = (function () {
     code.textContent =
       "python -m venv .venv\n" +
       "pip install -e \".[dev]\"\n\n" +
-      "python progress.py        # the dashboard: where you stand\n" +
-      "python progress.py 0.1    # run one lesson's tests";
+      "progress        # the dashboard: where you stand\n" +
+      "progress 0.1    # run one lesson's tests";
     pre.appendChild(code);
     cb.appendChild(pre);
     s3.appendChild(cb);

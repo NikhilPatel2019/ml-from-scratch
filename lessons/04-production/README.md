@@ -18,6 +18,6 @@ A trained model is roughly ten percent of a machine learning product. This phase
 
 ---
 
-Run `python progress.py` from the repository root to see where you are.
+Run `progress` from the repository root to see where you are.
 
-[← Phase 3: Transformers and LLMs](../03-transformers) · [Roadmap](../ROADMAP.md)
+[← Phase 3: Transformers and LLMs](../03-transformers) · [Roadmap](../../ROADMAP.md)

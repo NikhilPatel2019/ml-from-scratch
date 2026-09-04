@@ -5,8 +5,8 @@ The published artifact must be one file with no runtime build step, but a single
 1500-line file is not something anyone should have to edit. So the source lives
 split by concern under site/src/ and this script concatenates it.
 
-Curriculum data is read from the repository's curriculum.json — the same file
-progress.py uses — so the site and the dashboard can never disagree about what
+Curriculum data is read from lessons/curriculum.json — the same file
+the progress command uses — so the site and the dashboard can never disagree about what
 lessons exist.
 
     python site/build.py
@@ -27,7 +27,7 @@ BANNER = """<!--
   GENERATED FILE — do not edit.
 
   Source:  site/src/          (styles.css, app.js, widgets.js, lessons/*.html)
-  Data:    curriculum.json
+  Data:    lessons/curriculum.json
   Rebuild: python site/build.py
 -->
 """
@@ -57,7 +57,7 @@ def lesson_templates() -> tuple[str, list[str]]:
 
 
 def main() -> int:
-    curriculum = json.loads((ROOT / "curriculum.json").read_text(encoding="utf-8"))
+    curriculum = json.loads((ROOT / "lessons" / "curriculum.json").read_text(encoding="utf-8"))
 
     # The page needs only what it renders; drop repo-only fields such as `dir`.
     trimmed = {

@@ -200,7 +200,7 @@
       ["02", "Write the code in the repo",
         "Every lesson ships function stubs and a test suite. You implement the stubs. Nobody hands you the answer — recognising correct code is a different skill from producing it, and only one of them transfers."],
       ["03", "Run the tests",
-        "python progress.py 0.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
+        "progress 0.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
       ["04", "Tick it off",
         "Progress here is self-reported and stored in this browser. Progress in the repo is measured by passing tests, which is the definition worth trusting."]
     ].forEach(function (row) {
@@ -251,8 +251,8 @@
     code.textContent =
       "python -m venv .venv\n" +
       "pip install -e \".[dev]\"\n\n" +
-      "python progress.py        # the dashboard: where you stand\n" +
-      "python progress.py 0.1    # run one lesson's tests";
+      "progress        # the dashboard: where you stand\n" +
+      "progress 0.1    # run one lesson's tests";
     pre.appendChild(code);
     cb.appendChild(pre);
     s3.appendChild(cb);

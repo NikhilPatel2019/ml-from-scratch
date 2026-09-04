@@ -28,6 +28,6 @@ All of machine learning stands on four ideas: vectors, matrix multiplication, th
 
 ---
 
-Run `python progress.py` from the repository root to see where you are.
+Run `progress` from the repository root to see where you are.
 
-[Roadmap](../ROADMAP.md) · [Phase 1: Classical Machine Learning →](../01-classical-ml)
+[Roadmap](../../ROADMAP.md) · [Phase 1: Classical Machine Learning →](../01-classical-ml)
