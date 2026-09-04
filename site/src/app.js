@@ -64,8 +64,35 @@
     for (var j = 0; j < allLessons.length; j++) if (!done[allLessons[j].id]) return allLessons[j];
     return null;
   }
-  function goOverview() { view = { kind: "overview", id: null }; render(); window.scrollTo(0, 0); }
-  function goLesson(id) { view = { kind: "lesson", id: id }; render(); window.scrollTo(0, 0); }
+  /* ---------- resume where you left off ----------
+     Course sites drop you back into the lesson you were reading rather than the
+     catalogue. Stored per device alongside progress; the overview stays one
+     click away in the rail and the wordmark. */
+  var VIEW_KEY = "mlfs:view:v1";
+
+  function saveView() {
+    try {
+      localStorage.setItem(VIEW_KEY, JSON.stringify({
+        id: view.kind === "lesson" ? view.id : null,
+        tab: view.kind === "lesson" ? (activeTab[view.id] || 0) : 0
+      }));
+    } catch (e) {}
+  }
+
+  function restoreView() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
+      if (!saved || !saved.id) return;
+      var lesson = lessonById(saved.id);
+      if (!lesson) return;               // curriculum changed under an old value
+      view = { kind: "lesson", id: saved.id };
+      activeTab[saved.id] = typeof saved.tab === "number" ? saved.tab : 0;
+      collapsed[lesson.phase.id] = false;
+    } catch (e) {}
+  }
+
+  function goOverview() { view = { kind: "overview", id: null }; saveView(); render(); window.scrollTo(0, 0); }
+  function goLesson(id) { view = { kind: "lesson", id: id }; saveView(); render(); window.scrollTo(0, 0); }
   function toggleDone(id) {
     if (done[id]) { delete done[id]; } else { done[id] = true; }
     saveDone();
@@ -313,19 +340,44 @@
       var panels = el("div", "panels");
       var entries = [];
 
+      var slug = l.id.replace(/\./g, "-");
+
       names.forEach(function (name, i) {
         var tpl = document.getElementById("lesson-" + l.id + "-" + name);
         if (!tpl) return;
 
+        var tabId = "tab-" + slug + "-" + name;
+        var panelId = "panel-" + slug + "-" + name;
+
         var panel = el("section", "panel");
+        panel.id = panelId;
         panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("aria-labelledby", tabId);
+        /* A scrollable panel needs to be focusable, or keyboard users can tab
+           to the tablist and then have no way to scroll the content. */
+        panel.tabIndex = 0;
         panel.appendChild(tpl.content.cloneNode(true));
         panel.hidden = i !== activeTab[l.id];
         panels.appendChild(panel);
 
         var tb = button("tab", TAB_LABELS[name] || name, function () { show(i); });
+        tb.id = tabId;
         tb.setAttribute("role", "tab");
+        tb.setAttribute("aria-controls", panelId);
         tb.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
+        /* Roving tabindex: one stop for the whole tablist, arrows move within it. */
+        tb.tabIndex = i === activeTab[l.id] ? 0 : -1;
+        tb.addEventListener("keydown", function (evt) {
+          var delta = { ArrowRight: 1, ArrowLeft: -1 }[evt.key];
+          var target = null;
+          if (delta != null) target = (i + delta + entries.length) % entries.length;
+          else if (evt.key === "Home") target = 0;
+          else if (evt.key === "End") target = entries.length - 1;
+          if (target == null) return;
+          evt.preventDefault();
+          show(target);
+          entries[target].btn.focus();
+        });
         tabbar.appendChild(tb);
         entries.push({ btn: tb, panel: panel });
       });
@@ -338,7 +390,9 @@
           e.panel.hidden = j !== i;
           e.btn.classList.toggle("on", j === i);
           e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
+          e.btn.tabIndex = j === i ? 0 : -1;
         });
+        saveView();
         wrap.scrollIntoView({ block: "start" });
         buildToc(entries[i].panel);
       }
@@ -486,5 +540,6 @@
   window.addEventListener("resize", syncRail);
 
   if (narrow.matches) rail.hidden = true;
+  restoreView();
   render();
 })();
