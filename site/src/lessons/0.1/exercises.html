@@ -71,6 +71,94 @@
 
 <p>It is self-contained and not wired into <code>progress</code>, so it cannot affect your score. It forces you into <code>axis=</code> and <code>keepdims=</code> — where nearly everyone's first silent shape bug lives — and it carries a real design decision in its comments: whether to normalise the library once at write time or divide on every query. That is the trade-off every vector database actually makes.</p>
 
+<h2>Solutions</h2>
+
+<div class="callout danger">
+  <span class="lbl">Read this before you open anything below</span>
+  <p>Every solution is collapsed, and opening one is a deliberate act. That is the whole design. <strong>Reading a correct solution produces the feeling of understanding without the substance of it</strong> — you will nod along, it will make complete sense, and you will not be able to reproduce it a week later. Recognition and production are different skills, and only one of them transfers.</p>
+  <p>If you are stuck: re-read the docstring, print <code>.shape</code> and the intermediate values, or solve a smaller version by hand on paper first. Open these once your tests pass, to compare — not to get unstuck.</p>
+</div>
+
+<details class="solution">
+<summary>Exercise 1 — <code>dot_loop</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def dot_loop(a: list[float], b: list[float]) -> float:
+    if len(a) != len(b):
+        raise ValueError("The lengths of the two lists must be equal.")
+
+    total = 0.0
+    for i in range(len(a)):
+        total += a[i] * b[i]
+    return total</code></pre>
+</div>
+<p class="why">The accumulator starts at <code>0.0</code> rather than <code>0</code> so the return type is a float even for integer inputs. Indexing with <code>range(len(a))</code> is the one place in this lesson where an index is genuinely needed — you are walking two lists in step.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 2 — <code>dot_numpy</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def dot_numpy(a: np.ndarray, b: np.ndarray) -> float:
+    return float(np.dot(a, b))</code></pre>
+</div>
+<p class="why"><code>np.matmul(a, b)</code> and <code>a @ b</code> are equally correct here. They agree with <code>np.dot</code> for 1-D inputs and diverge only in higher dimensions. The <code>float()</code> matters more than it looks: without it you return <code>np.float64</code>, which behaves almost like a Python float right up until it does not — it will not JSON-serialise, and it leaks numpy semantics into code that expected a plain number.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 3 — <code>magnitude_loop</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def magnitude_loop(v: list[float]) -> float:
+    squared = [x ** 2 for x in v]
+    return math.sqrt(sum(squared))</code></pre>
+</div>
+<p class="why">A comprehension plus <code>sum()</code> is idiomatic Python and allowed here — exercise 1 already proved you can accumulate by hand, and the point of this one is Pythagoras. <code>sum(x ** 2 for x in v)</code> using a generator instead of a list is marginally better for very long inputs, since it never materialises the intermediate list.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 4 — <code>magnitude</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def magnitude(v: np.ndarray) -> float:
+    return float(np.sqrt(np.sum(np.square(v))))</code></pre>
+</div>
+<p class="why"><code>np.linalg.norm(v)</code> does the same job in one call and is what you would reach for in real code. Write it out at least once, though — seeing <code>square</code>, <code>sum</code> and <code>sqrt</code> compose into a single expression is where the vectorised style starts to feel natural. Neither version survives extreme inputs: both overflow to <code>inf</code> around <code>1e200</code>, because both square before summing.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 5 — <code>normalise</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def normalise(v: np.ndarray) -> np.ndarray:
+    length = magnitude(v)
+    if length == 0:
+        raise ValueError("Cannot normalise a zero vector.")
+    return v / length</code></pre>
+</div>
+<p class="why">Calling <code>magnitude(v)</code> rather than rewriting the formula gives you one source of truth. Naming the local <code>length</code> and not <code>magnitude</code> matters — a local of the same name shadows the function, and the next person to add a second call inside this function gets a confusing <code>TypeError</code>.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 6 — <code>cosine_similarity</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    a_magnitude = magnitude(a)
+    b_magnitude = magnitude(b)
+    if a_magnitude == 0 or b_magnitude == 0:
+        raise ValueError("Cannot compute cosine similarity with a zero vector.")
+    return float(np.dot(a, b) / (a_magnitude * b_magnitude))</code></pre>
+</div>
+<p class="why">The zero check is not required by the tests, but the cosine of an angle with a directionless vector is genuinely undefined, so raising beats returning a made-up number.</p>
+<p class="why"><code>np.dot(normalise(a), normalise(b))</code> is equally correct and returns the identical value bit for bit — the second route from the walkthrough. It is shorter and inherits the zero-vector check from <code>normalise</code> for free. The version above was chosen only because it mirrors the formula in the docstring. Watch out for the trap in between: calling <code>normalise</code> where you meant <code>magnitude</code> gives you an array where a scalar belongs, and <code>if array == 0</code> raises "the truth value of an array with more than one element is ambiguous".</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 7 — <code>most_similar</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def most_similar(query: np.ndarray, library: dict[str, np.ndarray]) -> str:
+    scores = {name: cosine_similarity(query, vector) for name, vector in library.items()}
+    return max(scores, key=scores.get)</code></pre>
+</div>
+<p class="why">Iterating a dict yields its keys, and <code>key=</code> changes what gets <em>compared</em>, not what gets <em>returned</em> — so the comparison runs over scores while the return value is a name. <code>max(scores.values())</code> would hand you <code>0.998</code> with no way back to which item earned it.</p>
+<p class="why">This is the definition, not the implementation. See the walkthrough tab, and <code>stretch.py</code>, for the single-matmul version a real system uses.</p>
+</details>
+
 <h2>Finally, write your notes</h2>
 
 <p><code>notes.md</code> in the lesson folder holds seven questions. Answer them in your own words, not copied from anywhere. Rewriting an explanation is the cheapest test of understanding there is, and the "things I got wrong" section at the bottom will be the most valuable thing in your repository six months from now.</p>

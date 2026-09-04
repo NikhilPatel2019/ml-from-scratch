@@ -340,6 +340,7 @@
           e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
         });
         wrap.scrollIntoView({ block: "start" });
+        buildToc(entries[i].panel);
       }
       entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
 
@@ -394,6 +395,54 @@
     return wrap;
   }
 
+  /* ---------- on-this-page rail ----------
+     Built from whatever is currently visible, so it follows the active tab
+     rather than listing the whole lesson. */
+  var tocCleanup = null;
+
+  function buildToc(scope) {
+    var toc = document.getElementById("toc");
+    if (tocCleanup) { tocCleanup(); tocCleanup = null; }
+    toc.textContent = "";
+
+    var heads = [].slice.call(scope.querySelectorAll("h2"));
+    if (heads.length < 2) { toc.hidden = true; return; }
+
+    var head = el("div", "toc-head");
+    head.appendChild(el("span", "eyebrow", "On this page"));
+    toc.appendChild(head);
+
+    var list = el("div", "toc-list");
+    var links = heads.map(function (h) {
+      var link = button("toc-link", h.textContent, function () {
+        h.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+      list.appendChild(link);
+      return link;
+    });
+    toc.appendChild(list);
+    toc.hidden = false;
+
+    /* Highlight whichever heading you have most recently scrolled past. */
+    var ticking = false;
+    function sync() {
+      ticking = false;
+      var line = 140, best = 0;
+      for (var i = 0; i < heads.length; i++) {
+        if (heads[i].getBoundingClientRect().top <= line) best = i;
+      }
+      links.forEach(function (a, i) { a.classList.toggle("on", i === best); });
+    }
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(sync);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    tocCleanup = function () { window.removeEventListener("scroll", onScroll); };
+    sync();
+  }
+
   /* ---------- render ---------- */
   function render() {
     var pane = document.getElementById("pane");
@@ -405,6 +454,9 @@
     } else {
       pane.appendChild(buildOverview());
     }
+
+    var live = pane.querySelector(".panel:not([hidden])") || pane.querySelector(".wrap");
+    if (live) buildToc(live);
 
     var n = totalDone();
     document.getElementById("stat-count").textContent = n + "/" + TOTAL;

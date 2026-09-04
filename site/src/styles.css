@@ -18,6 +18,8 @@
   --done-wash:  #E2F0E8;
   --active:     #A9660F;
   --active-wash:#F6EBDB;
+  --danger:     #A4342C;
+  --danger-wash:#F9EAE8;
   --on-accent:  #FFFFFF;
   --shadow:     0 1px 2px rgba(22,32,43,.05), 0 8px 24px -12px rgba(22,32,43,.18);
   --shadow-sm:  0 1px 2px rgba(22,32,43,.06);
@@ -48,6 +50,8 @@
     --done-wash:  #142E22;
     --active:     #D9A040;
     --active-wash:#2E2413;
+    --danger:     #E58A80;
+    --danger-wash:#35201D;
     --on-accent:  #08222A;
     --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
     --shadow-sm:  0 1px 2px rgba(0,0,0,.35);
@@ -72,6 +76,8 @@
   --done-wash:  #142E22;
   --active:     #D9A040;
   --active-wash:#2E2413;
+  --danger:     #E58A80;
+  --danger-wash:#35201D;
   --on-accent:  #08222A;
   --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
   --shadow-sm:  0 1px 2px rgba(0,0,0,.35);
@@ -149,8 +155,8 @@ code, kbd { font-family: var(--f-mono); }
    ============================================================ */
 .shell {
   display: grid;
-  grid-template-columns: 306px minmax(0, 1fr);
-  max-width: 1460px; margin: 0 auto; align-items: start;
+  grid-template-columns: 306px minmax(0, 1fr) auto;
+  max-width: 1580px; margin: 0 auto; align-items: start;
 }
 
 .rail {
@@ -239,7 +245,7 @@ code, kbd { font-family: var(--f-mono); }
    pane
    ============================================================ */
 .pane { padding: 34px 40px 100px; min-width: 0; }
-.wrap { max-width: 780px; }
+.wrap { max-width: 800px; }
 
 .hero { margin-bottom: 34px; }
 .hero h1 { font-size: clamp(34px, 5vw, 52px); letter-spacing: -.02em; margin: 10px 0 0; }
@@ -375,7 +381,11 @@ code, kbd { font-family: var(--f-mono); }
 
 .prose { font-size: 16.5px; line-height: 1.72; color: var(--ink); }
 .prose > * + * { margin-top: 1.1em; }
-.prose h2 { font-size: 24px; margin-top: 2.2em; padding-top: .9em; border-top: 1px solid var(--rule); letter-spacing: -.015em; }
+.prose h2 {
+  font-size: 24px; margin-top: 2.2em; padding-top: .9em;
+  border-top: 1px solid var(--rule); letter-spacing: -.015em;
+  scroll-margin-top: calc(var(--topbar-h) + 66px);
+}
 .prose h3 { font-size: 18.5px; margin-top: 1.9em; font-family: var(--f-body); font-weight: 600; }
 .prose p { margin-block: 0; max-width: 66ch; }
 .prose strong { font-weight: 600; }
@@ -580,6 +590,11 @@ figcaption {
    responsive
    ============================================================ */
 .railtoggle { display: none; }
+/* Below this the on-this-page rail costs more than it gives. */
+@media (max-width: 1280px) {
+  .shell { grid-template-columns: 306px minmax(0, 1fr); }
+  .toc { display: none !important; }
+}
 @media (max-width: 1080px) {
   .veclab, .searchgrid { grid-template-columns: minmax(0, 1fr); }
   .veclab svg { max-width: 340px; margin: 0 auto; }
@@ -603,3 +618,62 @@ figcaption {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+
+/* ============================================================
+   solutions — collapsed by default, opening is a deliberate act
+   ============================================================ */
+.callout.danger {
+  background: var(--danger-wash);
+  border-color: color-mix(in srgb, var(--danger) 34%, transparent);
+}
+.callout.danger .lbl { color: var(--danger); }
+
+.solution {
+  margin-top: 12px; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+}
+.solution + .solution { margin-top: 8px; }
+.solution > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px; font-family: var(--f-body); font-size: 14px; font-weight: 600;
+  color: var(--ink-2); transition: color .15s, background .15s;
+}
+.solution > summary::-webkit-details-marker { display: none; }
+.solution > summary::before {
+  content: ""; flex: none; width: 8px; height: 8px;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(-45deg); transition: transform .18s;
+}
+.solution > summary:hover { color: var(--ink); background: var(--surface-2); }
+.solution[open] > summary { color: var(--ink); border-bottom: 1px solid var(--rule); }
+.solution[open] > summary::before { transform: rotate(45deg); }
+.solution > summary code { font-size: .9em; }
+.solution .codeblock { margin: 14px 16px 0; }
+.solution .why {
+  margin: 12px 16px; font-size: 14px; line-height: 1.6;
+  color: var(--ink-2); max-width: 64ch;
+}
+
+/* ============================================================
+   on-this-page rail
+   ============================================================ */
+.toc {
+  width: 250px;
+  position: sticky; top: calc(var(--topbar-h) + 20px);
+  padding: 34px 24px 40px 0; align-self: start;
+  max-height: calc(100vh - var(--topbar-h) - 40px); overflow-y: auto;
+  scrollbar-width: thin;
+}
+.toc-head { padding-bottom: 10px; border-bottom: 1px solid var(--rule); margin-bottom: 10px; }
+.toc-list { display: flex; flex-direction: column; gap: 1px; }
+.toc-link {
+  background: none; border: 0; cursor: pointer; text-align: left;
+  font-family: var(--f-body); font-size: 12.5px; line-height: 1.45;
+  color: var(--ink-3); padding: 6px 10px; border-radius: 6px;
+  border-left: 2px solid transparent; margin-left: -2px;
+}
+.toc-link:hover { color: var(--ink); background: var(--surface-2); }
+.toc-link.on { color: var(--accent-ink); border-left-color: var(--accent); font-weight: 500; }
+.toc-link.sub { padding-left: 22px; font-size: 12px; }
+.toc[hidden] { display: none !important; }

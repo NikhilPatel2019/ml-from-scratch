@@ -38,6 +38,8 @@
   --done-wash:  #E2F0E8;
   --active:     #A9660F;
   --active-wash:#F6EBDB;
+  --danger:     #A4342C;
+  --danger-wash:#F9EAE8;
   --on-accent:  #FFFFFF;
   --shadow:     0 1px 2px rgba(22,32,43,.05), 0 8px 24px -12px rgba(22,32,43,.18);
   --shadow-sm:  0 1px 2px rgba(22,32,43,.06);
@@ -68,6 +70,8 @@
     --done-wash:  #142E22;
     --active:     #D9A040;
     --active-wash:#2E2413;
+    --danger:     #E58A80;
+    --danger-wash:#35201D;
     --on-accent:  #08222A;
     --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
     --shadow-sm:  0 1px 2px rgba(0,0,0,.35);
@@ -92,6 +96,8 @@
   --done-wash:  #142E22;
   --active:     #D9A040;
   --active-wash:#2E2413;
+  --danger:     #E58A80;
+  --danger-wash:#35201D;
   --on-accent:  #08222A;
   --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
   --shadow-sm:  0 1px 2px rgba(0,0,0,.35);
@@ -169,8 +175,8 @@ code, kbd { font-family: var(--f-mono); }
    ============================================================ */
 .shell {
   display: grid;
-  grid-template-columns: 306px minmax(0, 1fr);
-  max-width: 1460px; margin: 0 auto; align-items: start;
+  grid-template-columns: 306px minmax(0, 1fr) auto;
+  max-width: 1580px; margin: 0 auto; align-items: start;
 }
 
 .rail {
@@ -259,7 +265,7 @@ code, kbd { font-family: var(--f-mono); }
    pane
    ============================================================ */
 .pane { padding: 34px 40px 100px; min-width: 0; }
-.wrap { max-width: 780px; }
+.wrap { max-width: 800px; }
 
 .hero { margin-bottom: 34px; }
 .hero h1 { font-size: clamp(34px, 5vw, 52px); letter-spacing: -.02em; margin: 10px 0 0; }
@@ -395,7 +401,11 @@ code, kbd { font-family: var(--f-mono); }
 
 .prose { font-size: 16.5px; line-height: 1.72; color: var(--ink); }
 .prose > * + * { margin-top: 1.1em; }
-.prose h2 { font-size: 24px; margin-top: 2.2em; padding-top: .9em; border-top: 1px solid var(--rule); letter-spacing: -.015em; }
+.prose h2 {
+  font-size: 24px; margin-top: 2.2em; padding-top: .9em;
+  border-top: 1px solid var(--rule); letter-spacing: -.015em;
+  scroll-margin-top: calc(var(--topbar-h) + 66px);
+}
 .prose h3 { font-size: 18.5px; margin-top: 1.9em; font-family: var(--f-body); font-weight: 600; }
 .prose p { margin-block: 0; max-width: 66ch; }
 .prose strong { font-weight: 600; }
@@ -600,6 +610,11 @@ figcaption {
    responsive
    ============================================================ */
 .railtoggle { display: none; }
+/* Below this the on-this-page rail costs more than it gives. */
+@media (max-width: 1280px) {
+  .shell { grid-template-columns: 306px minmax(0, 1fr); }
+  .toc { display: none !important; }
+}
 @media (max-width: 1080px) {
   .veclab, .searchgrid { grid-template-columns: minmax(0, 1fr); }
   .veclab svg { max-width: 340px; margin: 0 auto; }
@@ -623,6 +638,65 @@ figcaption {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+
+/* ============================================================
+   solutions — collapsed by default, opening is a deliberate act
+   ============================================================ */
+.callout.danger {
+  background: var(--danger-wash);
+  border-color: color-mix(in srgb, var(--danger) 34%, transparent);
+}
+.callout.danger .lbl { color: var(--danger); }
+
+.solution {
+  margin-top: 12px; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+}
+.solution + .solution { margin-top: 8px; }
+.solution > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px; font-family: var(--f-body); font-size: 14px; font-weight: 600;
+  color: var(--ink-2); transition: color .15s, background .15s;
+}
+.solution > summary::-webkit-details-marker { display: none; }
+.solution > summary::before {
+  content: ""; flex: none; width: 8px; height: 8px;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(-45deg); transition: transform .18s;
+}
+.solution > summary:hover { color: var(--ink); background: var(--surface-2); }
+.solution[open] > summary { color: var(--ink); border-bottom: 1px solid var(--rule); }
+.solution[open] > summary::before { transform: rotate(45deg); }
+.solution > summary code { font-size: .9em; }
+.solution .codeblock { margin: 14px 16px 0; }
+.solution .why {
+  margin: 12px 16px; font-size: 14px; line-height: 1.6;
+  color: var(--ink-2); max-width: 64ch;
+}
+
+/* ============================================================
+   on-this-page rail
+   ============================================================ */
+.toc {
+  width: 250px;
+  position: sticky; top: calc(var(--topbar-h) + 20px);
+  padding: 34px 24px 40px 0; align-self: start;
+  max-height: calc(100vh - var(--topbar-h) - 40px); overflow-y: auto;
+  scrollbar-width: thin;
+}
+.toc-head { padding-bottom: 10px; border-bottom: 1px solid var(--rule); margin-bottom: 10px; }
+.toc-list { display: flex; flex-direction: column; gap: 1px; }
+.toc-link {
+  background: none; border: 0; cursor: pointer; text-align: left;
+  font-family: var(--f-body); font-size: 12.5px; line-height: 1.45;
+  color: var(--ink-3); padding: 6px 10px; border-radius: 6px;
+  border-left: 2px solid transparent; margin-left: -2px;
+}
+.toc-link:hover { color: var(--ink); background: var(--surface-2); }
+.toc-link.on { color: var(--accent-ink); border-left-color: var(--accent); font-weight: 500; }
+.toc-link.sub { padding-left: 22px; font-size: 12px; }
+.toc[hidden] { display: none !important; }
 </style>
 
 <header class="topbar">
@@ -652,6 +726,8 @@ figcaption {
   </aside>
 
   <main class="pane" id="pane"></main>
+
+  <aside class="toc" id="toc" aria-label="On this page" hidden></aside>
 </div>
 
 <script type="application/json" id="curriculum-data">
@@ -1088,6 +1164,94 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 </div>
 
 <p>It is self-contained and not wired into <code>progress</code>, so it cannot affect your score. It forces you into <code>axis=</code> and <code>keepdims=</code> — where nearly everyone's first silent shape bug lives — and it carries a real design decision in its comments: whether to normalise the library once at write time or divide on every query. That is the trade-off every vector database actually makes.</p>
+
+<h2>Solutions</h2>
+
+<div class="callout danger">
+  <span class="lbl">Read this before you open anything below</span>
+  <p>Every solution is collapsed, and opening one is a deliberate act. That is the whole design. <strong>Reading a correct solution produces the feeling of understanding without the substance of it</strong> — you will nod along, it will make complete sense, and you will not be able to reproduce it a week later. Recognition and production are different skills, and only one of them transfers.</p>
+  <p>If you are stuck: re-read the docstring, print <code>.shape</code> and the intermediate values, or solve a smaller version by hand on paper first. Open these once your tests pass, to compare — not to get unstuck.</p>
+</div>
+
+<details class="solution">
+<summary>Exercise 1 — <code>dot_loop</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def dot_loop(a: list[float], b: list[float]) -> float:
+    if len(a) != len(b):
+        raise ValueError("The lengths of the two lists must be equal.")
+
+    total = 0.0
+    for i in range(len(a)):
+        total += a[i] * b[i]
+    return total</code></pre>
+</div>
+<p class="why">The accumulator starts at <code>0.0</code> rather than <code>0</code> so the return type is a float even for integer inputs. Indexing with <code>range(len(a))</code> is the one place in this lesson where an index is genuinely needed — you are walking two lists in step.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 2 — <code>dot_numpy</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def dot_numpy(a: np.ndarray, b: np.ndarray) -> float:
+    return float(np.dot(a, b))</code></pre>
+</div>
+<p class="why"><code>np.matmul(a, b)</code> and <code>a @ b</code> are equally correct here. They agree with <code>np.dot</code> for 1-D inputs and diverge only in higher dimensions. The <code>float()</code> matters more than it looks: without it you return <code>np.float64</code>, which behaves almost like a Python float right up until it does not — it will not JSON-serialise, and it leaks numpy semantics into code that expected a plain number.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 3 — <code>magnitude_loop</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def magnitude_loop(v: list[float]) -> float:
+    squared = [x ** 2 for x in v]
+    return math.sqrt(sum(squared))</code></pre>
+</div>
+<p class="why">A comprehension plus <code>sum()</code> is idiomatic Python and allowed here — exercise 1 already proved you can accumulate by hand, and the point of this one is Pythagoras. <code>sum(x ** 2 for x in v)</code> using a generator instead of a list is marginally better for very long inputs, since it never materialises the intermediate list.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 4 — <code>magnitude</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def magnitude(v: np.ndarray) -> float:
+    return float(np.sqrt(np.sum(np.square(v))))</code></pre>
+</div>
+<p class="why"><code>np.linalg.norm(v)</code> does the same job in one call and is what you would reach for in real code. Write it out at least once, though — seeing <code>square</code>, <code>sum</code> and <code>sqrt</code> compose into a single expression is where the vectorised style starts to feel natural. Neither version survives extreme inputs: both overflow to <code>inf</code> around <code>1e200</code>, because both square before summing.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 5 — <code>normalise</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def normalise(v: np.ndarray) -> np.ndarray:
+    length = magnitude(v)
+    if length == 0:
+        raise ValueError("Cannot normalise a zero vector.")
+    return v / length</code></pre>
+</div>
+<p class="why">Calling <code>magnitude(v)</code> rather than rewriting the formula gives you one source of truth. Naming the local <code>length</code> and not <code>magnitude</code> matters — a local of the same name shadows the function, and the next person to add a second call inside this function gets a confusing <code>TypeError</code>.</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 6 — <code>cosine_similarity</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    a_magnitude = magnitude(a)
+    b_magnitude = magnitude(b)
+    if a_magnitude == 0 or b_magnitude == 0:
+        raise ValueError("Cannot compute cosine similarity with a zero vector.")
+    return float(np.dot(a, b) / (a_magnitude * b_magnitude))</code></pre>
+</div>
+<p class="why">The zero check is not required by the tests, but the cosine of an angle with a directionless vector is genuinely undefined, so raising beats returning a made-up number.</p>
+<p class="why"><code>np.dot(normalise(a), normalise(b))</code> is equally correct and returns the identical value bit for bit — the second route from the walkthrough. It is shorter and inherits the zero-vector check from <code>normalise</code> for free. The version above was chosen only because it mirrors the formula in the docstring. Watch out for the trap in between: calling <code>normalise</code> where you meant <code>magnitude</code> gives you an array where a scalar belongs, and <code>if array == 0</code> raises "the truth value of an array with more than one element is ambiguous".</p>
+</details>
+
+<details class="solution">
+<summary>Exercise 7 — <code>most_similar</code></summary>
+<div class="codeblock">
+<pre><code class="language-python">def most_similar(query: np.ndarray, library: dict[str, np.ndarray]) -> str:
+    scores = {name: cosine_similarity(query, vector) for name, vector in library.items()}
+    return max(scores, key=scores.get)</code></pre>
+</div>
+<p class="why">Iterating a dict yields its keys, and <code>key=</code> changes what gets <em>compared</em>, not what gets <em>returned</em> — so the comparison runs over scores while the return value is a name. <code>max(scores.values())</code> would hand you <code>0.998</code> with no way back to which item earned it.</p>
+<p class="why">This is the definition, not the implementation. See the walkthrough tab, and <code>stretch.py</code>, for the single-matmul version a real system uses.</p>
+</details>
 
 <h2>Finally, write your notes</h2>
 
@@ -2188,6 +2352,7 @@ var Widgets = (function () {
           e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
         });
         wrap.scrollIntoView({ block: "start" });
+        buildToc(entries[i].panel);
       }
       entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
 
@@ -2242,6 +2407,54 @@ var Widgets = (function () {
     return wrap;
   }
 
+  /* ---------- on-this-page rail ----------
+     Built from whatever is currently visible, so it follows the active tab
+     rather than listing the whole lesson. */
+  var tocCleanup = null;
+
+  function buildToc(scope) {
+    var toc = document.getElementById("toc");
+    if (tocCleanup) { tocCleanup(); tocCleanup = null; }
+    toc.textContent = "";
+
+    var heads = [].slice.call(scope.querySelectorAll("h2"));
+    if (heads.length < 2) { toc.hidden = true; return; }
+
+    var head = el("div", "toc-head");
+    head.appendChild(el("span", "eyebrow", "On this page"));
+    toc.appendChild(head);
+
+    var list = el("div", "toc-list");
+    var links = heads.map(function (h) {
+      var link = button("toc-link", h.textContent, function () {
+        h.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+      list.appendChild(link);
+      return link;
+    });
+    toc.appendChild(list);
+    toc.hidden = false;
+
+    /* Highlight whichever heading you have most recently scrolled past. */
+    var ticking = false;
+    function sync() {
+      ticking = false;
+      var line = 140, best = 0;
+      for (var i = 0; i < heads.length; i++) {
+        if (heads[i].getBoundingClientRect().top <= line) best = i;
+      }
+      links.forEach(function (a, i) { a.classList.toggle("on", i === best); });
+    }
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(sync);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    tocCleanup = function () { window.removeEventListener("scroll", onScroll); };
+    sync();
+  }
+
   /* ---------- render ---------- */
   function render() {
     var pane = document.getElementById("pane");
@@ -2253,6 +2466,9 @@ var Widgets = (function () {
     } else {
       pane.appendChild(buildOverview());
     }
+
+    var live = pane.querySelector(".panel:not([hidden])") || pane.querySelector(".wrap");
+    if (live) buildToc(live);
 
     var n = totalDone();
     document.getElementById("stat-count").textContent = n + "/" + TOTAL;
