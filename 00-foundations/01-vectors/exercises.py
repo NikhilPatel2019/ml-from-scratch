@@ -6,8 +6,11 @@ Read README.md first. Then implement every function below and run:
     python progress.py 0.1
 
 Rules the tests enforce:
-  - Exercises 1 and 3 must use PLAIN PYTHON. No numpy, no sum(). You are
+  - Exercise 1 must use PLAIN PYTHON with no numpy and no sum(). You are
     implementing the machine, not calling it.
+  - Exercise 3 must use PLAIN PYTHON with no numpy. sum() is allowed here —
+    you already proved you can accumulate by hand in exercise 1, and the point
+    of this one is Pythagoras.
   - Exercises 2 and 4-7 must use NUMPY with NO python `for` loop. If you reach
     for a loop there, you have missed the point of the lesson.
 """
