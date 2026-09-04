@@ -29,6 +29,6 @@ You will write your own automatic differentiation engine — roughly 150 lines t
 
 ---
 
-Run `python progress.py` from the repository root to see where you are.
+Run `progress` from the repository root to see where you are.
 
-[← Phase 1: Classical Machine Learning](../01-classical-ml) · [Roadmap](../ROADMAP.md) · [Phase 3: Transformers and LLMs →](../03-transformers)
+[← Phase 1: Classical Machine Learning](../01-classical-ml) · [Roadmap](../../ROADMAP.md) · [Phase 3: Transformers and LLMs →](../03-transformers)

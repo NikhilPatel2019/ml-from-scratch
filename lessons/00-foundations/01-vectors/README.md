@@ -184,7 +184,7 @@ The mental shift, and it is a real one coming from imperative code: **stop think
 Writing a Python `for` loop over a NumPy array is the most common beginner mistake in this field and costs roughly 200× in speed. The tests in this lesson reject it. Once all seven pass, run the benchmark and see the gap on your own machine:
 
 ```bash
-python 00-foundations/01-vectors/exercises.py
+python lessons/00-foundations/01-vectors/exercises.py
 ```
 
 ---
@@ -192,7 +192,7 @@ python 00-foundations/01-vectors/exercises.py
 ## Your work
 
 1. Implement the seven functions in [exercises.py](exercises.py).
-2. Run `python progress.py 0.1` until all seven pass.
+2. Run `progress 0.1` until all seven pass.
 3. Run the benchmark above.
 4. Watch what is listed in [watch.md](watch.md) — chapter 9 only *after* your code passes.
 5. Answer the seven questions in [notes.md](notes.md) in your own words.

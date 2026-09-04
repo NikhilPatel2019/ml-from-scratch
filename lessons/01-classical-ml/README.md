@@ -28,6 +28,6 @@ Most industry ML is still this. It is also where loss, overfitting, evaluation a
 
 ---
 
-Run `python progress.py` from the repository root to see where you are.
+Run `progress` from the repository root to see where you are.
 
-[← Phase 0: Foundations](../00-foundations) · [Roadmap](../ROADMAP.md) · [Phase 2: Deep Learning →](../02-deep-learning)
+[← Phase 0: Foundations](../00-foundations) · [Roadmap](../../ROADMAP.md) · [Phase 2: Deep Learning →](../02-deep-learning)

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Where am I?
 
-    python progress.py            full dashboard across every phase
-    python progress.py 0.1        run one lesson's tests, verbosely
-    python progress.py --json     machine-readable, for tooling
+    progress            full dashboard across every phase
+    progress 0.1        run one lesson's tests, verbosely
+    progress --json     machine-readable, for tooling
+
+Installed as the `progress` command by `pip install -e .`. Also runnable as
+`python -m mlfs.cli` if you would rather not rely on the console script.
 
 Progress here is not self-reported. A lesson counts as done when its tests pass,
 which means you wrote the code. That is the only definition worth having.
@@ -15,14 +18,26 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT))
-
-from mlfs.harness import PASS, TODO, bar, enable_utf8, report, run_lesson  # noqa: E402
+from .harness import PASS, TODO, bar, enable_utf8, report, run_lesson
 
 enable_utf8()
 
-CURRICULUM = ROOT / "curriculum.json"
+
+def find_root(start: Path | None = None) -> Path:
+    """Walk up from this file until we find the repository root.
+
+    Keyed on pyproject.toml rather than a fixed number of parent hops, so the
+    layout can move again without this silently resolving somewhere wrong.
+    """
+    here = (start or Path(__file__)).resolve()
+    for candidate in [here, *here.parents]:
+        if (candidate / "pyproject.toml").is_file():
+            return candidate
+    raise RuntimeError("could not locate the repository root (no pyproject.toml found)")
+
+
+ROOT = find_root()
+CURRICULUM = ROOT / "lessons" / "curriculum.json"
 
 
 def load_curriculum() -> dict:
@@ -107,13 +122,13 @@ def one_lesson(curriculum: dict, lesson_id: str) -> int:
             passed = sum(1 for r in results if r.status == PASS)
             print(f"\n  {passed}/{len(results)} passing\n")
             return 0 if passed == len(results) else 1
-    print(f"\n  No lesson with id {lesson_id!r}. Try: python progress.py\n")
+    print(f"\n  No lesson with id {lesson_id!r}. Try: progress\n")
     return 2
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     curriculum = load_curriculum()
-    args = sys.argv[1:]
+    args = list(sys.argv[1:] if argv is None else argv)
 
     if args and args[0] == "--json":
         out = {

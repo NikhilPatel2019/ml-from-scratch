@@ -63,7 +63,7 @@ pip install -e ".[dev]"
 See where you stand:
 
 ```bash
-python progress.py
+progress
 ```
 
 ```
@@ -80,7 +80,7 @@ python progress.py
 Then work a lesson:
 
 ```bash
-python progress.py 0.1
+progress 0.1
 ```
 
 Progress is **not self-reported.** A lesson counts as complete when its tests pass, which means you wrote the code. That is the only definition worth having.
@@ -89,34 +89,37 @@ Progress is **not self-reported.** A lesson counts as complete when its tests pa
 
 | Phase | Title | Lessons | What you end up with |
 |---:|---|---:|---|
-| 0 | [Foundations](00-foundations) | 13 | Minimise a function you have never seen, from scratch |
-| 1 | [Classical ML](01-classical-ml) | 13 | A raw CSV taken to a validated, honestly-evaluated model |
-| 2 | [Deep Learning](02-deep-learning) | 14 | Your own autograd engine, training your own network |
-| 3 | [Transformers and LLMs](03-transformers) | 12 | A working GPT you wrote line by line |
-| 4 | [Production](04-production) | 3 | A model deployed, monitored, and understood |
+| 0 | [Foundations](lessons/00-foundations) | 13 | Minimise a function you have never seen, from scratch |
+| 1 | [Classical ML](lessons/01-classical-ml) | 13 | A raw CSV taken to a validated, honestly-evaluated model |
+| 2 | [Deep Learning](lessons/02-deep-learning) | 14 | Your own autograd engine, training your own network |
+| 3 | [Transformers and LLMs](lessons/03-transformers) | 12 | A working GPT you wrote line by line |
+| 4 | [Production](lessons/04-production) | 3 | A model deployed, monitored, and understood |
 
 Full detail, including the reference library, is in **[ROADMAP.md](ROADMAP.md)**.
 
 ## Repository layout
 
 ```
-curriculum.json        single source of truth: every phase and lesson
-progress.py            the dashboard — run this to see where you are
-mlfs/harness.py        shared test runner used by every lesson
-ROADMAP.md             the full plan, with resources
-site/index.html        the reading companion (published as a web page)
-00-foundations/        Phase 0 — the maths, built in code
-01-classical-ml/       Phase 1
-02-deep-learning/      Phase 2
-03-transformers/       Phase 3
-04-production/         Phase 4
+lessons/                  the curriculum
+  curriculum.json         single source of truth: every phase and lesson
+  00-foundations/         Phase 0 — the maths, built in code
+  01-classical-ml/        Phase 1
+  02-deep-learning/       Phase 2
+  03-transformers/        Phase 3
+  04-production/          Phase 4
+src/mlfs/                 the tooling
+  cli.py                  the `progress` dashboard
+  harness.py              shared test runner used by every lesson
+site/                     the published reading companion
+  build.py                assembles site/index.html from site/src/
+ROADMAP.md                the full plan, with resources
 ```
 
 ### Two places, one curriculum
 
 The **[web version](https://claude.ai/code/artifact/121da12d-60e9-4351-9b44-1be2659623e8)** is for reading and orientation — the full curriculum, the lesson text, and a checklist stored in your browser.
 
-This **repository** is where the learning happens, because the learning is the writing of code. It is also where progress is measured honestly: the site's checkboxes are self-reported, whereas `python progress.py` counts passing tests.
+This **repository** is where the learning happens, because the learning is the writing of code. It is also where progress is measured honestly: the site's checkboxes are self-reported, whereas `progress` counts passing tests.
 
 In-browser Python was deliberately not built into the site. Learning the real toolchain — a virtual environment, a test runner, a terminal — is part of becoming useful at this, not an obstacle in front of it.
 

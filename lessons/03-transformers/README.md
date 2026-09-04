@@ -27,6 +27,6 @@ Attention derived rather than memorised, a byte-pair tokeniser you implement you
 
 ---
 
-Run `python progress.py` from the repository root to see where you are.
+Run `progress` from the repository root to see where you are.
 
-[← Phase 2: Deep Learning](../02-deep-learning) · [Roadmap](../ROADMAP.md) · [Phase 4: Production and Specialisation →](../04-production)
+[← Phase 2: Deep Learning](../02-deep-learning) · [Roadmap](../../ROADMAP.md) · [Phase 4: Production and Specialisation →](../04-production)

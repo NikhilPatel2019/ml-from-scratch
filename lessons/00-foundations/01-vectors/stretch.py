@@ -12,7 +12,7 @@ one — which is what lessons 0.3 and 0.4 are about.
 
 Nothing here affects your 7/7. Run it on its own:
 
-    python 00-foundations/01-vectors/stretch.py
+    python lessons/00-foundations/01-vectors/stretch.py
 """
 
 import numpy as np

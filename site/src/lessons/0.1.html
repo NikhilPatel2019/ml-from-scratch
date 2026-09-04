@@ -166,7 +166,7 @@ mansion  = [8000, 7,  2]</code></pre>
     </marker>
   </defs>
 
-  <text x="0" y="12" class="head">A Python list of three floats</text>
+  <text x="0" y="16" class="head">A Python list of three floats</text>
 
   <rect x="0"   y="24" width="56" height="30" rx="4" class="box"></rect>
   <rect x="60"  y="24" width="56" height="30" rx="4" class="box"></rect>
@@ -243,7 +243,7 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
 <h2>Your work</h2>
 
-<p>Seven functions, in <code>00-foundations/01-vectors/exercises.py</code>. The tests check <em>how</em> you solved it, not only the answer: exercises 1 and 3 reject NumPy so you implement the mechanism yourself, and exercises 2 and 4–7 reject <code>for</code> loops so you learn to think in arrays.</p>
+<p>Seven functions, in <code>lessons/00-foundations/01-vectors/exercises.py</code>. The tests check <em>how</em> you solved it, not only the answer: exercises 1 and 3 reject NumPy so you implement the mechanism yourself, and exercises 2 and 4–7 reject <code>for</code> loops so you learn to think in arrays.</p>
 
 <div class="codeblock">
 <div class="cap">exercises.py — the file you edit</div>
@@ -277,10 +277,203 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 
 <div class="codeblock">
 <div class="cap">terminal</div>
-<pre><code>python progress.py 0.1</code></pre>
+<pre><code>progress 0.1</code></pre>
 </div>
 
 <p>Exercise 7 is the search demo above, in about two lines. It is a toy only in its scale — swap the hand-written vectors for real embeddings and that function is a production retrieval system.</p>
+
+<h2>Exercise walkthrough</h2>
+
+<p>What each exercise is really asking, and how the seven fit together. This explains the <em>mechanisms</em>, not the implementations — the code is yours to write, and reading someone else's answer is the one way to get nothing out of this lesson.</p>
+
+<p>The seven come in pairs. Each pair does the same maths twice: once by hand so you own it, once vectorised so you can use it.</p>
+
+<h3>1 and 2 — the dot product, by hand and vectorised</h3>
+
+<p>Exercise 1 is the definition as an algorithm: walk both lists together, multiply each pair, accumulate. The stepper near the top of this page is exactly what your loop does, one iteration per click. The length check matters because the operation is <em>undefined</em> for mismatched lengths — there is no sensible answer, so failing loudly beats guessing.</p>
+
+<p>Exercise 2 is the same result with the loop pushed into compiled C. Worth knowing: <code>np.dot</code> and <code>np.matmul</code> (also spelled <code>@</code>) agree for 1-D inputs but diverge for higher dimensions — <code>np.dot</code> sums over the last axis of one and the second-to-last of the other, while <code>matmul</code> broadcasts stacks of matrices. For two vectors, either is right.</p>
+
+<h3>3 and 4 — magnitude is just Pythagoras</h3>
+
+<p>Nothing new is happening here. The length of <code>[3, 4]</code> is the hypotenuse of a right triangle with legs 3 and 4.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 258" role="img" aria-label="The vector 3,4 drawn as the hypotenuse of a right triangle with legs of length 3 and 4, giving a length of 5 by Pythagoras, and a note that the same formula extends unchanged to any number of dimensions.">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="70" y1="200" x2="154" y2="200" class="conn"></line>
+  <line x1="154" y1="200" x2="154" y2="88" class="conn"></line>
+  <line x1="70" y1="200" x2="154" y2="88" class="conn-hl" marker-end="url(#ar2)"></line>
+  <path d="M 142 200 L 142 188 L 154 188" class="conn" fill="none"></path>
+
+  <text x="112" y="220" class="lbl" text-anchor="middle">3</text>
+  <text x="166" y="148" class="lbl">4</text>
+  <text x="88" y="134" class="lbl-hl">5</text>
+
+  <rect x="300" y="60" width="290" height="110" rx="4" class="box"></rect>
+  <text x="322" y="92" class="lbl">√(3² + 4²)</text>
+  <text x="322" y="118" class="lbl">= √(9 + 16)</text>
+  <text x="322" y="146" class="lbl-hl">= √25  =  5</text>
+
+  <rect x="300" y="190" width="290" height="48" rx="4" class="box"></rect>
+  <text x="322" y="212" class="head">In 4096 dimensions: identical</text>
+  <text x="322" y="230" class="lbl-sm">just more terms under the root</text>
+</svg>
+<figcaption>Squaring removes signs so that direction cannot cancel length out, and the square root undoes the squaring to bring the answer back to the original units. Nothing about this changes when the vector has 4096 components instead of two — which is why two-dimensional intuition is worth building.</figcaption>
+</figure>
+
+<p>Exercise 4 is the same sum, vectorised. <code>np.linalg.norm</code> exists and does it in one call — but write it out at least once, because seeing <code>square</code>, <code>sum</code> and <code>sqrt</code> compose is how the vectorised style starts to feel natural.</p>
+
+<h3>5 — normalise: keep the direction, throw away the length</h3>
+
+<p>Dividing a vector by its own magnitude leaves it pointing exactly where it was, with length precisely 1. Every such vector lands on the unit circle.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 290" role="img" aria-label="The vector 3,4 of length 5 shrunk along the same ray onto the unit circle, becoming 0.6,0.8 with length 1 and the same direction.">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="40" y1="210" x2="262" y2="210" class="sep"></line>
+  <line x1="120" y1="86" x2="120" y2="258" class="sep"></line>
+  <circle cx="120" cy="210" r="26" class="conn" fill="none" stroke-dasharray="3 3"></circle>
+
+  <line x1="120" y1="210" x2="196" y2="108" class="conn" marker-end="url(#ar3)"></line>
+  <line x1="120" y1="210" x2="137" y2="188" class="conn-hl" marker-end="url(#ar3)"></line>
+
+  <text x="202" y="104" class="lbl">v</text>
+  <text x="146" y="180" class="lbl-hl">unit v</text>
+
+  <rect x="300" y="70" width="290" height="58" rx="4" class="box"></rect>
+  <text x="322" y="96" class="head">[3, 4]</text>
+  <text x="322" y="116" class="lbl-sm">length 5</text>
+
+  <rect x="300" y="146" width="290" height="48" rx="4" class="box"></rect>
+  <text x="322" y="168" class="head">divide by 5</text>
+  <text x="322" y="186" class="lbl-sm">its own length</text>
+
+  <rect x="300" y="212" width="290" height="58" rx="4" class="box-hl"></rect>
+  <text x="322" y="238" class="lbl-hl">[0.6, 0.8]</text>
+  <text x="322" y="258" class="lbl-sm">length 1, same direction</text>
+</svg>
+<figcaption>The zero vector is the one case with no answer: it has no direction to preserve, and the division would be by zero. Raising an error there is not defensive padding — it is the honest response to a question with no meaningful result.</figcaption>
+</figure>
+
+<h3>6 — cosine similarity, and why the division works</h3>
+
+<p>One identity sits underneath the whole exercise:</p>
+
+<div class="figure">
+<pre>a · b  =  |a| × |b| × cos θ</pre>
+</div>
+
+<p>The dot product was never purely about agreement — it is agreement <strong>scaled by both lengths</strong>. That is precisely the flaw demonstrated earlier: pressing <span class="mono">× 2</span> doubles the number without turning the arrows at all. Divide both sides by <code>|a| × |b|</code> and the lengths cancel, leaving the angle alone. You are not inventing a metric; you are rearranging an identity to isolate what you actually wanted.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 326" role="img" aria-label="Two routes to the same number: dividing a dot product by both magnitudes, or normalising both vectors first and then taking their dot product.">
+  <defs>
+    <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="30" y="40" width="165" height="56" rx="4" class="box"></rect>
+  <text x="48" y="64" class="head">vector a</text>
+  <text x="48" y="82" class="lbl-sm">[4, 3] · length 5</text>
+
+  <rect x="30" y="110" width="165" height="56" rx="4" class="box"></rect>
+  <text x="48" y="134" class="head">vector b</text>
+  <text x="48" y="152" class="lbl-sm">[6, 8] · length 10</text>
+
+  <rect x="30" y="180" width="165" height="56" rx="4" class="box"></rect>
+  <text x="48" y="204" class="head">a · b  =  48</text>
+  <text x="48" y="222" class="lbl-sm">grows with length</text>
+
+  <rect x="225" y="78" width="150" height="50" rx="4" class="box"></rect>
+  <text x="243" y="100" class="head">normalise</text>
+  <text x="243" y="118" class="lbl-sm">divide by length</text>
+
+  <rect x="405" y="40" width="185" height="56" rx="4" class="box-hl"></rect>
+  <text x="423" y="64" class="lbl-hl">unit a</text>
+  <text x="423" y="82" class="lbl-sm">[0.8, 0.6] · length 1</text>
+
+  <rect x="405" y="110" width="185" height="56" rx="4" class="box-hl"></rect>
+  <text x="423" y="134" class="lbl-hl">unit b</text>
+  <text x="423" y="152" class="lbl-sm">[0.6, 0.8] · length 1</text>
+
+  <rect x="405" y="180" width="185" height="56" rx="4" class="box-hl"></rect>
+  <text x="423" y="204" class="lbl-hl">unit a · unit b = 0.96</text>
+  <text x="423" y="222" class="lbl-sm">direction only</text>
+
+  <line x1="195" y1="68" x2="223" y2="96" class="conn" marker-end="url(#ar4)"></line>
+  <line x1="195" y1="138" x2="223" y2="110" class="conn" marker-end="url(#ar4)"></line>
+  <line x1="377" y1="96" x2="403" y2="68" class="conn" marker-end="url(#ar4)"></line>
+  <line x1="377" y1="110" x2="403" y2="138" class="conn" marker-end="url(#ar4)"></line>
+
+  <line x1="112" y1="236" x2="112" y2="250" class="sep"></line>
+  <line x1="497" y1="236" x2="497" y2="250" class="sep"></line>
+
+  <rect x="30" y="250" width="560" height="56" rx="4" class="box-hl"></rect>
+  <text x="48" y="274" class="lbl-hl">48 / (5 × 10)  =  0.96</text>
+  <text x="48" y="292" class="lbl-sm">both routes return the same number, bit for bit</text>
+</svg>
+<figcaption>Normalising sets both lengths to 1, so for unit vectors the dot product already is the cosine, with nothing left to divide out. Exercises 5 and 6 are the same operation in different clothes. Production vector databases exploit exactly this: they store embeddings pre-normalised so that search becomes a bare dot product with no division at query time.</figcaption>
+</figure>
+
+<p>The name is not decoration either. cos(0°) = 1, cos(90°) = 0, cos(180°) = −1 — the function already had the range and the meaning we wanted. Nobody designed that; it fell out.</p>
+
+<h3>7 — search, and the version you have not written yet</h3>
+
+<p>Exercise 7 is short because exercise 6 did the work. The one piece of Python worth pinning down is <code>max(scores, key=scores.get)</code>: iterating a dict yields its <strong>keys</strong>, and <code>key=</code> changes what gets <em>compared</em>, not what gets <em>returned</em>. So the comparison runs over scores while the return value is a name. Reaching for <code>max(d.values())</code> instead gives you <code>0.998</code> with no way back to which item earned it.</p>
+
+<p>That solution is the definition. It is not the implementation a real system uses.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 266" role="img" aria-label="Stacking every library vector into a matrix turns a loop of separate dot products into one matrix-vector multiplication that scores every item at once.">
+  <defs>
+    <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="30" y="40" width="160" height="56" rx="4" class="box"></rect>
+  <text x="48" y="64" class="head">library matrix</text>
+  <text x="48" y="82" class="lbl-sm">n items × d dims</text>
+
+  <rect x="30" y="110" width="160" height="56" rx="4" class="box"></rect>
+  <text x="48" y="134" class="head">query vector</text>
+  <text x="48" y="152" class="lbl-sm">d dims</text>
+
+  <rect x="225" y="76" width="125" height="54" rx="4" class="box"></rect>
+  <text x="243" y="100" class="head">one matmul</text>
+  <text x="243" y="118" class="lbl-sm">L @ q</text>
+
+  <rect x="380" y="76" width="105" height="54" rx="4" class="box-hl"></rect>
+  <text x="398" y="100" class="lbl-hl">scores</text>
+  <text x="398" y="118" class="lbl-sm">n numbers</text>
+
+  <rect x="505" y="76" width="85" height="54" rx="4" class="box-hl"></rect>
+  <text x="523" y="100" class="lbl-hl">argmax</text>
+  <text x="523" y="118" class="lbl-sm">the winner</text>
+
+  <line x1="190" y1="68" x2="223" y2="94" class="conn" marker-end="url(#ar5)"></line>
+  <line x1="190" y1="138" x2="223" y2="112" class="conn" marker-end="url(#ar5)"></line>
+  <line x1="352" y1="103" x2="378" y2="103" class="conn" marker-end="url(#ar5)"></line>
+  <line x1="487" y1="103" x2="503" y2="103" class="conn" marker-end="url(#ar5)"></line>
+
+  <rect x="30" y="190" width="560" height="56" rx="4" class="box"></rect>
+  <text x="48" y="214" class="head">Same maths, one call instead of n</text>
+  <text x="48" y="232" class="lbl-sm">a vector database runs exactly this shape over millions of rows</text>
+</svg>
+<figcaption>Your dict comprehension calls cosine similarity once per item. Stacking the library into a matrix scores everything in a single operation — identical arithmetic, one call. This is why searching ten million documents is even possible, and it is what lessons 0.3 and 0.4 are building toward. There is an optional <code>stretch.py</code> in the lesson folder if you want to write it now.</figcaption>
+</figure>
 
 <h2>What to watch</h2>
 
