@@ -26,8 +26,6 @@
   }
   var done = loadDone();
   var view = { kind: "overview", id: null };
-  var collapsed = {};
-  var expandedPlanned = {};
   var activeTab = {};
 
   var SECTIONS = data.sections || {};
@@ -58,11 +56,10 @@
   }
   function phaseDone(p) { return p.lessons.filter(function (l) { return done[l.id]; }).length; }
   function totalDone() { return Object.keys(done).length; }
+  function writtenLessons() { return allLessons.filter(function (l) { return l.written; }); }
   function nextLesson() {
-    for (var i = 0; i < allLessons.length; i++) {
-      if (allLessons[i].status === "available" && !done[allLessons[i].id]) return allLessons[i];
-    }
-    for (var j = 0; j < allLessons.length; j++) if (!done[allLessons[j].id]) return allLessons[j];
+    var pool = writtenLessons();
+    for (var i = 0; i < pool.length; i++) if (!done[pool[i].id]) return pool[i];
     return null;
   }
   /* ---------- resume where you left off ----------
@@ -85,10 +82,9 @@
       var saved = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
       if (!saved || !saved.id) return;
       var lesson = lessonById(saved.id);
-      if (!lesson) return;               // curriculum changed under an old value
+      if (!lesson || !lesson.written) return;   // stale id, or no longer written
       view = { kind: "lesson", id: saved.id };
       activeTab[saved.id] = typeof saved.tab === "number" ? saved.tab : 0;
-      collapsed[lesson.phase.id] = false;
     } catch (e) {}
   }
 
@@ -114,37 +110,19 @@
     railHome.classList.toggle("current", view.kind === "overview");
     railNav.textContent = "";
 
-    phases.forEach(function (p) {
-      var block = el("div", "phase-block" + (collapsed[p.id] ? " collapsed" : ""));
+    /* Two zones. Everything in the first opens real content; the second is a
+       phase-level summary with nothing clickable, because there is nothing
+       behind it yet. Written-ness comes from build.py reading the disk, so
+       adding site/src/lessons/0.2/ moves 0.2 across on the next build with no
+       other edit. */
+    var written = allLessons.filter(function (l) { return l.written; });
+    var planned = allLessons.length - written.length;
 
-      var btn = button("phase-btn", null, function () {
-        collapsed[p.id] = !collapsed[p.id];
-        buildRail();
-      });
-      btn.setAttribute("aria-expanded", collapsed[p.id] ? "false" : "true");
-      btn.appendChild(el("span", "chev"));
-      btn.appendChild(el("span", "phase-num", String(p.number)));
-      btn.appendChild(el("span", "phase-name", p.title));
-      btn.appendChild(el("span", "phase-count", phaseDone(p) + "/" + p.lessons.length));
-      block.appendChild(btn);
+    railNav.appendChild(zoneHead("Available now", String(written.length)));
 
-      var prog = el("div", "phase-progress");
-      var fill = el("i");
-      fill.style.width = (p.lessons.length ? phaseDone(p) / p.lessons.length * 100 : 0) + "%";
-      prog.appendChild(fill);
-      block.appendChild(prog);
-
-      /* 54 of 55 rows used to lead to the same "not written yet" placeholder.
-         Show what you can actually open; fold the rest into a count you can
-         expand if you want to see the shape of what is coming. */
-      var visible = expandedPlanned[p.id] ? p.lessons : p.lessons.filter(function (l) {
-        return l.status === "available" || done[l.id] ||
-               (view.kind === "lesson" && view.id === l.id);
-      });
-      var foldedCount = p.lessons.length - visible.length;
-
+    if (written.length) {
       var list = el("ul", "lesson-list");
-      visible.forEach(function (l) {
+      written.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (done[l.id] ? " is-done" : ""));
@@ -159,28 +137,38 @@
         var link = button("lesson-link", null, function () { goLesson(l.id); });
         link.appendChild(el("span", "lid", l.id));
         link.appendChild(el("span", "ltitle", l.title));
-        if (l.status === "available") link.appendChild(el("span", "dot-ready"));
         row.appendChild(link);
 
         list.appendChild(row);
       });
-      if (visible.length) block.appendChild(list);
+      railNav.appendChild(list);
+    } else {
+      railNav.appendChild(el("div", "rail-empty", "Nothing written yet."));
+    }
 
-      if (foldedCount) {
-        var more = button("planned-row", null, function () {
-          expandedPlanned[p.id] = true;
-          buildRail();
-        });
-        more.appendChild(el("span", "pcount", String(foldedCount)));
-        more.appendChild(document.createTextNode(
-          visible.length ? " more planned" : " lessons planned"));
-        block.appendChild(more);
-      } else if (!visible.length) {
-        block.appendChild(el("div", "phase-empty", "nothing here yet"));
-      }
+    if (!planned) return;
 
-      railNav.appendChild(block);
+    railNav.appendChild(zoneHead("Ahead", planned + " planned"));
+    phases.forEach(function (p) {
+      var count = p.lessons.filter(function (l) { return !l.written; }).length;
+      if (!count) return;
+      var row = el("div", "ahead-row");
+      row.title = "Milestone: " + p.milestone;
+      var top = el("div", "ahead-top");
+      top.appendChild(el("span", "ahead-num", String(p.number)));
+      top.appendChild(el("span", "ahead-title", p.title));
+      top.appendChild(el("span", "ahead-count", String(count)));
+      row.appendChild(top);
+      row.appendChild(el("div", "ahead-sub", p.subtitle));
+      railNav.appendChild(row);
     });
+  }
+
+  function zoneHead(label, meta) {
+    var h = el("div", "rail-zone");
+    h.appendChild(el("span", "eyebrow", label));
+    h.appendChild(el("span", "eyebrow", meta));
+    return h;
   }
 
   /* ---------- overview ---------- */
@@ -281,10 +269,10 @@
     s2.appendChild(el("p", "sub", "Ordered so that each phase assumes exactly what came before it, and nothing more."));
     var cards = el("div", "phase-cards");
     phases.forEach(function (p) {
-      var c = button("pcard", null, function () {
-        collapsed[p.id] = false;
-        goLesson(p.lessons[0].id);
-      });
+      var first = p.lessons.filter(function (l) { return l.written; })[0];
+      var c = first
+        ? button("pcard", null, function () { goLesson(first.id); })
+        : el("div", "pcard is-planned");
       var head = el("div", "pcard-top");
       head.appendChild(el("span", "phase-num", String(p.number)));
       head.appendChild(el("h3", null, p.title));
@@ -342,10 +330,9 @@
     var crumbs = el("div", "crumbs");
     crumbs.appendChild(button("crumb", "Overview", goOverview));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    crumbs.appendChild(button("crumb", "Phase " + l.phase.number + " · " + l.phase.title, function () {
-      collapsed[l.phase.id] = false;
-      goLesson(l.phase.lessons[0].id);
-    }));
+    /* Step 2 gives phases real pages; until then this is a label, not a link
+       that quietly lands you somewhere else. */
+    crumbs.appendChild(el("span", "crumb-static", "Phase " + l.phase.number + " · " + l.phase.title));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
     if (done[l.id]) crumbs.appendChild(el("span", "chip done", "Complete"));
     else if (l.status === "available") crumbs.appendChild(el("span", "chip ready", "Ready"));
@@ -457,15 +444,16 @@
       wrap.appendChild(mile);
     }
 
-    var idx = allLessons.indexOf(l);
+    var pool = writtenLessons();
+    var idx = pool.indexOf(l);
     var foot = el("div", "foot");
     foot.appendChild(button("linkbtn", "← Overview", goOverview));
     if (idx > 0) {
-      var pv = allLessons[idx - 1];
+      var pv = pool[idx - 1];
       foot.appendChild(button("linkbtn", "← " + pv.id + " " + pv.title, function () { goLesson(pv.id); }));
     }
-    if (idx + 1 < allLessons.length) {
-      var nx = allLessons[idx + 1];
+    if (idx > -1 && idx + 1 < pool.length) {
+      var nx = pool[idx + 1];
       foot.appendChild(button("linkbtn", "Next: " + nx.id + " " + nx.title + " →", function () { goLesson(nx.id); }));
     }
     wrap.appendChild(foot);

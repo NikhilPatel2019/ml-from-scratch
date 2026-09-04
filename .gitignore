@@ -18,3 +18,5 @@ install.cmd
 *.egg-info/
 build/
 dist/
+site.zip
+*.zip

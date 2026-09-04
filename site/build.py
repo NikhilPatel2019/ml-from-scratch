@@ -103,6 +103,10 @@ def main() -> int:
         (ROOT / "lessons" / "curriculum.json").read_text(encoding="utf-8")
     )
 
+    # Read the disk first: whether a lesson is written is a fact about what
+    # exists under site/src/lessons/, not a flag anyone should maintain by hand.
+    templates, sections = lesson_templates()
+
     # The page needs only what it renders; drop repo-only fields such as `dir`.
     trimmed = {
         "phases": [
@@ -111,7 +115,8 @@ def main() -> int:
                 "subtitle": p["subtitle"], "blurb": p["blurb"], "milestone": p["milestone"],
                 "lessons": [
                     {"id": les["id"], "title": les["title"], "summary": les["summary"],
-                     "status": les.get("status", "planned")}
+                     "status": les.get("status", "planned"),
+                     "written": les["id"] in sections}
                     for les in p["lessons"]
                 ],
             }
@@ -119,7 +124,6 @@ def main() -> int:
         ]
     }
 
-    templates, sections = lesson_templates()
     trimmed["sections"] = sections
     total = sum(len(p["lessons"]) for p in trimmed["phases"])
     known = {les["id"] for p in trimmed["phases"] for les in p["lessons"]}

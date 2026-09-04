@@ -754,6 +754,45 @@ figcaption {
   font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
   padding: 2px 8px 10px 12px; margin-left: 6px;
 }
+
+
+/* ============================================================
+   rail zones — available now vs ahead (HANDOFF step 1)
+   ============================================================ */
+.rail-zone {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 18px 8px 8px; margin-top: 2px;
+  border-top: 1px solid var(--rule);
+}
+.rail-zone:first-child { border-top: 0; margin-top: 0; }
+.rail-empty {
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  padding: 2px 8px 8px;
+}
+
+/* Nothing in Ahead is interactive, so nothing here takes a hover or a cursor
+   that would imply it opens. */
+.ahead-row { padding: 8px 8px 10px; border-radius: 7px; }
+.ahead-top { display: flex; align-items: baseline; gap: 9px; }
+.ahead-num {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 600;
+  width: 21px; height: 21px; flex: none; border-radius: 5px;
+  display: grid; place-items: center; align-self: center;
+  background: var(--surface-2); color: var(--ink-3); border: 1px solid var(--rule);
+}
+.ahead-title { font-size: 13px; color: var(--ink-2); flex: 1; min-width: 0; }
+.ahead-count {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  font-variant-numeric: tabular-nums; flex: none;
+}
+.ahead-sub {
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
+  padding-left: 30px; margin-top: 3px; line-height: 1.4;
+}
+
+.pcard.is-planned { cursor: default; }
+.pcard.is-planned:hover { border-color: var(--rule); transform: none; }
+.crumb-static { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); }
 </style>
 
 <header class="topbar">
@@ -793,7 +832,7 @@ figcaption {
 
 <script type="application/json" id="curriculum-data">
 
-{"phases":[{"id":"p0","number":0,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"0.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available"},{"id":"0.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned"},{"id":"0.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned"},{"id":"0.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned"},{"id":"0.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned"},{"id":"0.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned"},{"id":"0.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned"},{"id":"0.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned"},{"id":"0.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned"},{"id":"0.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned"},{"id":"0.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned"},{"id":"0.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned"},{"id":"0.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned"}]},{"id":"p1","number":1,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"1.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned"},{"id":"1.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned"},{"id":"1.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned"},{"id":"1.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned"},{"id":"1.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned"},{"id":"1.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned"},{"id":"1.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned"},{"id":"1.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned"},{"id":"1.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned"},{"id":"1.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned"},{"id":"1.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned"},{"id":"1.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 0 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned"},{"id":"1.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned"}]},{"id":"p2","number":2,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"2.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned"},{"id":"2.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned"},{"id":"2.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned"},{"id":"2.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned"},{"id":"2.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned"},{"id":"2.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned"},{"id":"2.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned"},{"id":"2.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned"},{"id":"2.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned"},{"id":"2.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned"},{"id":"2.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned"},{"id":"2.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned"},{"id":"2.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned"},{"id":"2.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned"}]},{"id":"p3","number":3,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"3.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned"},{"id":"3.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned"},{"id":"3.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned"},{"id":"3.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned"},{"id":"3.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned"},{"id":"3.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned"},{"id":"3.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned"},{"id":"3.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned"},{"id":"3.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned"},{"id":"3.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 0.1 comes back around.","status":"planned"},{"id":"3.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned"},{"id":"3.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned"}]},{"id":"p4","number":4,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"4.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned"},{"id":"4.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned"},{"id":"4.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned"}]}],"sections":{"0.1":["overview","lesson","exercises","walkthrough","resources"]}}
+{"phases":[{"id":"p0","number":0,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"0.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available","written":true},{"id":"0.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned","written":false},{"id":"0.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned","written":false},{"id":"0.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned","written":false},{"id":"0.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned","written":false},{"id":"0.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned","written":false},{"id":"0.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned","written":false},{"id":"0.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned","written":false},{"id":"0.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned","written":false},{"id":"0.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned","written":false},{"id":"0.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned","written":false},{"id":"0.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned","written":false},{"id":"0.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned","written":false}]},{"id":"p1","number":1,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"1.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned","written":false},{"id":"1.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned","written":false},{"id":"1.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned","written":false},{"id":"1.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned","written":false},{"id":"1.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned","written":false},{"id":"1.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned","written":false},{"id":"1.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned","written":false},{"id":"1.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned","written":false},{"id":"1.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned","written":false},{"id":"1.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned","written":false},{"id":"1.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned","written":false},{"id":"1.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 0 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned","written":false},{"id":"1.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned","written":false}]},{"id":"p2","number":2,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"2.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned","written":false},{"id":"2.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned","written":false},{"id":"2.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned","written":false},{"id":"2.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned","written":false},{"id":"2.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned","written":false},{"id":"2.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned","written":false},{"id":"2.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned","written":false},{"id":"2.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned","written":false},{"id":"2.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned","written":false},{"id":"2.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned","written":false},{"id":"2.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned","written":false},{"id":"2.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned","written":false},{"id":"2.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned","written":false},{"id":"2.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned","written":false}]},{"id":"p3","number":3,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"3.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned","written":false},{"id":"3.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned","written":false},{"id":"3.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned","written":false},{"id":"3.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned","written":false},{"id":"3.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned","written":false},{"id":"3.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned","written":false},{"id":"3.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned","written":false},{"id":"3.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned","written":false},{"id":"3.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned","written":false},{"id":"3.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 0.1 comes back around.","status":"planned","written":false},{"id":"3.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned","written":false},{"id":"3.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned","written":false}]},{"id":"p4","number":4,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"4.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned","written":false},{"id":"4.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned","written":false},{"id":"4.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned","written":false}]}],"sections":{"0.1":["overview","lesson","exercises","walkthrough","resources"]}}
 
 </script>
 
@@ -2099,8 +2138,6 @@ var Widgets = (function () {
   }
   var done = loadDone();
   var view = { kind: "overview", id: null };
-  var collapsed = {};
-  var expandedPlanned = {};
   var activeTab = {};
 
   var SECTIONS = data.sections || {};
@@ -2131,11 +2168,10 @@ var Widgets = (function () {
   }
   function phaseDone(p) { return p.lessons.filter(function (l) { return done[l.id]; }).length; }
   function totalDone() { return Object.keys(done).length; }
+  function writtenLessons() { return allLessons.filter(function (l) { return l.written; }); }
   function nextLesson() {
-    for (var i = 0; i < allLessons.length; i++) {
-      if (allLessons[i].status === "available" && !done[allLessons[i].id]) return allLessons[i];
-    }
-    for (var j = 0; j < allLessons.length; j++) if (!done[allLessons[j].id]) return allLessons[j];
+    var pool = writtenLessons();
+    for (var i = 0; i < pool.length; i++) if (!done[pool[i].id]) return pool[i];
     return null;
   }
   /* ---------- resume where you left off ----------
@@ -2158,10 +2194,9 @@ var Widgets = (function () {
       var saved = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
       if (!saved || !saved.id) return;
       var lesson = lessonById(saved.id);
-      if (!lesson) return;               // curriculum changed under an old value
+      if (!lesson || !lesson.written) return;   // stale id, or no longer written
       view = { kind: "lesson", id: saved.id };
       activeTab[saved.id] = typeof saved.tab === "number" ? saved.tab : 0;
-      collapsed[lesson.phase.id] = false;
     } catch (e) {}
   }
 
@@ -2187,37 +2222,19 @@ var Widgets = (function () {
     railHome.classList.toggle("current", view.kind === "overview");
     railNav.textContent = "";
 
-    phases.forEach(function (p) {
-      var block = el("div", "phase-block" + (collapsed[p.id] ? " collapsed" : ""));
+    /* Two zones. Everything in the first opens real content; the second is a
+       phase-level summary with nothing clickable, because there is nothing
+       behind it yet. Written-ness comes from build.py reading the disk, so
+       adding site/src/lessons/0.2/ moves 0.2 across on the next build with no
+       other edit. */
+    var written = allLessons.filter(function (l) { return l.written; });
+    var planned = allLessons.length - written.length;
 
-      var btn = button("phase-btn", null, function () {
-        collapsed[p.id] = !collapsed[p.id];
-        buildRail();
-      });
-      btn.setAttribute("aria-expanded", collapsed[p.id] ? "false" : "true");
-      btn.appendChild(el("span", "chev"));
-      btn.appendChild(el("span", "phase-num", String(p.number)));
-      btn.appendChild(el("span", "phase-name", p.title));
-      btn.appendChild(el("span", "phase-count", phaseDone(p) + "/" + p.lessons.length));
-      block.appendChild(btn);
+    railNav.appendChild(zoneHead("Available now", String(written.length)));
 
-      var prog = el("div", "phase-progress");
-      var fill = el("i");
-      fill.style.width = (p.lessons.length ? phaseDone(p) / p.lessons.length * 100 : 0) + "%";
-      prog.appendChild(fill);
-      block.appendChild(prog);
-
-      /* 54 of 55 rows used to lead to the same "not written yet" placeholder.
-         Show what you can actually open; fold the rest into a count you can
-         expand if you want to see the shape of what is coming. */
-      var visible = expandedPlanned[p.id] ? p.lessons : p.lessons.filter(function (l) {
-        return l.status === "available" || done[l.id] ||
-               (view.kind === "lesson" && view.id === l.id);
-      });
-      var foldedCount = p.lessons.length - visible.length;
-
+    if (written.length) {
       var list = el("ul", "lesson-list");
-      visible.forEach(function (l) {
+      written.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (done[l.id] ? " is-done" : ""));
@@ -2232,28 +2249,38 @@ var Widgets = (function () {
         var link = button("lesson-link", null, function () { goLesson(l.id); });
         link.appendChild(el("span", "lid", l.id));
         link.appendChild(el("span", "ltitle", l.title));
-        if (l.status === "available") link.appendChild(el("span", "dot-ready"));
         row.appendChild(link);
 
         list.appendChild(row);
       });
-      if (visible.length) block.appendChild(list);
+      railNav.appendChild(list);
+    } else {
+      railNav.appendChild(el("div", "rail-empty", "Nothing written yet."));
+    }
 
-      if (foldedCount) {
-        var more = button("planned-row", null, function () {
-          expandedPlanned[p.id] = true;
-          buildRail();
-        });
-        more.appendChild(el("span", "pcount", String(foldedCount)));
-        more.appendChild(document.createTextNode(
-          visible.length ? " more planned" : " lessons planned"));
-        block.appendChild(more);
-      } else if (!visible.length) {
-        block.appendChild(el("div", "phase-empty", "nothing here yet"));
-      }
+    if (!planned) return;
 
-      railNav.appendChild(block);
+    railNav.appendChild(zoneHead("Ahead", planned + " planned"));
+    phases.forEach(function (p) {
+      var count = p.lessons.filter(function (l) { return !l.written; }).length;
+      if (!count) return;
+      var row = el("div", "ahead-row");
+      row.title = "Milestone: " + p.milestone;
+      var top = el("div", "ahead-top");
+      top.appendChild(el("span", "ahead-num", String(p.number)));
+      top.appendChild(el("span", "ahead-title", p.title));
+      top.appendChild(el("span", "ahead-count", String(count)));
+      row.appendChild(top);
+      row.appendChild(el("div", "ahead-sub", p.subtitle));
+      railNav.appendChild(row);
     });
+  }
+
+  function zoneHead(label, meta) {
+    var h = el("div", "rail-zone");
+    h.appendChild(el("span", "eyebrow", label));
+    h.appendChild(el("span", "eyebrow", meta));
+    return h;
   }
 
   /* ---------- overview ---------- */
@@ -2354,10 +2381,10 @@ var Widgets = (function () {
     s2.appendChild(el("p", "sub", "Ordered so that each phase assumes exactly what came before it, and nothing more."));
     var cards = el("div", "phase-cards");
     phases.forEach(function (p) {
-      var c = button("pcard", null, function () {
-        collapsed[p.id] = false;
-        goLesson(p.lessons[0].id);
-      });
+      var first = p.lessons.filter(function (l) { return l.written; })[0];
+      var c = first
+        ? button("pcard", null, function () { goLesson(first.id); })
+        : el("div", "pcard is-planned");
       var head = el("div", "pcard-top");
       head.appendChild(el("span", "phase-num", String(p.number)));
       head.appendChild(el("h3", null, p.title));
@@ -2415,10 +2442,9 @@ var Widgets = (function () {
     var crumbs = el("div", "crumbs");
     crumbs.appendChild(button("crumb", "Overview", goOverview));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    crumbs.appendChild(button("crumb", "Phase " + l.phase.number + " · " + l.phase.title, function () {
-      collapsed[l.phase.id] = false;
-      goLesson(l.phase.lessons[0].id);
-    }));
+    /* Step 2 gives phases real pages; until then this is a label, not a link
+       that quietly lands you somewhere else. */
+    crumbs.appendChild(el("span", "crumb-static", "Phase " + l.phase.number + " · " + l.phase.title));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
     if (done[l.id]) crumbs.appendChild(el("span", "chip done", "Complete"));
     else if (l.status === "available") crumbs.appendChild(el("span", "chip ready", "Ready"));
@@ -2530,15 +2556,16 @@ var Widgets = (function () {
       wrap.appendChild(mile);
     }
 
-    var idx = allLessons.indexOf(l);
+    var pool = writtenLessons();
+    var idx = pool.indexOf(l);
     var foot = el("div", "foot");
     foot.appendChild(button("linkbtn", "← Overview", goOverview));
     if (idx > 0) {
-      var pv = allLessons[idx - 1];
+      var pv = pool[idx - 1];
       foot.appendChild(button("linkbtn", "← " + pv.id + " " + pv.title, function () { goLesson(pv.id); }));
     }
-    if (idx + 1 < allLessons.length) {
-      var nx = allLessons[idx + 1];
+    if (idx > -1 && idx + 1 < pool.length) {
+      var nx = pool[idx + 1];
       foot.appendChild(button("linkbtn", "Next: " + nx.id + " " + nx.title + " →", function () { goLesson(nx.id); }));
     }
     wrap.appendChild(foot);
