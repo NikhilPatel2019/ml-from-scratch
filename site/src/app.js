@@ -27,6 +27,7 @@
   var done = loadDone();
   var view = { kind: "overview", id: null };
   var collapsed = {};
+  var expandedPlanned = {};
   var activeTab = {};
 
   var SECTIONS = data.sections || {};
@@ -133,8 +134,17 @@
       prog.appendChild(fill);
       block.appendChild(prog);
 
+      /* 54 of 55 rows used to lead to the same "not written yet" placeholder.
+         Show what you can actually open; fold the rest into a count you can
+         expand if you want to see the shape of what is coming. */
+      var visible = expandedPlanned[p.id] ? p.lessons : p.lessons.filter(function (l) {
+        return l.status === "available" || done[l.id] ||
+               (view.kind === "lesson" && view.id === l.id);
+      });
+      var foldedCount = p.lessons.length - visible.length;
+
       var list = el("ul", "lesson-list");
-      p.lessons.forEach(function (l) {
+      visible.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (done[l.id] ? " is-done" : ""));
@@ -154,7 +164,21 @@
 
         list.appendChild(row);
       });
-      block.appendChild(list);
+      if (visible.length) block.appendChild(list);
+
+      if (foldedCount) {
+        var more = button("planned-row", null, function () {
+          expandedPlanned[p.id] = true;
+          buildRail();
+        });
+        more.appendChild(el("span", "pcount", String(foldedCount)));
+        more.appendChild(document.createTextNode(
+          visible.length ? " more planned" : " lessons planned"));
+        block.appendChild(more);
+      } else if (!visible.length) {
+        block.appendChild(el("div", "phase-empty", "nothing here yet"));
+      }
+
       railNav.appendChild(block);
     });
   }
@@ -538,6 +562,42 @@
   var narrow = window.matchMedia("(max-width: 940px)");
   function syncRail() { if (!narrow.matches) rail.hidden = false; }
   window.addEventListener("resize", syncRail);
+
+  /* ---------- theme ----------
+     head.html already applied any saved choice before first paint; this only
+     wires the control and keeps it in sync. No stored value means no attribute,
+     which leaves prefers-color-scheme in charge. */
+  var THEME_KEY = "mlfs:theme:v1";
+  var themeButtons = [].slice.call(document.querySelectorAll("[data-theme-set]"));
+  var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function effectiveTheme() {
+    return document.documentElement.getAttribute("data-theme") ||
+           (darkQuery.matches ? "dark" : "light");
+  }
+  function syncTheme() {
+    var now = effectiveTheme();
+    themeButtons.forEach(function (b) {
+      var mine = b.getAttribute("data-theme-set") === now;
+      b.classList.toggle("on", mine);
+      b.setAttribute("aria-pressed", mine ? "true" : "false");
+    });
+  }
+  themeButtons.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var next = b.getAttribute("data-theme-set");
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      syncTheme();
+    });
+  });
+  /* Follow the OS until the reader makes a choice of their own. */
+  if (darkQuery.addEventListener) {
+    darkQuery.addEventListener("change", function () {
+      if (!document.documentElement.getAttribute("data-theme")) syncTheme();
+    });
+  }
+  syncTheme();
 
   if (narrow.matches) rail.hidden = true;
   restoreView();

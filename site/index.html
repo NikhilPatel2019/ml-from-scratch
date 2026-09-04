@@ -1,11 +1,14 @@
 <!--
-  GENERATED FILE — do not edit.
+  GENERATED FILE - do not edit.
 
   Source:  site/src/          (styles.css, app.js, widgets.js, lessons/<id>/*.html)
   Data:    lessons/curriculum.json
   Rebuild: python site/build.py
 -->
 
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>ML From Scratch</title>
 <meta name="description" content="A ground-up machine learning curriculum for engineers with no maths background.">
@@ -16,6 +19,19 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+
+<script>
+/* Runs before the body paints: a saved theme applied from app.js at the end of
+   the document would flash the other theme first. No saved value means no
+   attribute, which leaves prefers-color-scheme in charge. */
+(function () {
+  try {
+    var t = localStorage.getItem("mlfs:theme:v1");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+</script>
 
 <style>
 /* ============================================================
@@ -703,6 +719,41 @@ figcaption {
 .toc-link.on { color: var(--accent-ink); border-left-color: var(--accent); font-weight: 500; }
 .toc-link.sub { padding-left: 22px; font-size: 12px; }
 .toc[hidden] { display: none !important; }
+
+
+/* ============================================================
+   theme toggle — the page followed the OS with no way to override
+   ============================================================ */
+.themetoggle {
+  display: inline-flex; flex: none; padding: 2px; gap: 2px;
+  border: 1px solid var(--rule-firm); border-radius: 8px; background: var(--surface);
+}
+.themetoggle button {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .04em;
+  color: var(--ink-3); padding: 5px 10px; border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+.themetoggle button:hover { color: var(--ink); }
+.themetoggle button.on { background: var(--accent-wash); color: var(--accent-ink); }
+
+/* ============================================================
+   collapsed planned phases — 54 of 55 rows led to one placeholder
+   ============================================================ */
+.planned-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: none; border: 0; cursor: pointer; text-align: left;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  padding: 7px 8px 7px 12px; border-radius: 7px; margin-left: 6px;
+}
+.planned-row:hover { background: var(--surface-2); color: var(--ink-2); }
+.planned-row .pcount {
+  font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 500;
+}
+.phase-empty {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  padding: 2px 8px 10px 12px; margin-left: 6px;
+}
 </style>
 
 <header class="topbar">
@@ -714,6 +765,10 @@ figcaption {
     <span class="words">lessons complete</span>
     <b id="stat-count" class="mono">0/55</b>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
+  </div>
+  <div class="themetoggle" role="group" aria-label="Colour theme">
+    <button type="button" id="theme-light" data-theme-set="light">light</button>
+    <button type="button" id="theme-dark" data-theme-set="dark">dark</button>
   </div>
   <button class="iconbtn railtoggle" id="railtoggle" aria-expanded="false">Curriculum</button>
 </header>
@@ -2045,6 +2100,7 @@ var Widgets = (function () {
   var done = loadDone();
   var view = { kind: "overview", id: null };
   var collapsed = {};
+  var expandedPlanned = {};
   var activeTab = {};
 
   var SECTIONS = data.sections || {};
@@ -2151,8 +2207,17 @@ var Widgets = (function () {
       prog.appendChild(fill);
       block.appendChild(prog);
 
+      /* 54 of 55 rows used to lead to the same "not written yet" placeholder.
+         Show what you can actually open; fold the rest into a count you can
+         expand if you want to see the shape of what is coming. */
+      var visible = expandedPlanned[p.id] ? p.lessons : p.lessons.filter(function (l) {
+        return l.status === "available" || done[l.id] ||
+               (view.kind === "lesson" && view.id === l.id);
+      });
+      var foldedCount = p.lessons.length - visible.length;
+
       var list = el("ul", "lesson-list");
-      p.lessons.forEach(function (l) {
+      visible.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (done[l.id] ? " is-done" : ""));
@@ -2172,7 +2237,21 @@ var Widgets = (function () {
 
         list.appendChild(row);
       });
-      block.appendChild(list);
+      if (visible.length) block.appendChild(list);
+
+      if (foldedCount) {
+        var more = button("planned-row", null, function () {
+          expandedPlanned[p.id] = true;
+          buildRail();
+        });
+        more.appendChild(el("span", "pcount", String(foldedCount)));
+        more.appendChild(document.createTextNode(
+          visible.length ? " more planned" : " lessons planned"));
+        block.appendChild(more);
+      } else if (!visible.length) {
+        block.appendChild(el("div", "phase-empty", "nothing here yet"));
+      }
+
       railNav.appendChild(block);
     });
   }
@@ -2556,6 +2635,42 @@ var Widgets = (function () {
   var narrow = window.matchMedia("(max-width: 940px)");
   function syncRail() { if (!narrow.matches) rail.hidden = false; }
   window.addEventListener("resize", syncRail);
+
+  /* ---------- theme ----------
+     head.html already applied any saved choice before first paint; this only
+     wires the control and keeps it in sync. No stored value means no attribute,
+     which leaves prefers-color-scheme in charge. */
+  var THEME_KEY = "mlfs:theme:v1";
+  var themeButtons = [].slice.call(document.querySelectorAll("[data-theme-set]"));
+  var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function effectiveTheme() {
+    return document.documentElement.getAttribute("data-theme") ||
+           (darkQuery.matches ? "dark" : "light");
+  }
+  function syncTheme() {
+    var now = effectiveTheme();
+    themeButtons.forEach(function (b) {
+      var mine = b.getAttribute("data-theme-set") === now;
+      b.classList.toggle("on", mine);
+      b.setAttribute("aria-pressed", mine ? "true" : "false");
+    });
+  }
+  themeButtons.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var next = b.getAttribute("data-theme-set");
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      syncTheme();
+    });
+  });
+  /* Follow the OS until the reader makes a choice of their own. */
+  if (darkQuery.addEventListener) {
+    darkQuery.addEventListener("change", function () {
+      if (!document.documentElement.getAttribute("data-theme")) syncTheme();
+    });
+  }
+  syncTheme();
 
   if (narrow.matches) rail.hidden = true;
   restoreView();

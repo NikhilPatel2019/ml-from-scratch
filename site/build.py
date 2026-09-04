@@ -38,8 +38,11 @@ OUT = SITE / "index.html"
 # Canonical tab order. A lesson may omit any of these.
 SECTIONS = ["overview", "lesson", "exercises", "walkthrough", "resources"]
 
+# Deliberately ASCII-only: this comment precedes the <meta charset> in the
+# output, and non-ASCII bytes ahead of the encoding declaration are exactly the
+# thing that makes a parser guess wrong.
 BANNER = """<!--
-  GENERATED FILE — do not edit.
+  GENERATED FILE - do not edit.
 
   Source:  site/src/          (styles.css, app.js, widgets.js, lessons/<id>/*.html)
   Data:    lessons/curriculum.json

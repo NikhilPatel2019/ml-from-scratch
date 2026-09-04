@@ -683,3 +683,38 @@ figcaption {
 .toc-link.on { color: var(--accent-ink); border-left-color: var(--accent); font-weight: 500; }
 .toc-link.sub { padding-left: 22px; font-size: 12px; }
 .toc[hidden] { display: none !important; }
+
+
+/* ============================================================
+   theme toggle — the page followed the OS with no way to override
+   ============================================================ */
+.themetoggle {
+  display: inline-flex; flex: none; padding: 2px; gap: 2px;
+  border: 1px solid var(--rule-firm); border-radius: 8px; background: var(--surface);
+}
+.themetoggle button {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .04em;
+  color: var(--ink-3); padding: 5px 10px; border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+.themetoggle button:hover { color: var(--ink); }
+.themetoggle button.on { background: var(--accent-wash); color: var(--accent-ink); }
+
+/* ============================================================
+   collapsed planned phases — 54 of 55 rows led to one placeholder
+   ============================================================ */
+.planned-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: none; border: 0; cursor: pointer; text-align: left;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  padding: 7px 8px 7px 12px; border-radius: 7px; margin-left: 6px;
+}
+.planned-row:hover { background: var(--surface-2); color: var(--ink-2); }
+.planned-row .pcount {
+  font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 500;
+}
+.phase-empty {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  padding: 2px 8px 10px 12px; margin-left: 6px;
+}
