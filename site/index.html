@@ -28,7 +28,7 @@
   --grid:       rgba(22, 32, 43, 0.055);
   --ink:        #16202B;
   --ink-2:      #4A5A68;
-  --ink-3:      #7C8A95;
+  --ink-3:      #5E6C77;
   --rule:       #DCE1DC;
   --rule-firm:  #C3CBC4;
   --accent:     #0E6B78;
@@ -60,7 +60,7 @@
     --grid:       rgba(190, 214, 226, 0.05);
     --ink:        #E4EAEE;
     --ink-2:      #A2B2BE;
-    --ink-3:      #71858F;
+    --ink-3:      #8598A2;
     --rule:       #26333E;
     --rule-firm:  #384956;
     --accent:     #4FC3D4;
@@ -86,7 +86,7 @@
   --grid:       rgba(190, 214, 226, 0.05);
   --ink:        #E4EAEE;
   --ink-2:      #A2B2BE;
-  --ink-3:      #71858F;
+  --ink-3:      #8598A2;
   --rule:       #26333E;
   --rule-firm:  #384956;
   --accent:     #4FC3D4;
@@ -237,15 +237,21 @@ code, kbd { font-family: var(--f-mono); }
 .lesson-row:hover { background: var(--surface-2); }
 .lesson-row.current { background: var(--accent-wash); }
 
+/* 24x24 hit area, 16x16 visual — WCAG 2.5.8 asks for the first, the list
+   layout wants the second. A pseudo-element gives both. */
 .tickbox {
-  appearance: none; flex: none; width: 15px; height: 15px; margin: 8px 0 0;
-  border: 1.5px solid var(--rule-firm); border-radius: 4px; background: var(--surface);
-  cursor: pointer; position: relative; transition: background .15s, border-color .15s;
+  appearance: none; flex: none; width: 24px; height: 24px; margin: 3px 0 0;
+  border: 0; background: none; cursor: pointer; position: relative;
 }
-.tickbox:hover { border-color: var(--done); }
-.tickbox:checked { background: var(--done); border-color: var(--done); }
+.tickbox::before {
+  content: ""; position: absolute; left: 4px; top: 4px; width: 16px; height: 16px;
+  border: 1.5px solid var(--rule-firm); border-radius: 4px; background: var(--surface);
+  transition: background .15s, border-color .15s;
+}
+.tickbox:hover::before { border-color: var(--done); }
+.tickbox:checked::before { background: var(--done); border-color: var(--done); }
 .tickbox:checked::after {
-  content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
+  content: ""; position: absolute; left: 10px; top: 7px; width: 4px; height: 8px;
   border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(42deg);
 }
 
@@ -469,7 +475,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .placeholder p { margin: 0; color: var(--ink-2); font-size: 14.5px; max-width: 60ch; }
 
 .foot { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
-.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--ink-3); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.linkbtn { background: none; border: 0; padding: 5px 0; font: inherit; color: var(--ink-3); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .linkbtn:hover { color: var(--ink-2); }
 
 /* ============================================================
