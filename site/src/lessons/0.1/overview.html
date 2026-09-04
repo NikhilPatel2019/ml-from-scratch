@@ -1,0 +1,105 @@
+<div class="prose">
+
+<p class="lead">Machine learning begins with one move: turning things into lists of numbers so that "similar" becomes arithmetic. This lesson covers that move, and the single operation everything else in the field is built from.</p>
+
+<div class="outcomes">
+  <div class="oc">
+    <div class="oc-n">01</div>
+    <div>
+      <h3>Represent anything as a vector</h3>
+      <p>Why a list of numbers can stand in for a house, a customer or a word, and what "4096-dimensional" actually means.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">02</div>
+    <div>
+      <h3>Compute and read a dot product</h3>
+      <p>Implement it by hand, then vectorised — and explain what a result of zero tells you about two things.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">03</div>
+    <div>
+      <h3>Measure similarity properly</h3>
+      <p>Find the flaw in the raw dot product, fix it with cosine similarity, and understand why the fix works.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">04</div>
+    <div>
+      <h3>Build a working search engine</h3>
+      <p>Rank a small library by meaning — the same mechanism behind semantic search and every RAG system.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">05</div>
+    <div>
+      <h3>Think in arrays, not loops</h3>
+      <p>The mental shift NumPy demands, and the memory-layout reason it is roughly 200× faster.</p>
+    </div>
+  </div>
+</div>
+
+<h2>Before you start</h2>
+
+<div class="tablewrap">
+<table>
+  <tbody>
+    <tr><th>Prerequisites</th><td>None. This is the first lesson. You can already program in some language; no maths is assumed.</td></tr>
+    <tr><th>You will need</th><td>Python 3.10+, the repository cloned, and <code>pip install -e ".[dev]"</code> run once.</td></tr>
+    <tr><th>Exercises</th><td>Seven, plus one optional stretch. The tests check <em>how</em> you solved it, not only the answer.</td></tr>
+    <tr><th>Maths introduced</th><td>Vectors, the dot product, magnitude, and cosine. All built from arithmetic — no calculus, no notation you have not met.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>How to work through it</h2>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Lesson</h3>
+      <p>Read it, and play with the two interactive demos. Dragging the vectors until the dot product reads zero teaches something prose cannot.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Exercises</h3>
+      <p>Seven functions in your own repository. This is the part that actually teaches you — everything else is scaffolding for it.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Walkthrough</h3>
+      <p>Visual explanations of how each exercise works. Deliberately a separate tab: read it <em>after</em> you have attempted them, not before.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Resources</h3>
+      <p>Four curated videos, ordered, with a note on which to watch before the exercises and which only after.</p>
+    </div>
+  </div>
+</div>
+
+<h2>You are done when</h2>
+
+<p>Not when the tests pass — when you can answer these without looking anything up:</p>
+
+<ul>
+  <li>What does a dot product of zero tell you about two vectors?</li>
+  <li>Why divide by the magnitudes to get cosine similarity — what does it fix?</li>
+  <li>Why is a NumPy operation so much faster than the equivalent Python loop?</li>
+  <li>Where does a neuron use the function you wrote today?</li>
+</ul>
+
+<div class="callout">
+  <span class="lbl">One rule for this whole curriculum</span>
+  <p>Nobody hands you the answer — not this page, and not whatever model you ask for help. Recognising correct code is a different skill from producing it, and only one of them transfers. Ask for a smaller sub-problem when you are stuck. Ask why your working code is bad. Do not ask for the solution.</p>
+</div>
+
+</div>

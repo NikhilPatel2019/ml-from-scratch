@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://claude.ai/code/artifact/121da12d-60e9-4351-9b44-1be2659623e8"><b>Read the lessons &rarr;</b></a>
+  <a href="https://nikhilpatel2019.github.io/ml-from-scratch/"><b>Read the lessons &rarr;</b></a>
 </p>
 
 <p align="center">
@@ -14,6 +14,7 @@
   <img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-green">
   <img alt="Lessons" src="https://img.shields.io/badge/lessons-55-blue">
   <img alt="Status: in progress" src="https://img.shields.io/badge/status-in%20progress-orange">
+  <a href="https://github.com/NikhilPatel2019/ml-from-scratch/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/NikhilPatel2019/ml-from-scratch/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
 ---
@@ -117,7 +118,7 @@ ROADMAP.md                the full plan, with resources
 
 ### Two places, one curriculum
 
-The **[web version](https://claude.ai/code/artifact/121da12d-60e9-4351-9b44-1be2659623e8)** is for reading and orientation — the full curriculum, the lesson text, and a checklist stored in your browser.
+The **[web version](https://nikhilpatel2019.github.io/ml-from-scratch/)** is for reading and orientation — the full curriculum, the lesson text, and a checklist stored in your browser.
 
 This **repository** is where the learning happens, because the learning is the writing of code. It is also where progress is measured honestly: the site's checkboxes are self-reported, whereas `progress` counts passing tests.
 

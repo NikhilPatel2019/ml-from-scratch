@@ -1,0 +1,66 @@
+name: Deploy site
+
+# Builds site/index.html from source and publishes it to GitHub Pages.
+# `enablement: true` on configure-pages turns Pages on the first time this runs,
+# so no manual setup in the repository settings is needed.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race. Queue rather than cancel, so a push that lands
+# during a deploy still ends up published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # build.py is standard library only, so there is nothing to install.
+      - name: Build the page
+        run: python site/build.py
+
+      - name: Fail if the committed build is stale
+        run: |
+          if ! git diff --quiet -- site/index.html; then
+            echo "::error::site/index.html differs from a fresh build. Run: python site/build.py"
+            exit 1
+          fi
+
+      # Publish only the built page, not site/src or the build script.
+      - name: Stage
+        run: |
+          mkdir -p _site
+          cp site/index.html _site/index.html
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -27,6 +27,16 @@
   var done = loadDone();
   var view = { kind: "overview", id: null };
   var collapsed = {};
+  var activeTab = {};
+
+  var SECTIONS = data.sections || {};
+  var TAB_LABELS = {
+    overview: "Overview",
+    lesson: "Lesson",
+    exercises: "Exercises",
+    walkthrough: "Walkthrough",
+    resources: "Resources"
+  };
 
   /* ---------- helpers ---------- */
   function el(tag, cls, text) {
@@ -294,11 +304,49 @@
     head.appendChild(el("p", "lede", l.summary));
     wrap.appendChild(head);
 
-    var tpl = document.getElementById("lesson-" + l.id);
-    if (tpl) {
-      wrap.appendChild(tpl.content.cloneNode(true));
-      highlight(wrap);
-      if (typeof Widgets !== "undefined") Widgets.mount(wrap);
+    var names = SECTIONS[l.id] || [];
+    if (names.length) {
+      if (activeTab[l.id] == null || activeTab[l.id] >= names.length) activeTab[l.id] = 0;
+
+      var tabbar = el("div", "tabs");
+      tabbar.setAttribute("role", "tablist");
+      var panels = el("div", "panels");
+      var entries = [];
+
+      names.forEach(function (name, i) {
+        var tpl = document.getElementById("lesson-" + l.id + "-" + name);
+        if (!tpl) return;
+
+        var panel = el("section", "panel");
+        panel.setAttribute("role", "tabpanel");
+        panel.appendChild(tpl.content.cloneNode(true));
+        panel.hidden = i !== activeTab[l.id];
+        panels.appendChild(panel);
+
+        var tb = button("tab", TAB_LABELS[name] || name, function () { show(i); });
+        tb.setAttribute("role", "tab");
+        tb.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
+        tabbar.appendChild(tb);
+        entries.push({ btn: tb, panel: panel });
+      });
+
+      /* Switching tabs only toggles visibility — no re-render, so the vector lab
+         keeps whatever position you dragged it to. */
+      function show(i) {
+        activeTab[l.id] = i;
+        entries.forEach(function (e, j) {
+          e.panel.hidden = j !== i;
+          e.btn.classList.toggle("on", j === i);
+          e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
+        });
+        wrap.scrollIntoView({ block: "start" });
+      }
+      entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
+
+      wrap.appendChild(tabbar);
+      wrap.appendChild(panels);
+      highlight(panels);
+      if (typeof Widgets !== "undefined") Widgets.mount(panels);
 
       var mark = el("div", "nextup");
       mark.style.marginTop = "44px";

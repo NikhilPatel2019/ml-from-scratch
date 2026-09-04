@@ -1,0 +1,244 @@
+<div class="prose">
+
+<h2>Why we start here</h2>
+
+<p>Strip away every buzzword and machine learning is three claims:</p>
+
+<ol>
+  <li><strong>Anything can be turned into a list of numbers.</strong> A house, a customer, a photograph, the word "banana".</li>
+  <li><strong>Once things are lists of numbers, "similar" and "different" become arithmetic</strong> — and arithmetic is something a computer does a trillion times a second.</li>
+  <li><strong>A model is a large pile of numbers that you adjust until its outputs stop being wrong.</strong></li>
+</ol>
+
+<p>Phase 0 makes claims 1 and 2 concrete. Today is claim 1, plus the single operation that claim 2 rests on.</p>
+
+<p>That operation is the <strong>dot product</strong>. To be precise about how central it is: a neuron in a neural network is a dot product followed by one simple function. Attention — the mechanism behind every modern large language model — is dot products. Semantic search is dot products. When a model has 175 billion parameters and needs a GPU cluster, what that hardware is doing, almost exclusively, is dot products.</p>
+
+<p>There is no second idea in this field of comparable importance. You will implement it today in about four lines.</p>
+
+<h2>The Python you need</h2>
+
+<p>If you already program, only the deltas matter:</p>
+
+<div class="codeblock">
+<div class="cap">Python, for people who already program</div>
+<pre><code class="language-python">xs = [1, 2, 3]              # list: dynamically sized, heterogeneous, indexed from 0
+xs[-1]                      # 3  — negative indices count from the end
+xs[0:2]                     # [1, 2] — slice, end-exclusive
+len(xs)                     # 3
+
+def f(a: list[float]) -> float:   # type hints exist but are NOT enforced.
+    return a[0]                   # they are documentation; the runtime ignores them.
+
+d = {"a": 1, "b": 2}        # dict
+for k in d: ...             # iterates KEYS, not pairs
+for x in xs: ...            # no index — this is the idiomatic loop
+for i in range(len(xs)): .. # only when you genuinely need the index
+
+total = 0.0                 # no declarations, no type, no semicolon
+raise ValueError("nope")    # exceptions: raise, not throw</code></pre>
+</div>
+
+<p>Three gotchas that will bite you:</p>
+
+<ul>
+  <li><strong>Indentation is syntax.</strong> Four spaces. A misindented line is a different program, not a style violation.</li>
+  <li><strong><code>/</code> is always float division.</strong> <code>5 / 2 == 2.5</code>. Integer division is <code>//</code>.</li>
+  <li><strong><code>**</code> is exponentiation.</strong> <code>x ** 0.5</code> is a square root.</li>
+</ul>
+
+<h2>A vector is a list of numbers</h2>
+
+<p>Genuinely — that is the whole definition. <code>[3, 4]</code> is a vector. <code>[0.2, -1.7, 0.0, 5.5]</code> is a vector. In code it is an array.</p>
+
+<p>The word sounds intimidating because physics teaches it as "magnitude and direction, drawn as an arrow". Set the arrows aside for a moment. <strong>A vector is an ordered list of numbers where each position means something fixed.</strong></p>
+
+<p>The interesting half is the second one — <em>each position means something fixed</em>. That is what turns a list into a representation:</p>
+
+<div class="codeblock">
+<pre><code class="language-python">house    = [1500, 3, 12]     # [square feet, bedrooms, age in years]
+another  = [1600, 3, 10]
+mansion  = [8000, 7,  2]</code></pre>
+</div>
+
+<p>Position 0 is <em>always</em> square footage. Position 1 is <em>always</em> bedrooms. Now these three lists are comparable, and "is this house like that house" has become a maths problem.</p>
+
+<p>That is the entire trick, and every ML system is built on it. Deciding what goes in each position used to be a job title — <em>feature engineering</em>, covered in lesson 1.10. The revolution of deep learning is that networks now <strong>learn</strong> what the positions should mean instead of you specifying them.</p>
+
+<p><strong>Dimensions</strong> just means "how many numbers are in the list". The house vector is 3-dimensional. Sentence embeddings in a modern LLM are typically 768 to 4096-dimensional. You cannot picture 4096 dimensions and you should stop trying — but every operation you learn in 2D works <em>identically</em> in 4096D, unchanged. That is the gift: intuition is built cheaply in two dimensions and then transfers for free.</p>
+
+<h2>The dot product</h2>
+
+<p>Take two vectors of the same length. Multiply them position by position. Add up the results. One number falls out.</p>
+
+<div data-widget="dotsteps"></div>
+
+<p>That is the entire operation. As an algorithm: <em>walk both lists together, multiply each pair, accumulate the total.</em> Exercise 1 asks you to write exactly this, with no help from NumPy.</p>
+
+<h3>What the number means</h3>
+
+<p>This is the part that matters, and where most people's understanding stays shallow.</p>
+
+<p>The dot product measures <strong>agreement</strong>. Look at what happens to each term in the sum:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Signs</th><th>Contribution</th><th>Reading</th></tr></thead>
+  <tbody>
+    <tr><td>both positive</td><td>positive</td><td>they agree</td></tr>
+    <tr><td>both negative</td><td>positive</td><td>they agree, in the other direction</td></tr>
+    <tr><td>one of each</td><td>negative</td><td>they disagree</td></tr>
+    <tr><td>either is zero</td><td>nothing</td><td>no opinion</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>So the total answers: <strong>across all these dimensions, do these two vectors tend to go the same way?</strong> This is much easier to feel than to read, so here are the arrows I told you to set aside. Drag them.</p>
+
+<div data-widget="vectorlab"></div>
+
+<p>The case worth pausing on is the one in the middle. A dot product of <strong>zero means "these two things have nothing to say about each other"</strong>. In geometry that is a right angle. In machine learning it is "unrelated concepts". Same fact, two vocabularies.</p>
+
+<h3>Why this is the atom of the field</h3>
+
+<p>A neuron in a neural network does exactly this:</p>
+
+<div class="figure">
+<pre>output = activation( inputs · weights + bias )</pre>
+</div>
+
+<p>The weights are a vector the network learned. The dot product asks <em>"how much does this input agree with the pattern I have learned to look for?"</em> A high number means "strong match — fire".</p>
+
+<p>That is what a neuron <strong>is</strong>. Everything else in deep learning — layers, depth, attention, transformers — is about arranging billions of these agreement checks so that useful patterns emerge. When you build a network from scratch in Phase 2, you will be stacking today's function.</p>
+
+<h2>The flaw, and the fix</h2>
+
+<p>The dot product has a bug as a similarity measure: <strong>it is inflated by magnitude.</strong> If you pressed <span class="mono">× 2</span> in the demo above, you already saw it — the dot product doubled while the arrows did not turn at all.</p>
+
+<div class="figure">
+<pre>[1, 0] · [100, 0]  =  100
+[1, 0] · [  1, 0]  =    1</pre>
+</div>
+
+<p>Both pairs point in <em>precisely</em> the same direction. The first scores 100× higher purely because one vector is bigger. If those were documents, a long document would beat a short one on every query regardless of topic. Not what you want.</p>
+
+<p>The fix is to divide out the magnitudes. The <strong>magnitude</strong> (also called length, or norm) is Pythagoras extended to any number of dimensions — square everything, sum, take the root:</p>
+
+<div class="figure">
+<pre>|[3, 4]|  =  √(3² + 4²)  =  √25  =  5</pre>
+</div>
+
+<p>Divide the dot product by both magnitudes and you get <strong>cosine similarity</strong>:</p>
+
+<div class="figure">
+<pre>cos_sim(a, b)  =  (a · b) / (|a| × |b|)</pre>
+</div>
+
+<p>The answer is now always between −1 and 1, and magnitude is gone. Only <em>direction</em> survives:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1.0</td><td>identical direction</td></tr>
+    <tr><td class="num">0.7</td><td>strongly related</td></tr>
+    <tr><td class="num">0.0</td><td>unrelated, perpendicular</td></tr>
+    <tr><td class="num">−1.0</td><td>opposite</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>This function is how semantic search works, how RAG retrieves documents, how "customers who liked X also liked Y" works, and how a vector database ranks results. It is four lines of arithmetic, and it is exercise 6. Here it is doing the job:</p>
+
+<div data-widget="search"></div>
+
+<h2>Why NumPy exists</h2>
+
+<p>Python is slow, and it is worth knowing precisely <em>why</em>, because "NumPy is optimised" is not an answer — it is a way of not having one.</p>
+
+<p>Every value in a Python list is a full heap object carrying a type pointer and a reference count, and the list holds pointers to them. Adding two of them means following a pointer, checking a type, unboxing a number, adding, then allocating a new object for the result. NumPy stores the raw numbers side by side in one block of memory and pushes the loop into compiled C, where one instruction can operate on several values at once.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 320" role="img" aria-label="A Python list holds pointers to three separately allocated float objects, each carrying a type and reference count; a NumPy array holds the same three numbers side by side in one contiguous block with no per-element overhead.">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <text x="0" y="16" class="head">A Python list of three floats</text>
+
+  <rect x="0"   y="24" width="56" height="30" rx="4" class="box"></rect>
+  <rect x="60"  y="24" width="56" height="30" rx="4" class="box"></rect>
+  <rect x="120" y="24" width="56" height="30" rx="4" class="box"></rect>
+  <text x="28"  y="44" class="lbl" text-anchor="middle">ptr</text>
+  <text x="88"  y="44" class="lbl" text-anchor="middle">ptr</text>
+  <text x="148" y="44" class="lbl" text-anchor="middle">ptr</text>
+  <text x="188" y="44" class="lbl-sm">the list: three pointers</text>
+
+  <path d="M 28 56 L 22 96"   class="conn" marker-end="url(#ar)"></path>
+  <path d="M 88 56 L 152 88"  class="conn" marker-end="url(#ar)"></path>
+  <path d="M 148 56 L 286 102" class="conn" marker-end="url(#ar)"></path>
+
+  <rect x="0"   y="100" width="106" height="46" rx="4" class="box"></rect>
+  <rect x="126" y="92"  width="106" height="46" rx="4" class="box"></rect>
+  <rect x="256" y="106" width="106" height="46" rx="4" class="box"></rect>
+  <text x="10"  y="120" class="lbl">float 1.0</text>
+  <text x="136" y="112" class="lbl">float 2.0</text>
+  <text x="266" y="126" class="lbl">float 3.0</text>
+  <text x="10"  y="136" class="lbl-sm">+ type, refcount</text>
+  <text x="136" y="128" class="lbl-sm">+ type, refcount</text>
+  <text x="266" y="142" class="lbl-sm">+ type, refcount</text>
+
+  <text x="404" y="30"  class="head">Cost, per element</text>
+  <text x="404" y="52"  class="lbl-sm">1 · follow the pointer</text>
+  <text x="404" y="70"  class="lbl-sm">2 · check the type</text>
+  <text x="404" y="88"  class="lbl-sm">3 · unbox the value</text>
+  <text x="404" y="106" class="lbl-sm">4 · add, then allocate</text>
+
+  <line x1="0" y1="180" x2="620" y2="180" class="sep"></line>
+
+  <text x="0" y="208" class="head">The same three numbers, as a NumPy array</text>
+
+  <rect x="0"   y="220" width="104" height="44" class="box-hl"></rect>
+  <rect x="104" y="220" width="104" height="44" class="box-hl"></rect>
+  <rect x="208" y="220" width="104" height="44" class="box-hl"></rect>
+  <text x="52"  y="247" class="lbl-hl" text-anchor="middle">1.0</text>
+  <text x="156" y="247" class="lbl-hl" text-anchor="middle">2.0</text>
+  <text x="260" y="247" class="lbl-hl" text-anchor="middle">3.0</text>
+
+  <line x1="0" y1="278" x2="312" y2="278" class="conn-hl"></line>
+  <line x1="0" y1="273" x2="0" y2="283" class="conn-hl"></line>
+  <line x1="312" y1="273" x2="312" y2="283" class="conn-hl"></line>
+  <text x="156" y="298" class="lbl-sm" text-anchor="middle">24 bytes, one contiguous block, no pointers</text>
+
+  <text x="404" y="226" class="head">Cost, per element</text>
+  <text x="404" y="250" class="lbl-hl">none</text>
+  <text x="404" y="272" class="lbl-sm">one instruction covers</text>
+  <text x="404" y="290" class="lbl-sm">many values at once</text>
+</svg>
+<figcaption>The speed difference is not tuning — it is layout. A Python list is a directory of pointers to scattered objects, so every arithmetic operation pays four costs per element. A NumPy array is the numbers themselves, adjacent in memory, which is the arrangement a CPU's vector instructions require.</figcaption>
+</figure>
+
+<div class="codeblock">
+<div class="cap">The vectorised mental model</div>
+<pre><code class="language-python">import numpy as np
+
+a = np.array([1.0, 2.0, 3.0])
+b = np.array([4.0, 5.0, 6.0])
+
+a + b        # array([5., 7., 9.])   elementwise, no loop
+a * b        # array([4., 10., 18.]) elementwise multiply, NOT matrix multiply
+a * 2        # array([2., 4., 6.])   the scalar broadcasts across the array
+a.sum()      # 6.0
+a.shape      # (3,)  — check this when confused. always.</code></pre>
+</div>
+
+<p>The mental shift, and it is a real one coming from imperative code: <strong>stop thinking "for each element, do X". Start thinking "apply X to the whole array".</strong></p>
+
+<div class="callout">
+  <span class="lbl">The most common beginner mistake</span>
+  <p>Writing a Python <code>for</code> loop over a NumPy array costs roughly 200× in speed. The tests in this lesson reject it outright. Once all seven pass, run the benchmark and see the gap on your own machine.</p>
+</div>
+
+</div>

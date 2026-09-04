@@ -1,7 +1,7 @@
 <!--
   GENERATED FILE — do not edit.
 
-  Source:  site/src/          (styles.css, app.js, widgets.js, lessons/*.html)
+  Source:  site/src/          (styles.css, app.js, widgets.js, lessons/<id>/*.html)
   Data:    lessons/curriculum.json
   Rebuild: python site/build.py
 -->
@@ -350,6 +350,49 @@ code, kbd { font-family: var(--f-mono); }
 .lesson-head h1 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.02em; }
 .lesson-head .lede { font-size: 17px; color: var(--ink-2); margin-top: 12px; max-width: 60ch; }
 
+/* lesson tabs */
+.tabs {
+  display: flex; gap: 2px; margin-bottom: 30px;
+  border-bottom: 1px solid var(--rule);
+  position: sticky; top: var(--topbar-h); z-index: 20;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  appearance: none; background: none; border: 0; cursor: pointer;
+  font-family: var(--f-body); font-size: 14px; font-weight: 500;
+  color: var(--ink-3); padding: 12px 15px 11px; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.tab:hover { color: var(--ink); }
+.tab.on { color: var(--accent-ink); border-bottom-color: var(--accent); }
+
+.panel[hidden] { display: none !important; }
+
+.prose .lead {
+  font-size: 18.5px; line-height: 1.6; color: var(--ink-2);
+  max-width: 62ch; margin-bottom: 1.4em;
+}
+.prose > .lead:first-child { margin-top: 0; }
+
+/* learning outcomes */
+.outcomes {
+  display: grid; gap: 1px; margin-top: 1.6em;
+  background: var(--rule); border: 1px solid var(--rule);
+  border-radius: 11px; overflow: hidden;
+}
+.oc { display: flex; gap: 16px; padding: 16px 20px; background: var(--surface); align-items: flex-start; }
+.oc-n {
+  font-family: var(--f-mono); font-size: 11.5px; font-weight: 600;
+  color: var(--accent); flex: none; width: 24px; padding-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.oc h3 { font-family: var(--f-body); font-size: 14.5px; font-weight: 600; margin: 0; }
+.oc p { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.55; max-width: 62ch; }
+
 .prose { font-size: 16.5px; line-height: 1.72; color: var(--ink); }
 .prose > * + * { margin-top: 1.1em; }
 .prose h2 { font-size: 24px; margin-top: 2.2em; padding-top: .9em; border-top: 1px solid var(--rule); letter-spacing: -.015em; }
@@ -613,11 +656,119 @@ figcaption {
 
 <script type="application/json" id="curriculum-data">
 
-{"phases":[{"id":"p0","number":0,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"0.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available"},{"id":"0.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned"},{"id":"0.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned"},{"id":"0.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned"},{"id":"0.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned"},{"id":"0.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned"},{"id":"0.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned"},{"id":"0.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned"},{"id":"0.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned"},{"id":"0.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned"},{"id":"0.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned"},{"id":"0.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned"},{"id":"0.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned"}]},{"id":"p1","number":1,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"1.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned"},{"id":"1.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned"},{"id":"1.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned"},{"id":"1.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned"},{"id":"1.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned"},{"id":"1.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned"},{"id":"1.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned"},{"id":"1.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned"},{"id":"1.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned"},{"id":"1.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned"},{"id":"1.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned"},{"id":"1.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 0 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned"},{"id":"1.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned"}]},{"id":"p2","number":2,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"2.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned"},{"id":"2.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned"},{"id":"2.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned"},{"id":"2.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned"},{"id":"2.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned"},{"id":"2.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned"},{"id":"2.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned"},{"id":"2.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned"},{"id":"2.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned"},{"id":"2.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned"},{"id":"2.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned"},{"id":"2.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned"},{"id":"2.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned"},{"id":"2.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned"}]},{"id":"p3","number":3,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"3.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned"},{"id":"3.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned"},{"id":"3.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned"},{"id":"3.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned"},{"id":"3.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned"},{"id":"3.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned"},{"id":"3.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned"},{"id":"3.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned"},{"id":"3.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned"},{"id":"3.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 0.1 comes back around.","status":"planned"},{"id":"3.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned"},{"id":"3.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned"}]},{"id":"p4","number":4,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"4.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned"},{"id":"4.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned"},{"id":"4.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned"}]}]}
+{"phases":[{"id":"p0","number":0,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"0.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available"},{"id":"0.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned"},{"id":"0.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned"},{"id":"0.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned"},{"id":"0.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned"},{"id":"0.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned"},{"id":"0.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned"},{"id":"0.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned"},{"id":"0.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned"},{"id":"0.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned"},{"id":"0.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned"},{"id":"0.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned"},{"id":"0.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned"}]},{"id":"p1","number":1,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"1.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned"},{"id":"1.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned"},{"id":"1.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned"},{"id":"1.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned"},{"id":"1.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned"},{"id":"1.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned"},{"id":"1.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned"},{"id":"1.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned"},{"id":"1.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned"},{"id":"1.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned"},{"id":"1.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned"},{"id":"1.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 0 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned"},{"id":"1.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned"}]},{"id":"p2","number":2,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"2.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned"},{"id":"2.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned"},{"id":"2.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned"},{"id":"2.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned"},{"id":"2.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned"},{"id":"2.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned"},{"id":"2.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned"},{"id":"2.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned"},{"id":"2.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned"},{"id":"2.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned"},{"id":"2.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned"},{"id":"2.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned"},{"id":"2.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned"},{"id":"2.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned"}]},{"id":"p3","number":3,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"3.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned"},{"id":"3.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned"},{"id":"3.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned"},{"id":"3.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned"},{"id":"3.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned"},{"id":"3.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned"},{"id":"3.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned"},{"id":"3.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned"},{"id":"3.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned"},{"id":"3.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 0.1 comes back around.","status":"planned"},{"id":"3.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned"},{"id":"3.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned"}]},{"id":"p4","number":4,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"4.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned"},{"id":"4.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned"},{"id":"4.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned"}]}],"sections":{"0.1":["overview","lesson","exercises","walkthrough","resources"]}}
 
 </script>
 
-<template id="lesson-0.1">
+<template id="lesson-0.1-overview">
+<div class="prose">
+
+<p class="lead">Machine learning begins with one move: turning things into lists of numbers so that "similar" becomes arithmetic. This lesson covers that move, and the single operation everything else in the field is built from.</p>
+
+<div class="outcomes">
+  <div class="oc">
+    <div class="oc-n">01</div>
+    <div>
+      <h3>Represent anything as a vector</h3>
+      <p>Why a list of numbers can stand in for a house, a customer or a word, and what "4096-dimensional" actually means.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">02</div>
+    <div>
+      <h3>Compute and read a dot product</h3>
+      <p>Implement it by hand, then vectorised — and explain what a result of zero tells you about two things.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">03</div>
+    <div>
+      <h3>Measure similarity properly</h3>
+      <p>Find the flaw in the raw dot product, fix it with cosine similarity, and understand why the fix works.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">04</div>
+    <div>
+      <h3>Build a working search engine</h3>
+      <p>Rank a small library by meaning — the same mechanism behind semantic search and every RAG system.</p>
+    </div>
+  </div>
+  <div class="oc">
+    <div class="oc-n">05</div>
+    <div>
+      <h3>Think in arrays, not loops</h3>
+      <p>The mental shift NumPy demands, and the memory-layout reason it is roughly 200× faster.</p>
+    </div>
+  </div>
+</div>
+
+<h2>Before you start</h2>
+
+<div class="tablewrap">
+<table>
+  <tbody>
+    <tr><th>Prerequisites</th><td>None. This is the first lesson. You can already program in some language; no maths is assumed.</td></tr>
+    <tr><th>You will need</th><td>Python 3.10+, the repository cloned, and <code>pip install -e ".[dev]"</code> run once.</td></tr>
+    <tr><th>Exercises</th><td>Seven, plus one optional stretch. The tests check <em>how</em> you solved it, not only the answer.</td></tr>
+    <tr><th>Maths introduced</th><td>Vectors, the dot product, magnitude, and cosine. All built from arithmetic — no calculus, no notation you have not met.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>How to work through it</h2>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <h3>Lesson</h3>
+      <p>Read it, and play with the two interactive demos. Dragging the vectors until the dot product reads zero teaches something prose cannot.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <h3>Exercises</h3>
+      <p>Seven functions in your own repository. This is the part that actually teaches you — everything else is scaffolding for it.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <h3>Walkthrough</h3>
+      <p>Visual explanations of how each exercise works. Deliberately a separate tab: read it <em>after</em> you have attempted them, not before.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <h3>Resources</h3>
+      <p>Four curated videos, ordered, with a note on which to watch before the exercises and which only after.</p>
+    </div>
+  </div>
+</div>
+
+<h2>You are done when</h2>
+
+<p>Not when the tests pass — when you can answer these without looking anything up:</p>
+
+<ul>
+  <li>What does a dot product of zero tell you about two vectors?</li>
+  <li>Why divide by the magnitudes to get cosine similarity — what does it fix?</li>
+  <li>Why is a NumPy operation so much faster than the equivalent Python loop?</li>
+  <li>Where does a neuron use the function you wrote today?</li>
+</ul>
+
+<div class="callout">
+  <span class="lbl">One rule for this whole curriculum</span>
+  <p>Nobody hands you the answer — not this page, and not whatever model you ask for help. Recognising correct code is a different skill from producing it, and only one of them transfers. Ask for a smaller sub-problem when you are stuck. Ask why your working code is bad. Do not ask for the solution.</p>
+</div>
+
+</div>
+</template>
+
+<template id="lesson-0.1-lesson">
 <div class="prose">
 
 <h2>Why we start here</h2>
@@ -861,12 +1012,47 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
   <p>Writing a Python <code>for</code> loop over a NumPy array costs roughly 200× in speed. The tests in this lesson reject it outright. Once all seven pass, run the benchmark and see the gap on your own machine.</p>
 </div>
 
-<h2>Your work</h2>
+</div>
+</template>
 
-<p>Seven functions, in <code>lessons/00-foundations/01-vectors/exercises.py</code>. The tests check <em>how</em> you solved it, not only the answer: exercises 1 and 3 reject NumPy so you implement the mechanism yourself, and exercises 2 and 4–7 reject <code>for</code> loops so you learn to think in arrays.</p>
+<template id="lesson-0.1-exercises">
+<div class="prose">
+
+<p class="lead">Seven functions in <code>lessons/00-foundations/01-vectors/exercises.py</code>. They come in pairs: each does the same maths twice, once by hand so you own the mechanism, once vectorised so you can actually use it.</p>
 
 <div class="codeblock">
-<div class="cap">exercises.py — the file you edit</div>
+<div class="cap">run until all seven pass</div>
+<pre><code>progress 0.1</code></pre>
+</div>
+
+<h2>The seven</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Function</th><th>What it asks</th><th>Constraint</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><code>dot_loop</code></td><td>Multiply two lists pairwise and accumulate. Raise <code>ValueError</code> if the lengths differ.</td><td>Plain Python. No NumPy, no <code>sum()</code>.</td></tr>
+    <tr><td class="num">2</td><td><code>dot_numpy</code></td><td>The same result, vectorised.</td><td>NumPy. No <code>for</code> loop.</td></tr>
+    <tr><td class="num">3</td><td><code>magnitude_loop</code></td><td>The length of a vector: square, sum, square-root.</td><td>Plain Python. <code>sum()</code> allowed here.</td></tr>
+    <tr><td class="num">4</td><td><code>magnitude</code></td><td>The same, vectorised.</td><td>NumPy. No <code>for</code> loop.</td></tr>
+    <tr><td class="num">5</td><td><code>normalise</code></td><td>Same direction, length exactly 1. Raise <code>ValueError</code> on the zero vector.</td><td>NumPy. No <code>for</code> loop.</td></tr>
+    <tr><td class="num">6</td><td><code>cosine_similarity</code></td><td>Dot product divided by both magnitudes. Answers "do these point the same way?"</td><td>NumPy. No <code>for</code> loop.</td></tr>
+    <tr><td class="num">7</td><td><code>most_similar</code></td><td>Return the name of the library item closest to a query.</td><td>Reuse exercise 6.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <span class="lbl">The constraints are the lesson</span>
+  <p>The tests inspect your source, not just your return value. Exercises 1 and 3 reject NumPy because you are meant to build the mechanism before you are allowed to call it. Exercises 2 and 4–7 reject <code>for</code> loops because writing a Python loop over a NumPy array is the most common beginner mistake in this field, and it costs roughly 200× in speed.</p>
+</div>
+
+<h2>What the file looks like</h2>
+
+<p>Every function arrives as a stub. The docstring is the specification — read it as the requirement, not as a hint.</p>
+
+<div class="codeblock">
+<div class="cap">exercises.py — the only file you edit</div>
 <pre><code class="language-python">def dot_loop(a: list[float], b: list[float]) -> float:
     """EXERCISE 1 — the dot product, by hand.
 
@@ -876,31 +1062,42 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
     Plain Python only. Raise ValueError if the lengths differ.
     """
-    raise NotImplementedError("exercise 1")
-
-
-def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
-    """EXERCISE 6 — cosine similarity.
-
-    The dot product of two vectors, divided by the product of their magnitudes.
-    Produces a number from -1 to 1 answering: "do these two vectors point the
-    same way?"
-
-    This one function is how every semantic search engine, every RAG system and
-    every recommendation engine you have used decides two things are similar.
-    You are about to write it in one line.
-    """
-    raise NotImplementedError("exercise 6")</code></pre>
+    raise NotImplementedError("exercise 1")</code></pre>
 </div>
 
-<p>Run this until all seven pass:</p>
+<p>The runner reports each exercise as <span class="mono">PASS</span>, <span class="mono">FAIL</span> or <span class="mono">TODO</span>. A stub you have not touched shows as TODO rather than a failure — an unwritten exercise is not a bug.</p>
+
+<h2>Then run the benchmark</h2>
+
+<p>Once all seven pass, measure the gap on your own machine:</p>
 
 <div class="codeblock">
 <div class="cap">terminal</div>
-<pre><code>progress 0.1</code></pre>
+<pre><code>python lessons/00-foundations/01-vectors/exercises.py</code></pre>
 </div>
 
-<p>Exercise 7 is the search demo above, in about two lines. It is a toy only in its scale — swap the hand-written vectors for real embeddings and that function is a production retrieval system.</p>
+<p>It times your <code>dot_loop</code> against your <code>dot_numpy</code> over two million elements. Expect somewhere around 100–200×. That single number is why machine learning is written in NumPy and not in loops, and a GPU widens it by roughly another 100×.</p>
+
+<h2>Optional: the stretch</h2>
+
+<p>Exercise 7 is the <em>definition</em> of similarity search — one cosine per item. It is not the <em>implementation</em> a real system uses. <code>stretch.py</code> in the same folder asks for that version: stack the whole library into a matrix and score every row in a single operation, with no loop and no comprehension anywhere.</p>
+
+<div class="codeblock">
+<div class="cap">terminal</div>
+<pre><code>python lessons/00-foundations/01-vectors/stretch.py</code></pre>
+</div>
+
+<p>It is self-contained and not wired into <code>progress</code>, so it cannot affect your score. It forces you into <code>axis=</code> and <code>keepdims=</code> — where nearly everyone's first silent shape bug lives — and it carries a real design decision in its comments: whether to normalise the library once at write time or divide on every query. That is the trade-off every vector database actually makes.</p>
+
+<h2>Finally, write your notes</h2>
+
+<p><code>notes.md</code> in the lesson folder holds seven questions. Answer them in your own words, not copied from anywhere. Rewriting an explanation is the cheapest test of understanding there is, and the "things I got wrong" section at the bottom will be the most valuable thing in your repository six months from now.</p>
+
+</div>
+</template>
+
+<template id="lesson-0.1-walkthrough">
+<div class="prose">
 
 <h2>Exercise walkthrough</h2>
 
@@ -1095,6 +1292,12 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 <figcaption>Your dict comprehension calls cosine similarity once per item. Stacking the library into a matrix scores everything in a single operation — identical arithmetic, one call. This is why searching ten million documents is even possible, and it is what lessons 0.3 and 0.4 are building toward. There is an optional <code>stretch.py</code> in the lesson folder if you want to write it now.</figcaption>
 </figure>
 
+</div>
+</template>
+
+<template id="lesson-0.1-resources">
+<div class="prose">
+
 <h2>What to watch</h2>
 
 <p>Ordered. Do not binge the playlist — one idea, then code it.</p>
@@ -1132,17 +1335,6 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
   <p><strong>Watching is not learning</strong>, and neither is dragging the arrows above. Both produce a powerful sensation of understanding, because the animation performs the hard cognitive work on your behalf. That sensation is not the same as being able to reproduce the idea, and the gap between them is where most self-taught attempts die — people watch fifty hours of excellent video, feel educated, and cannot write twenty lines of NumPy.</p>
   <p>The test after each video: close the tab and explain the idea out loud without the animation. Budget roughly 20% of your time on video and demos, and 80% on the exercises.</p>
 </div>
-
-<h2>Check yourself</h2>
-
-<p>You have finished this lesson when you can answer these without looking anything up:</p>
-
-<ul>
-  <li>What does a dot product of zero tell you about two vectors?</li>
-  <li>Why divide by the magnitudes to get cosine similarity — what does it fix?</li>
-  <li>Why is a NumPy operation so much faster than the equivalent Python loop?</li>
-  <li>Where does a neuron use the function you wrote today?</li>
-</ul>
 
 </div>
 </template>
@@ -1683,6 +1875,16 @@ var Widgets = (function () {
   var done = loadDone();
   var view = { kind: "overview", id: null };
   var collapsed = {};
+  var activeTab = {};
+
+  var SECTIONS = data.sections || {};
+  var TAB_LABELS = {
+    overview: "Overview",
+    lesson: "Lesson",
+    exercises: "Exercises",
+    walkthrough: "Walkthrough",
+    resources: "Resources"
+  };
 
   /* ---------- helpers ---------- */
   function el(tag, cls, text) {
@@ -1950,11 +2152,49 @@ var Widgets = (function () {
     head.appendChild(el("p", "lede", l.summary));
     wrap.appendChild(head);
 
-    var tpl = document.getElementById("lesson-" + l.id);
-    if (tpl) {
-      wrap.appendChild(tpl.content.cloneNode(true));
-      highlight(wrap);
-      if (typeof Widgets !== "undefined") Widgets.mount(wrap);
+    var names = SECTIONS[l.id] || [];
+    if (names.length) {
+      if (activeTab[l.id] == null || activeTab[l.id] >= names.length) activeTab[l.id] = 0;
+
+      var tabbar = el("div", "tabs");
+      tabbar.setAttribute("role", "tablist");
+      var panels = el("div", "panels");
+      var entries = [];
+
+      names.forEach(function (name, i) {
+        var tpl = document.getElementById("lesson-" + l.id + "-" + name);
+        if (!tpl) return;
+
+        var panel = el("section", "panel");
+        panel.setAttribute("role", "tabpanel");
+        panel.appendChild(tpl.content.cloneNode(true));
+        panel.hidden = i !== activeTab[l.id];
+        panels.appendChild(panel);
+
+        var tb = button("tab", TAB_LABELS[name] || name, function () { show(i); });
+        tb.setAttribute("role", "tab");
+        tb.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
+        tabbar.appendChild(tb);
+        entries.push({ btn: tb, panel: panel });
+      });
+
+      /* Switching tabs only toggles visibility — no re-render, so the vector lab
+         keeps whatever position you dragged it to. */
+      function show(i) {
+        activeTab[l.id] = i;
+        entries.forEach(function (e, j) {
+          e.panel.hidden = j !== i;
+          e.btn.classList.toggle("on", j === i);
+          e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
+        });
+        wrap.scrollIntoView({ block: "start" });
+      }
+      entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
+
+      wrap.appendChild(tabbar);
+      wrap.appendChild(panels);
+      highlight(panels);
+      if (typeof Widgets !== "undefined") Widgets.mount(panels);
 
       var mark = el("div", "nextup");
       mark.style.marginTop = "44px";

@@ -49,9 +49,27 @@ site/src/shell.html      topbar and layout skeleton
 site/src/styles.css      design tokens, layout, widget styles
 site/src/app.js          routing, progress, the curriculum rail, the overview
 site/src/widgets.js      interactive lesson demos
-site/src/lessons/*.html  one file per lesson, named for its id
+site/src/lessons/<id>/   one directory per lesson, one file per tab
 site/build.py            assembles all of the above + lessons/curriculum.json
 ```
+
+Each lesson is authored as a directory of sections, and each section becomes a tab:
+
+```
+site/src/lessons/0.1/overview.html      what the lesson is, outcomes, prerequisites
+site/src/lessons/0.1/lesson.html        the theory, with interactive demos
+site/src/lessons/0.1/exercises.html     what each exercise asks, and how to run them
+site/src/lessons/0.1/walkthrough.html   visual explanations, read after attempting
+site/src/lessons/0.1/resources.html     curated videos and reading
+```
+
+All five are optional — a lesson with no stretch material simply has no walkthrough
+tab. The order above is fixed in `SECTIONS` in `build.py`, and any other filename in
+a lesson directory fails the build rather than being silently ignored.
+
+Keep the split honest. `walkthrough.html` exists so that explanations of how the
+exercises work sit behind a tab the reader has to choose, rather than being scrolled
+past before they have attempted anything. Do not move that material into `lesson.html`.
 
 ```bash
 python site/build.py
