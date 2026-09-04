@@ -12,7 +12,9 @@ This is a learning repository first and a project second. That shapes what is us
 
 ## Please do not send
 
-- **Solutions to the exercises.** The stubs are stubs deliberately. A PR that fills them in defeats the point of the repository for everyone who clones it after you.
+- **Solutions in the exercise files.** `exercises.py` ships as stubs, deliberately, and stays that way. A PR that fills them in defeats the point of the repository for everyone who clones it after you.
+
+  This is not a contradiction with the site, which *does* carry official solutions — collapsed, one click each, behind a warning that explains why opening one early does not work. The distinction is consent: a reader who expands a `<details>` has chosen to see the answer, whereas a learner who clones a repo with the stubs pre-filled never gets the choice. Keep solutions in `site/src/lessons/<id>/exercises.html` and out of `lessons/`.
 - **Whole new phases** without discussing it in an issue first. The ordering is deliberate — each lesson assumes exactly what came before and nothing more.
 - **Framework rewrites.** "This would be shorter with scikit-learn" is true and beside the point in Phase 0 and 1. We use the library *after* building the thing by hand.
 
