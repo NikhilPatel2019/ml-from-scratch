@@ -625,8 +625,8 @@
 
   /* The design's command control: the text and the copy affordance are one
      chip, so the whole thing reads as a thing you take. */
-  function commandChip(cmd) {
-    var chip = el("button", "cmdchip");
+  function commandChip(cmd, cls) {
+    var chip = el("button", cls || "cmdchip");
     chip.type = "button";
     var code = el("span", null, cmd);
     chip.appendChild(code);
@@ -993,108 +993,97 @@
     return wrap;
   }
 
-  /* ---------- practice: every exercise in one view ---------- */
+  /* ---------- practice — ported from the design canvas ---------- */
   var practiceFilter = "all";
 
   function buildPractice() {
     var wrap = el("div", "wrap");
     var rows = allExercises();
-    var totals = testTotals();
-
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow",
-      rows.length + " exercises across " + writtenLessons().length + " written lessons"));
-    hero.appendChild(el("h1", null, "Every exercise, and what the tests say"));
-    hero.appendChild(el("p", "lede",
-      "The exercises are the work. This is all of them in one place, without having to " +
-      "remember which lesson they belong to."));
-    wrap.appendChild(hero);
-
-    if (!progressData) {
-      var note = el("div", "callout");
-      note.appendChild(el("span", "lbl", "No results yet"));
-      note.appendChild(el("p", null,
-        "Pass and fail come from the test runner, never from this page. Run " +
-        "progress --json in the repository and reload; until then every exercise " +
-        "below reads as not run."));
-      var cmd = el("div", "codeblock");
-      cmd.appendChild(el("pre", null, "progress --json"));
-      note.appendChild(cmd);
-      note.appendChild(pasteBox());
-      wrap.appendChild(note);
-    } else {
-      var bar = el("div", "nextup");
-      var b = el("div", "body");
-      b.appendChild(el("div", "t", totals.passed + " of " + totals.total + " tests passing"));
-      b.appendChild(el("div", "s", "From the runner at " +
-        String(progressData.generated || "").replace("T", " ").replace("+00:00", " UTC")));
-      bar.appendChild(b);
-      bar.appendChild(button("btn ghost", "Forget results", function () {
-        try { localStorage.removeItem(PROG_KEY); } catch (e) {}
-        progressData = null;
-        render();
-      }));
-      wrap.appendChild(bar);
-
-      var ctrls = el("div", "ctrls");
-      ctrls.style.marginTop = "20px";
-      [["all", "all"], ["fail", "failing"], ["not_run", "not run"], ["pass", "passing"]]
-        .forEach(function (f) {
-          ctrls.appendChild(button("pill" + (practiceFilter === f[0] ? " on" : ""), f[1],
-            function () { practiceFilter = f[0]; render(); }));
-        });
-      wrap.appendChild(ctrls);
-    }
-
-    var shown = 0;
-    writtenLessons().forEach(function (l) {
-      if (!l.exercises || !l.exercises.length) return;
-
-      var visible = l.exercises.filter(function (e) {
-        if (practiceFilter === "all" || !progressData) return true;
-        var r = exerciseResult(l.id, e.name);
-        return (r ? r.status : "not_run") === practiceFilter;
-      });
-      if (!visible.length) return;
-      shown += visible.length;
-
-      var sec = el("div", "section");
-      var h = el("div", "practice-head");
-      h.appendChild(el("span", "lid", l.id));
-      h.appendChild(button("practice-lesson", l.title, function () { goLesson(l.id); }));
-      var lt = lessonTests(l.id);
-      h.appendChild(el("span", "practice-count", lt
-        ? lt.tests_passed + "/" + lt.tests_total + " passing"
-        : l.exercises.length + " exercises"));
-      sec.appendChild(h);
-
-      var list = el("div", "exrows");
-      visible.forEach(function (e) {
-        var r = exerciseResult(l.id, e.name);
-        var status = r ? r.status : "not_run";
-        var row = el("div", "exrow" + (e.optional ? " is-optional" : ""));
-        var mark = el("span", "exmark");
-        mark.setAttribute("data-status", status);
-        row.appendChild(mark);
-
-        var body = el("div", "exbody");
-        body.appendChild(el("div", "exname", e.name));
-        body.appendChild(el("div", "exsum", e.summary));
-        if (r && r.message) body.appendChild(el("div", "exmsg", r.message));
-        row.appendChild(body);
-
-        row.appendChild(el("span", "exstat is-" + status,
-          status === "pass" ? "pass" : status === "fail" ? "fail" : "not run"));
-        list.appendChild(row);
-      });
-      sec.appendChild(list);
-      wrap.appendChild(sec);
+    var open = rows.filter(function (r) {
+      return statusOf(r.lesson.id, r.ex.name) !== "pass";
     });
 
-    if (!shown && progressData) {
-      wrap.appendChild(el("div", "rail-empty", "Nothing matches that filter."));
+    wrap.appendChild(el("div", "hero-eyebrow", "Practice"));
+    wrap.appendChild(el("h1", "hero-h1", "Every exercise, and what the tests say"));
+    wrap.appendChild(el("p", "hero-lede",
+      "Across every written lesson. Status comes from the runner, so this and " +
+      "your repo cannot disagree."));
+
+    var filters = el("div", "filters");
+    [["all", "All", rows.length], ["open", "Not passing", open.length]]
+      .forEach(function (f) {
+        var b = button("filter" + (practiceFilter === f[0] ? " on" : ""), null,
+          function () { practiceFilter = f[0]; render(); });
+        b.appendChild(document.createTextNode(f[1] + " "));
+        b.appendChild(el("b", null, String(f[2])));
+        b.setAttribute("aria-pressed", practiceFilter === f[0] ? "true" : "false");
+        filters.appendChild(b);
+      });
+    var next = nextLesson();
+    filters.appendChild(commandChip("progress " + (next ? next.id : "--json"), "cmdchip plain"));
+    wrap.appendChild(filters);
+
+    var shown = practiceFilter === "open" ? open : rows;
+    var list = el("div", "exrows");
+    if (!shown.length) {
+      list.appendChild(el("div", "exempty", rows.length
+        ? "Every exercise is passing."
+        : "No exercises yet — no lesson has been written."));
     }
+    shown.forEach(function (r) {
+      var l = r.lesson, e = r.ex;
+      var status = statusOf(l.id, e.name);
+      var res = exerciseResult(l.id, e.name);
+      var row = el("div", "exrow");
+
+      var mark = el("span", "exmark",
+        status === "pass" ? "✓" : status === "fail" ? "✕" : "·");
+      mark.setAttribute("data-status", status);
+      mark.setAttribute("aria-hidden", "true");
+      row.appendChild(mark);
+
+      var body = el("div", "exbody");
+      var head = el("div", "exhead");
+      head.appendChild(el("code", "exname", e.name));
+      head.appendChild(el("span", "exwhere",
+        "lesson " + l.id + " · #" + (l.exercises.indexOf(e) + 1)));
+      if (e.optional) head.appendChild(el("span", "exopt", "optional"));
+      body.appendChild(head);
+      body.appendChild(el("span", "exsum", e.summary));
+      if (res && res.message) body.appendChild(el("span", "exmsg", res.message));
+      row.appendChild(body);
+
+      row.appendChild(el("span", "exstat is-" + status,
+        status === "pass" ? "passing" : status === "fail" ? "failing" : "not run"));
+
+      var bans = el("span", "exbans");
+      (e.forbids || []).forEach(function (b, i) {
+        if (i) bans.appendChild(el("br"));
+        bans.appendChild(document.createTextNode(b));
+      });
+      row.appendChild(bans);
+
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+
+    var note = el("p", "pane-note");
+    note.appendChild(document.createTextNode(
+      "The tests inspect your source, not just your return value. The last column " +
+      "is what each one actually forbids, read from the assertion that enforces it."));
+    if (!progressData) {
+      note.appendChild(el("br"));
+      note.appendChild(document.createTextNode("No results loaded yet — "));
+      note.appendChild(button("linkbtn", "Setup & environment", function () { go("setup"); }));
+      note.appendChild(document.createTextNode(" says how to run them."));
+    }
+    wrap.appendChild(note);
     return wrap;
+  }
+
+  function statusOf(lessonId, name) {
+    var r = exerciseResult(lessonId, name);
+    return r ? r.status : "not_run";
   }
 
   /* ---------- library ---------- */

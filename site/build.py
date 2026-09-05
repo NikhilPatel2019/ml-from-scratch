@@ -123,6 +123,38 @@ def section_headings(lesson_dir: Path, sections: list[str]) -> list[dict]:
     return out
 
 
+def test_constraints(lesson_dir: Path) -> dict[str, list[str]]:
+    """What each exercise forbids, read from the test that enforces it.
+
+    These tests check your source, not only your return value: exercise 1 fails
+    if "np." appears in it, exercise 2 fails if "for " does. Practice shows that
+    as a column, and the only honest source for it is the assertion itself — a
+    hand-kept list would drift the moment a test changed.
+    """
+    path = lesson_dir / "test_exercises.py"
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return {}
+
+    bans = [(r'"(?:np\.|numpy)" not in', "no numpy"),
+            (r'"for " not in', "no loops"),
+            (r'"sum\(" not in', "no sum()")]
+    out: dict[str, list[str]] = {}
+    for node in tree.body:
+        if not isinstance(node, ast.FunctionDef) or not node.name.startswith("test_"):
+            continue
+        body = ast.get_source_segment(text, node) or ""
+        found = [label for pattern, label in bans if re.search(pattern, body)]
+        if found:
+            # test_6_cosine_similarity -> cosine_similarity
+            out[re.sub(r"^test_\d+_", "", node.name)] = found
+    return out
+
+
 def lesson_exercises(lesson_dir: Path) -> list[dict]:
     """Function name + one-line summary for each exercise, read from the repo.
 
@@ -139,6 +171,7 @@ def lesson_exercises(lesson_dir: Path) -> list[dict]:
     except SyntaxError:
         return []                      # a half-written solution must not break the build
 
+    bans = test_constraints(lesson_dir)
     out = []
     for node in tree.body:
         if not isinstance(node, ast.FunctionDef) or node.name.startswith("_"):
@@ -148,7 +181,8 @@ def lesson_exercises(lesson_dir: Path) -> list[dict]:
         # "EXERCISE 1 — the dot product, by hand." -> "the dot product, by hand"
         summary = re.sub(r"^EXERCISE\s+\d+\s*[—-]\s*", "", first).rstrip(".")
         optional = node.name == "benchmark" or "stretch" in doc.lower()[:80]
-        out.append({"name": node.name, "summary": summary, "optional": optional})
+        out.append({"name": node.name, "summary": summary, "optional": optional,
+                    "forbids": bans.get(node.name, [])})
     return [e for e in out if e["name"] != "benchmark"]
 
 

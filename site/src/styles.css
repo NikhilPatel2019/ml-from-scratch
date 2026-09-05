@@ -342,14 +342,6 @@ code, kbd { font-family: var(--f-mono); }
 }
 .milestone-t { font-size: 14px; line-height: 1.5; color: var(--ink); }
 
-.nextup {
-  display: flex; gap: 16px; align-items: center; margin-top: 22px; padding: 16px 20px;
-  background: var(--accent-wash); border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
-  border-radius: 11px; flex-wrap: wrap;
-}
-.nextup .body { flex: 1; min-width: 200px; }
-.nextup .t { font-weight: 600; font-size: 15px; }
-.nextup .s { font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }
 
 .btn {
   appearance: none; border: 0; border-radius: 8px; background: var(--accent); color: var(--on-accent);
@@ -883,29 +875,66 @@ figcaption {
 .plesson-tag.done { background: var(--done-wash); color: var(--done); border-color: color-mix(in srgb, var(--done) 30%, transparent); }
 .phase-lede { line-height: 1.65; margin-top: 13px; max-width: 70ch; }
 
-/* practice */
-.practice-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--rule); }
-.practice-lesson {
-  background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--f-display);
-  font-size: 19px; font-weight: 600; color: var(--ink); flex: 1; text-align: left;
+/* ============================================================
+   practice — ported from the design canvas
+   ============================================================ */
+.filters { display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap; align-items: center; }
+.filter {
+  appearance: none; cursor: pointer; font-family: var(--f-mono); font-size: 11.5px;
+  color: var(--ink-2); background: var(--surface);
+  border: 1px solid var(--rule-firm); border-radius: 8px; padding: 8px 12px;
+  transition: color .15s, border-color .15s, background .15s;
 }
-.practice-lesson:hover { color: var(--accent-ink); }
-.practice-count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+.filter:hover { color: var(--ink); border-color: var(--ink-3); }
+.filter.on { background: var(--accent-wash); color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.filter b { font-weight: 600; }
+.cmdchip.plain {
+  margin-left: auto; font-size: 12px; padding: 8px 12px;
+  border-color: var(--rule-firm);
+}
+.cmdchip.plain .copylabel { font-size: 10px; }
 
-.exrows { display: grid; gap: 1px; margin-top: 16px; background: var(--rule);
-  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden; }
-.exrow { display: flex; align-items: center; gap: 14px; padding: 13px 18px; background: var(--surface); }
-.exmark {
-  width: 9px; height: 9px; flex: none; border-radius: 50%;
-  border: 1.5px solid var(--rule-firm); background: var(--surface);
+.exrows {
+  display: grid; gap: 1px; margin-top: 16px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden;
 }
+.exrow { display: flex; gap: 12px; padding: 13px 16px; background: var(--surface); align-items: flex-start; }
+.exmark {
+  flex: none; width: 16px; height: 16px; border-radius: 50%; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-mono); font-size: 10px; line-height: 1;
+  border: 1px solid var(--rule-firm); color: var(--ink-3);
+}
+.exmark[data-status="pass"] { background: var(--done-wash); border-color: color-mix(in srgb, var(--done) 40%, transparent); color: var(--done); }
+.exmark[data-status="fail"] { background: var(--danger-wash); border-color: color-mix(in srgb, var(--danger) 40%, transparent); color: var(--danger); }
+
 .exbody { flex: 1; min-width: 0; }
-.exname { font-family: var(--f-mono); font-size: 13.5px; font-weight: 500; color: var(--ink); }
-.exsum { font-size: 13px; color: var(--ink-2); margin-top: 2px; line-height: 1.45; }
+.exhead { display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+.exname { font-family: var(--f-mono); font-size: 13.5px; color: var(--ink); }
+.exwhere { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); }
+.exopt {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); background: var(--surface-2);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px;
+}
+.exsum { display: block; font-size: 13px; line-height: 1.5; color: var(--ink-3); margin-top: 3px; }
+.exmsg {
+  display: block; font-family: var(--f-mono); font-size: 11.5px; line-height: 1.5;
+  color: var(--danger); margin-top: 5px;
+}
 .exstat {
   font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
-  flex: none; font-variant-numeric: tabular-nums;
+  flex: none; text-align: right; width: 104px;
+}
+.exstat.is-pass { color: var(--done); }
+.exstat.is-fail { color: var(--danger); }
+.exbans {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  flex: none; width: 78px; text-align: right; line-height: 1.5;
+}
+.exempty {
+  padding: 26px 16px; background: var(--surface); text-align: center;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
 }
 
 /* library */
@@ -927,23 +956,6 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 /* ============================================================
    real test results (HANDOFF step 5)
    ============================================================ */
-.exmark[data-status="pass"]    { background: var(--done);   border-color: var(--done); }
-.exmark[data-status="fail"]    { background: var(--danger); border-color: var(--danger); }
-.exmark[data-status="not_run"] { background: var(--surface); border-color: var(--rule-firm); }
-
-.exstat.is-pass    { color: var(--done); font-weight: 500; }
-.exstat.is-fail    { color: var(--danger); font-weight: 500; }
-.exstat.is-not_run { color: var(--ink-3); }
-
-.exmsg {
-  font-family: var(--f-mono); font-size: 12px; color: var(--danger);
-  margin-top: 5px; line-height: 1.45; word-break: break-word;
-}
-.exrow.is-optional { opacity: .7; }
-.exrow.is-optional .exname::after {
-  content: "optional"; margin-left: 8px; font-size: 10px; letter-spacing: .05em;
-  text-transform: uppercase; color: var(--ink-3); font-weight: 400;
-}
 
 .pastebox {
   width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 8px;
