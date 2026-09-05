@@ -757,3 +757,86 @@ figcaption {
 .pcard.is-planned { cursor: default; }
 .pcard.is-planned:hover { border-color: var(--rule); transform: none; }
 .crumb-static { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); }
+
+
+/* ============================================================
+   four areas (HANDOFF step 2)
+   ============================================================ */
+.areas { display: flex; flex-direction: column; gap: 1px; padding-bottom: 14px; }
+.area {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; background: none; border: 0; cursor: pointer; text-align: left;
+  padding: 9px 10px; border-radius: 8px; font-family: inherit;
+  color: var(--ink-2); transition: background .15s, color .15s;
+}
+.area:hover { background: var(--surface-2); color: var(--ink); }
+.area.current { background: var(--accent-wash); color: var(--accent-ink); }
+.area-label { font-size: 14px; font-weight: 600; }
+.area-meta {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.area.current .area-meta { color: var(--accent-ink); }
+
+/* phase page */
+.assumes {
+  margin-top: 1.4em; padding: 14px 18px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--rule);
+}
+.assumes p { margin: 5px 0 0; font-size: 14.5px; color: var(--ink-2); max-width: 64ch; }
+
+.phase-lessons { display: grid; gap: 1px; margin-top: 20px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden; }
+.plesson {
+  display: block; width: 100%; text-align: left; font-family: inherit;
+  background: var(--surface); border: 0; padding: 15px 20px; cursor: pointer;
+  transition: background .15s;
+}
+.plesson:hover { background: var(--surface-2); }
+.plesson.is-planned { cursor: default; }
+.plesson.is-planned:hover { background: var(--surface); }
+.plesson-top { display: flex; align-items: baseline; gap: 10px; }
+.plesson-title { font-size: 15px; font-weight: 600; color: var(--ink); flex: 1; min-width: 0; }
+.plesson.is-planned .plesson-title { color: var(--ink-2); font-weight: 500; }
+.plesson-sum { margin: 5px 0 0 36px; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; max-width: 68ch; }
+
+/* practice */
+.practice-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule); }
+.practice-lesson {
+  background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--f-display);
+  font-size: 19px; font-weight: 600; color: var(--ink); flex: 1; text-align: left;
+}
+.practice-lesson:hover { color: var(--accent-ink); }
+.practice-count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+
+.exrows { display: grid; gap: 1px; margin-top: 16px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden; }
+.exrow { display: flex; align-items: center; gap: 14px; padding: 13px 18px; background: var(--surface); }
+.exmark {
+  width: 9px; height: 9px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--rule-firm); background: var(--surface);
+}
+.exbody { flex: 1; min-width: 0; }
+.exname { font-family: var(--f-mono); font-size: 13.5px; font-weight: 500; color: var(--ink); }
+.exsum { font-size: 13px; color: var(--ink-2); margin-top: 2px; line-height: 1.45; }
+.exstat {
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  flex: none; font-variant-numeric: tabular-nums;
+}
+
+/* library */
+.libitems { display: grid; gap: 1px; margin-top: 22px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden; }
+.libitem { background: var(--surface); padding: 15px 20px; }
+.libtop { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap; }
+.libtitle { font-size: 15px; font-weight: 500; color: var(--ink); text-decoration: none; flex: 1; min-width: 0; }
+.libtitle:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; }
+.libtags { display: flex; gap: 6px; flex-wrap: wrap; margin: 9px 0 0 0; }
+.libtag {
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
+  background: var(--surface-2); border: 1px solid var(--rule); border-radius: 5px;
+  padding: 3px 8px; cursor: default;
+}
+button.libtag { cursor: pointer; }
+button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }

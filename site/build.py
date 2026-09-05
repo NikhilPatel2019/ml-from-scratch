@@ -26,7 +26,9 @@ what lessons exist.
 
 from __future__ import annotations
 
+import ast
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -98,6 +100,35 @@ def lesson_templates() -> tuple[str, dict[str, list[str]]]:
     return "\n\n".join(blocks), sections
 
 
+def lesson_exercises(lesson_dir: Path) -> list[dict]:
+    """Function name + one-line summary for each exercise, read from the repo.
+
+    Practice needs to list every exercise across every lesson, and the authority
+    on what the exercises are is exercises.py itself — not a list anyone has to
+    keep in step with it. Parsed with ast rather than imported, so the build
+    never executes lesson code.
+    """
+    path = lesson_dir / "exercises.py"
+    if not path.exists():
+        return []
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except SyntaxError:
+        return []                      # a half-written solution must not break the build
+
+    out = []
+    for node in tree.body:
+        if not isinstance(node, ast.FunctionDef) or node.name.startswith("_"):
+            continue
+        doc = ast.get_docstring(node) or ""
+        first = doc.strip().splitlines()[0] if doc.strip() else node.name
+        # "EXERCISE 1 — the dot product, by hand." -> "the dot product, by hand"
+        summary = re.sub(r"^EXERCISE\s+\d+\s*[—-]\s*", "", first).rstrip(".")
+        optional = node.name == "benchmark" or "stretch" in doc.lower()[:80]
+        out.append({"name": node.name, "summary": summary, "optional": optional})
+    return [e for e in out if e["name"] != "benchmark"]
+
+
 def main() -> int:
     curriculum = json.loads(
         (ROOT / "lessons" / "curriculum.json").read_text(encoding="utf-8")
@@ -124,7 +155,17 @@ def main() -> int:
         ]
     }
 
+    # Practice lists exercises from every written lesson, so they travel with the
+    # curriculum data rather than being restated in the page.
+    for phase, raw_phase in zip(trimmed["phases"], curriculum["phases"], strict=True):
+        for les, raw in zip(phase["lessons"], raw_phase["lessons"], strict=True):
+            if "dir" in raw:
+                ex = lesson_exercises(ROOT / raw["dir"])
+                if ex:
+                    les["exercises"] = ex
+
     trimmed["sections"] = sections
+    trimmed["library"] = json.loads((SRC / "library.json").read_text(encoding="utf-8"))["items"]
     total = sum(len(p["lessons"]) for p in trimmed["phases"])
     known = {les["id"] for p in trimmed["phases"] for les in p["lessons"]}
 

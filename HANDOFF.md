@@ -1,6 +1,6 @@
 # Restructure brief — ML From Scratch site
 
-> **Status.** Step 1 done. The dark-mode toggle from step 8 landed early. Lesson
+> **Status.** Steps 1 and 2 done. The dark-mode toggle from step 8 landed early. Lesson
 > ids are 1-based (phases 1–5); this brief has been renumbered to match.
 > Decision on step 5: the published site shows the curriculum, a local run reads
 > `progress.json`.
@@ -44,7 +44,7 @@ other edit. The full 55-lesson ambition is still legible on the Path page.
 
 ---
 
-## Step 2 — Four areas instead of one
+## Step 2 — Four areas instead of one  ✅ done
 
 **Problem.** Materials, curriculum and exercises all hang off a single axis — the lesson you happen
 to be in. A paper, a snippet, a definition, or a resource spanning four lessons has nowhere to live.

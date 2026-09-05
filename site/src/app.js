@@ -25,7 +25,8 @@
     try { localStorage.setItem(STORE_KEY, JSON.stringify(Object.keys(done))); } catch (e) {}
   }
   var done = loadDone();
-  var view = { kind: "overview", id: null };
+  var view = { kind: "continue", id: null };
+  var LIBRARY = data.library || [];
   var activeTab = {};
 
   var SECTIONS = data.sections || {};
@@ -71,7 +72,8 @@
   function saveView() {
     try {
       localStorage.setItem(VIEW_KEY, JSON.stringify({
-        id: view.kind === "lesson" ? view.id : null,
+        kind: view.kind,
+        id: view.id,
         tab: view.kind === "lesson" ? (activeTab[view.id] || 0) : 0
       }));
     } catch (e) {}
@@ -80,16 +82,39 @@
   function restoreView() {
     try {
       var saved = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
-      if (!saved || !saved.id) return;
-      var lesson = lessonById(saved.id);
-      if (!lesson || !lesson.written) return;   // stale id, or no longer written
-      view = { kind: "lesson", id: saved.id };
-      activeTab[saved.id] = typeof saved.tab === "number" ? saved.tab : 0;
+      if (!saved || !saved.kind) return;
+      if (saved.kind === "lesson") {
+        var lesson = lessonById(saved.id);
+        if (!lesson || !lesson.written) return;   // stale id, or no longer written
+        activeTab[saved.id] = typeof saved.tab === "number" ? saved.tab : 0;
+      } else if (saved.kind === "phase" && !phaseById(saved.id)) {
+        return;
+      }
+      view = { kind: saved.kind, id: saved.id || null };
     } catch (e) {}
   }
 
-  function goOverview() { view = { kind: "overview", id: null }; saveView(); render(); window.scrollTo(0, 0); }
-  function goLesson(id) { view = { kind: "lesson", id: id }; saveView(); render(); window.scrollTo(0, 0); }
+  function go(kind, id) {
+    view = { kind: kind, id: id || null };
+    saveView();
+    render();
+    window.scrollTo(0, 0);
+  }
+  function goOverview() { go("continue"); }
+  function goLesson(id) { go("lesson", id); }
+  function goPhase(id) { go("phase", id); }
+
+  function phaseById(id) {
+    for (var i = 0; i < phases.length; i++) if (phases[i].id === id) return phases[i];
+    return null;
+  }
+  function allExercises() {
+    var out = [];
+    writtenLessons().forEach(function (l) {
+      (l.exercises || []).forEach(function (e) { out.push({ lesson: l, ex: e }); });
+    });
+    return out;
+  }
   function toggleDone(id) {
     if (done[id]) { delete done[id]; } else { done[id] = true; }
     saveDone();
@@ -104,10 +129,33 @@
 
   /* ---------- rail ---------- */
   var railNav = document.getElementById("rail-nav");
-  var railHome = document.getElementById("rail-home");
+  var railAreas = document.getElementById("rail-areas");
+
+  /* Four doors instead of one. Everything used to hang off whichever lesson you
+     happened to be in, so a resource spanning four lessons had nowhere to live. */
+  var AREAS = [
+    { kind: "continue", label: "Continue", meta: function () { return ""; } },
+    { kind: "path", label: "Path", meta: function () { return String(TOTAL); } },
+    { kind: "practice", label: "Practice", meta: function () { return String(allExercises().length); } },
+    { kind: "library", label: "Library", meta: function () { return String(LIBRARY.length); } }
+  ];
+
+  function buildAreas() {
+    railAreas.textContent = "";
+    AREAS.forEach(function (a) {
+      var active = view.kind === a.kind ||
+                   (a.kind === "path" && (view.kind === "phase" || view.kind === "lesson"));
+      var b = button("area" + (active ? " current" : ""), null, function () { go(a.kind); });
+      b.setAttribute("aria-current", active ? "page" : "false");
+      b.appendChild(el("span", "area-label", a.label));
+      var m = a.meta();
+      if (m) b.appendChild(el("span", "area-meta", m));
+      railAreas.appendChild(b);
+    });
+  }
 
   function buildRail() {
-    railHome.classList.toggle("current", view.kind === "overview");
+    buildAreas();
     railNav.textContent = "";
 
     /* Two zones. Everything in the first opens real content; the second is a
@@ -171,18 +219,11 @@
     return h;
   }
 
-  /* ---------- overview ---------- */
-  function buildOverview() {
-    var wrap = el("div", "wrap");
-
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow", TOTAL + " lessons · 5 phases · no prior maths"));
-    hero.appendChild(el("h1", null, "Learn machine learning by building it"));
-    hero.appendChild(el("p", "lede",
-      "A ground-up curriculum for engineers whose maths is rusty, weak or absent. " +
-      "Every idea is built once by hand before you are allowed the library that does it for you."));
-    wrap.appendChild(hero);
-
+  /* The ruler moved off the landing page: a 55-tick chart of the whole
+     curriculum belongs where the curriculum is the subject. `only` limits it to
+     one phase for a phase page. */
+  function rulerCard(only) {
+    var shown = only ? [only] : phases;
     /* the ruler */
     var card = el("div", "ruler-card");
     var top = el("div", "ruler-top");
@@ -194,13 +235,13 @@
     card.appendChild(top);
 
     var ruler = el("div", "ruler");
-    phases.forEach(function (p) {
+    shown.forEach(function (p) {
       var g = el("div", "rgroup");
       g.style.flex = p.lessons.length + " 1 0";
       var ticks = el("div", "ticks");
       p.lessons.forEach(function (l) {
         var t = el("span", "tick");
-        t.setAttribute("data-state", done[l.id] ? "done" : (l.status === "available" ? "ready" : "planned"));
+        t.setAttribute("data-state", done[l.id] ? "done" : (l.written ? "ready" : "planned"));
         t.title = l.id + " — " + l.title;
         ticks.appendChild(t);
       });
@@ -223,7 +264,21 @@
         legend.appendChild(s);
       });
     card.appendChild(legend);
-    wrap.appendChild(card);
+    return card;
+  }
+
+  /* ---------- continue (landing) ---------- */
+  function buildOverview() {
+    var wrap = el("div", "wrap");
+
+    var hero = el("div", "hero");
+    hero.appendChild(el("div", "eyebrow", TOTAL + " lessons · 5 phases · no prior maths"));
+    hero.appendChild(el("h1", null, "Learn machine learning by building it"));
+    hero.appendChild(el("p", "lede",
+      "A ground-up curriculum for engineers whose maths is rusty, weak or absent. " +
+      "Every idea is built once by hand before you are allowed the library that does it for you."));
+    wrap.appendChild(hero);
+
 
     var nxt = nextLesson();
     if (nxt) {
@@ -264,28 +319,6 @@
     s1.appendChild(steps);
     wrap.appendChild(s1);
 
-    var s2 = el("div", "section");
-    s2.appendChild(el("h2", null, "The five phases"));
-    s2.appendChild(el("p", "sub", "Ordered so that each phase assumes exactly what came before it, and nothing more."));
-    var cards = el("div", "phase-cards");
-    phases.forEach(function (p) {
-      var first = p.lessons.filter(function (l) { return l.written; })[0];
-      var c = first
-        ? button("pcard", null, function () { goLesson(first.id); })
-        : el("div", "pcard is-planned");
-      var head = el("div", "pcard-top");
-      head.appendChild(el("span", "phase-num", String(p.number)));
-      head.appendChild(el("h3", null, p.title));
-      c.appendChild(head);
-      c.appendChild(el("p", null, p.blurb));
-      var meta = el("div", "meta");
-      meta.appendChild(el("span", null, p.lessons.length + " lessons"));
-      meta.appendChild(el("span", null, phaseDone(p) + " complete"));
-      c.appendChild(meta);
-      cards.appendChild(c);
-    });
-    s2.appendChild(cards);
-    wrap.appendChild(s2);
 
     var s3 = el("div", "section");
     s3.appendChild(el("h2", null, "Where the code lives"));
@@ -322,17 +355,204 @@
     return wrap;
   }
 
+  /* ---------- path: the shape of the whole thing ---------- */
+  function buildPath() {
+    var wrap = el("div", "wrap");
+    var hero = el("div", "hero");
+    hero.appendChild(el("div", "eyebrow", "the whole curriculum"));
+    hero.appendChild(el("h1", null, "Five phases, " + TOTAL + " lessons"));
+    hero.appendChild(el("p", "lede",
+      "Ordered so that each phase assumes exactly what came before it, and nothing more."));
+    wrap.appendChild(hero);
+    wrap.appendChild(rulerCard());
+
+    var cards = el("div", "phase-cards");
+    cards.style.marginTop = "30px";
+    phases.forEach(function (ph) {
+      var written = ph.lessons.filter(function (l) { return l.written; }).length;
+      var c = button("pcard", null, function () { goPhase(ph.id); });
+      var head = el("div", "pcard-top");
+      head.appendChild(el("span", "phase-num", String(ph.number)));
+      head.appendChild(el("h3", null, ph.title));
+      c.appendChild(head);
+      c.appendChild(el("p", null, ph.blurb));
+      var meta = el("div", "meta");
+      meta.appendChild(el("span", null, ph.lessons.length + " lessons"));
+      meta.appendChild(el("span", null, written ? written + " written" : "not started"));
+      c.appendChild(meta);
+      cards.appendChild(c);
+    });
+    wrap.appendChild(cards);
+    return wrap;
+  }
+
+  /* ---------- one phase ---------- */
+  function buildPhase(ph) {
+    var wrap = el("div", "wrap");
+    var head = el("div", "lesson-head");
+    var crumbs = el("div", "crumbs");
+    crumbs.appendChild(button("crumb", "Path", function () { go("path"); }));
+    crumbs.appendChild(el("span", "crumb-sep", "/"));
+    crumbs.appendChild(el("span", "chip", "Phase " + ph.number));
+    head.appendChild(crumbs);
+    head.appendChild(el("h1", null, ph.title));
+    head.appendChild(el("p", "lede", ph.subtitle));
+    wrap.appendChild(head);
+
+    var intro = el("div", "prose");
+    intro.appendChild(el("p", null, ph.blurb));
+    wrap.appendChild(intro);
+
+    var mile = el("div", "callout");
+    mile.appendChild(el("span", "lbl", "Milestone"));
+    mile.appendChild(el("p", null, ph.milestone));
+    wrap.appendChild(mile);
+
+    var idx = phases.indexOf(ph);
+    var assumes = el("div", "assumes");
+    assumes.appendChild(el("span", "eyebrow", "assumes"));
+    assumes.appendChild(el("p", null, idx === 0
+      ? "Nothing. You can program; no maths is taken for granted."
+      : "Phase " + phases[idx - 1].number + ": " + phases[idx - 1].milestone));
+    wrap.appendChild(assumes);
+
+    wrap.appendChild(rulerCard(ph));
+
+    var sec = el("div", "section");
+    sec.appendChild(el("h2", null, "Lessons"));
+    var list = el("div", "phase-lessons");
+    ph.lessons.forEach(function (l) {
+      var row = l.written
+        ? button("plesson", null, function () { goLesson(l.id); })
+        : el("div", "plesson is-planned");
+      var top = el("div", "plesson-top");
+      top.appendChild(el("span", "lid", l.id));
+      top.appendChild(el("span", "plesson-title", l.title));
+      top.appendChild(el("span", "chip " + (l.written ? "ready" : "plan"),
+        l.written ? "ready" : "planned"));
+      row.appendChild(top);
+      row.appendChild(el("p", "plesson-sum", l.summary));
+      list.appendChild(row);
+    });
+    sec.appendChild(list);
+    wrap.appendChild(sec);
+    return wrap;
+  }
+
+  /* ---------- practice: every exercise in one view ---------- */
+  function buildPractice() {
+    var wrap = el("div", "wrap");
+    var rows = allExercises();
+    var hero = el("div", "hero");
+    hero.appendChild(el("div", "eyebrow",
+      rows.length + " exercises across " + writtenLessons().length + " written lessons"));
+    hero.appendChild(el("h1", null, "Every exercise, and what the tests say"));
+    hero.appendChild(el("p", "lede",
+      "The exercises are the work. This is all of them in one place, without having to " +
+      "remember which lesson they belong to."));
+    wrap.appendChild(hero);
+
+    var note = el("div", "callout");
+    note.appendChild(el("span", "lbl", "Status is not wired up yet"));
+    note.appendChild(el("p", null,
+      "Pass and fail come from the test runner, not from this page. Until the progress " +
+      "command writes progress.json, every exercise below reads as not run. The names and " +
+      "descriptions are parsed from your exercises.py, so this list cannot drift from the code."));
+    wrap.appendChild(note);
+
+    writtenLessons().forEach(function (l) {
+      if (!l.exercises || !l.exercises.length) return;
+      var sec = el("div", "section");
+      var h = el("div", "practice-head");
+      h.appendChild(el("span", "lid", l.id));
+      h.appendChild(button("practice-lesson", l.title, function () { goLesson(l.id); }));
+      h.appendChild(el("span", "practice-count", l.exercises.length + " exercises"));
+      sec.appendChild(h);
+
+      var list = el("div", "exrows");
+      l.exercises.forEach(function (e) {
+        var row = el("div", "exrow");
+        row.appendChild(el("span", "exmark"));
+        var body = el("div", "exbody");
+        body.appendChild(el("div", "exname", e.name));
+        body.appendChild(el("div", "exsum", e.summary));
+        row.appendChild(body);
+        row.appendChild(el("span", "exstat", "not run"));
+        list.appendChild(row);
+      });
+      sec.appendChild(list);
+      wrap.appendChild(sec);
+    });
+    return wrap;
+  }
+
+  /* ---------- library ---------- */
+  var libKind = "all";
+
+  function buildLibrary() {
+    var wrap = el("div", "wrap");
+    var hero = el("div", "hero");
+    hero.appendChild(el("div", "eyebrow", LIBRARY.length + " items"));
+    hero.appendChild(el("h1", null, "Everything you have collected"));
+    hero.appendChild(el("p", "lede",
+      "Every resource the curriculum cites, browsable on its own. Six months in, the " +
+      "question is where did I read that, not which lesson cited it."));
+    wrap.appendChild(hero);
+
+    var kinds = ["all"];
+    LIBRARY.forEach(function (it) { if (kinds.indexOf(it.kind) < 0) kinds.push(it.kind); });
+    var ctrls = el("div", "ctrls");
+    ctrls.style.marginTop = "22px";
+    kinds.forEach(function (k) {
+      ctrls.appendChild(button("pill" + (libKind === k ? " on" : ""), k, function () {
+        libKind = k;
+        render();
+      }));
+    });
+    wrap.appendChild(ctrls);
+
+    var list = el("div", "libitems");
+    LIBRARY.filter(function (it) { return libKind === "all" || it.kind === libKind; })
+      .forEach(function (it) {
+        var row = el("div", "libitem");
+        var top = el("div", "libtop");
+        top.appendChild(el("span", "chip", it.kind));
+        var a = el("a", "libtitle", it.title);
+        a.href = it.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        top.appendChild(a);
+        row.appendChild(top);
+
+        var tags = el("div", "libtags");
+        (it.lessons || []).forEach(function (lid) {
+          var l = lessonById(lid);
+          if (!l) return;
+          tags.appendChild(l.written
+            ? button("libtag is-link", lid + " " + l.title, function () { goLesson(lid); })
+            : el("span", "libtag", lid + " " + l.title));
+        });
+        (it.phases || []).forEach(function (n) {
+          var ph = phases.filter(function (x) { return x.number === n; })[0];
+          if (ph) tags.appendChild(button("libtag", "Phase " + n, function () { goPhase(ph.id); }));
+        });
+        if (tags.children.length) row.appendChild(tags);
+        list.appendChild(row);
+      });
+    wrap.appendChild(list);
+    return wrap;
+  }
+
   /* ---------- lesson ---------- */
   function buildLesson(l) {
     var wrap = el("div", "wrap");
 
     var head = el("div", "lesson-head");
     var crumbs = el("div", "crumbs");
-    crumbs.appendChild(button("crumb", "Overview", goOverview));
+    crumbs.appendChild(button("crumb", "Path", function () { go("path"); }));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    /* Step 2 gives phases real pages; until then this is a label, not a link
-       that quietly lands you somewhere else. */
-    crumbs.appendChild(el("span", "crumb-static", "Phase " + l.phase.number + " · " + l.phase.title));
+    crumbs.appendChild(button("crumb", "Phase " + l.phase.number + " · " + l.phase.title,
+      function () { goPhase(l.phase.id); }));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
     if (done[l.id]) crumbs.appendChild(el("span", "chip done", "Complete"));
     else if (l.status === "available") crumbs.appendChild(el("span", "chip ready", "Ready"));
@@ -517,6 +737,15 @@
     if (view.kind === "lesson") {
       var l = lessonById(view.id);
       pane.appendChild(l ? buildLesson(l) : buildOverview());
+    } else if (view.kind === "path") {
+      pane.appendChild(buildPath());
+    } else if (view.kind === "phase") {
+      var ph = phaseById(view.id);
+      pane.appendChild(ph ? buildPhase(ph) : buildPath());
+    } else if (view.kind === "practice") {
+      pane.appendChild(buildPractice());
+    } else if (view.kind === "library") {
+      pane.appendChild(buildLibrary());
     } else {
       pane.appendChild(buildOverview());
     }
@@ -527,7 +756,6 @@
     var n = totalDone();
     document.getElementById("stat-count").textContent = n + "/" + TOTAL;
     document.getElementById("stat-bar").style.width = (n / TOTAL * 100) + "%";
-    document.getElementById("rail-total").textContent = TOTAL + " lessons";
     buildRail();
 
     if (window.matchMedia("(max-width: 940px)").matches) {
@@ -541,7 +769,6 @@
   var toggle = document.getElementById("railtoggle");
 
   document.getElementById("brand").addEventListener("click", goOverview);
-  railHome.addEventListener("click", goOverview);
   toggle.addEventListener("click", function () {
     rail.hidden = !rail.hidden;
     toggle.setAttribute("aria-expanded", rail.hidden ? "false" : "true");
