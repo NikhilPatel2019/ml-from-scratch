@@ -153,135 +153,147 @@ code, kbd { font-family: var(--f-mono); }
 }
 
 /* ============================================================
-   topbar
+   topbar — ported from the design canvas
    ============================================================ */
 .topbar {
-  position: sticky; top: 0; z-index: 30;
-  height: var(--topbar-h);
-  display: flex; align-items: center; gap: 20px;
-  padding: 0 20px;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--rule);
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 18px; height: 53px; flex: none;
+  background: var(--surface); border-bottom: 1px solid var(--rule);
 }
 .brand {
-  display: flex; align-items: baseline; gap: 10px; margin-right: auto; min-width: 0;
-  background: none; border: 0; padding: 6px 8px; margin-left: -8px; border-radius: 8px;
-  cursor: pointer; color: inherit; font-family: inherit; text-align: left;
+  appearance: none; border: 0; background: none; cursor: pointer; padding: 0;
+  font-family: var(--f-body); display: flex; align-items: baseline; gap: 9px;
+  margin-right: auto; color: var(--ink);
 }
-.brand:hover { background: var(--surface-2); }
-.brand-mark { font-family: var(--f-display); font-size: 19px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
-.brand-sub { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+.brand-mark {
+  font-family: var(--f-display); font-size: 18px; font-weight: 600;
+  letter-spacing: -.01em; white-space: nowrap;
+}
 
-.topstat { display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.topstat b { color: var(--ink); font-weight: 600; }
-.minibar { width: 84px; height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+.searchbtn {
+  appearance: none; display: flex; align-items: center; gap: 9px;
+  height: 30px; padding: 0 9px 0 11px; cursor: pointer;
+  border: 1px solid var(--rule); background: var(--paper); border-radius: 7px;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  transition: border-color .15s, color .15s;
+}
+.searchbtn:hover { border-color: var(--ink-3); color: var(--ink-2); }
+.searchbtn kbd {
+  border: 1px solid var(--rule-firm); border-radius: 4px;
+  padding: 0 4px; font-size: 10px; font-family: var(--f-mono);
+}
+
+.topstat {
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-2);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.minibar {
+  width: 64px; height: 6px; border-radius: 3px;
+  background: var(--rule); overflow: hidden; display: block;
+}
 .minibar > i { display: block; height: 100%; background: var(--done); border-radius: 3px; transition: width .35s ease; }
+
+.themetoggle {
+  display: flex; border: 1px solid var(--rule); border-radius: 7px; overflow: hidden;
+  font-family: var(--f-mono); font-size: 10.5px; flex: none;
+}
+.themetoggle button {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  color: var(--ink-3); padding: 5px 10px; font-family: inherit; font-size: inherit;
+  transition: background .15s, color .15s;
+}
+.themetoggle button:hover { color: var(--ink-2); }
+.themetoggle button.on { background: var(--accent-wash); color: var(--accent-ink); }
 
 .iconbtn {
   appearance: none; border: 1px solid var(--rule-firm); background: var(--surface);
-  color: var(--ink-2); border-radius: 7px; height: 32px; padding: 0 11px;
-  font-family: var(--f-mono); font-size: 12px; cursor: pointer; display: inline-flex;
-  align-items: center; gap: 6px; transition: border-color .15s, color .15s;
+  color: var(--ink-2); border-radius: 7px; height: 30px; padding: 0 11px;
+  font-family: var(--f-mono); font-size: 11.5px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
 }
 .iconbtn:hover { color: var(--ink); border-color: var(--ink-3); }
 
 /* ============================================================
-   shell + rail
+   shell + rail — ported from the design canvas
    ============================================================ */
 .shell {
   display: grid;
-  grid-template-columns: 306px minmax(0, 1fr) auto;
+  grid-template-columns: 236px minmax(0, 1fr) auto;
   max-width: 1580px; margin: 0 auto; align-items: start;
 }
 
 .rail {
-  position: sticky; top: var(--topbar-h);
-  height: calc(100vh - var(--topbar-h));
-  overflow-y: auto;
-  border-right: 1px solid var(--rule);
-  padding: 16px 8px 60px 20px;
-  scrollbar-width: thin;
-}
-.rail-home {
-  display: flex; align-items: center; gap: 9px; width: 100%;
-  background: none; border: 0; border-radius: 8px; padding: 8px;
-  font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-2);
-  cursor: pointer; text-align: left;
-}
-.rail-home:hover { background: var(--surface-2); color: var(--ink); }
-.rail-home.current { background: var(--accent-wash); color: var(--accent-ink); }
-.home-ico {
-  width: 21px; height: 21px; flex: none; border-radius: 5px;
-  border: 1px solid var(--rule-firm); background: var(--surface-2);
-  position: relative;
-}
-.home-ico::before, .home-ico::after {
-  content: ""; position: absolute; left: 4px; right: 4px; height: 1.5px;
-  background: var(--ink-3); border-radius: 1px;
-}
-.home-ico::before { top: 6px; }
-.home-ico::after { top: 11px; right: 8px; }
-.rail-home.current .home-ico { border-color: var(--accent); background: var(--surface); }
-
-.rail-head { display: flex; align-items: baseline; justify-content: space-between; padding: 16px 8px 10px; }
-
-.phase-block { margin-bottom: 6px; }
-.phase-btn {
-  width: 100%; display: flex; align-items: center; gap: 9px;
-  background: none; border: 0; padding: 8px; border-radius: 8px;
-  cursor: pointer; text-align: left; color: var(--ink); font-family: inherit;
-}
-.phase-btn:hover { background: var(--surface-2); }
-.phase-num {
-  font-family: var(--f-mono); font-size: 11px; font-weight: 600;
-  width: 21px; height: 21px; flex: none; border-radius: 5px;
-  display: grid; place-items: center;
-  background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule);
-}
-.phase-name { font-size: 13.5px; font-weight: 600; flex: 1; min-width: 0; letter-spacing: -.005em; }
-.phase-count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.chev { width: 9px; height: 9px; border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3); transform: rotate(45deg); margin-right: 3px; transition: transform .18s; flex: none; }
-.phase-block.collapsed .chev { transform: rotate(-45deg); }
-.phase-block.collapsed .lesson-list { display: none; }
-
-.phase-progress { height: 3px; border-radius: 2px; background: var(--rule); margin: 0 8px 8px; overflow: hidden; }
-.phase-progress > i { display: block; height: 100%; background: var(--done); transition: width .35s ease; }
-
-.lesson-list { list-style: none; margin: 0 0 10px; padding: 0 0 0 6px; display: flex; flex-direction: column; gap: 1px; }
-.lesson-row { display: flex; align-items: flex-start; gap: 7px; border-radius: 7px; padding: 1px 4px 1px 2px; }
-.lesson-row:hover { background: var(--surface-2); }
-.lesson-row.current { background: var(--accent-wash); }
-
-/* 24x24 hit area, 16x16 visual — WCAG 2.5.8 asks for the first, the list
-   layout wants the second. A pseudo-element gives both. */
-.tickbox {
-  appearance: none; flex: none; width: 24px; height: 24px; margin: 3px 0 0;
-  border: 0; background: none; cursor: pointer; position: relative;
-}
-.tickbox::before {
-  content: ""; position: absolute; left: 4px; top: 4px; width: 16px; height: 16px;
-  border: 1.5px solid var(--rule-firm); border-radius: 4px; background: var(--surface);
-  transition: background .15s, border-color .15s;
-}
-.tickbox:hover::before { border-color: var(--done); }
-.tickbox:checked::before { background: var(--done); border-color: var(--done); }
-.tickbox:checked::after {
-  content: ""; position: absolute; left: 10px; top: 7px; width: 4px; height: 8px;
-  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(42deg);
+  position: sticky; top: 53px;
+  height: calc(100vh - 53px); overflow-y: auto;
+  border-right: 1px solid var(--rule); background: var(--surface);
+  padding: 14px 10px 60px; scrollbar-width: thin;
 }
 
+.areas { display: flex; flex-direction: column; gap: 2px; }
+.area {
+  appearance: none; border: 0; background: none; cursor: pointer; width: 100%;
+  font-family: var(--f-body); display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 7px; text-align: left;
+  font-size: 13px; color: var(--ink-2); transition: background .15s, color .15s;
+}
+.area:hover { background: var(--paper); color: var(--ink); }
+.area.current { background: var(--accent-wash); color: var(--accent-ink); font-weight: 600; }
+.area-label { flex: 1; min-width: 0; }
+.area-meta {
+  margin-left: auto; font-family: var(--f-mono); font-size: 10.5px;
+  opacity: .7; font-variant-numeric: tabular-nums;
+}
+.area-meta.is-red { color: var(--danger); opacity: 1; }
+
+.rail-zone {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--ink-3); padding: 24px 10px 8px;
+}
+.rail-empty { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); padding: 0 10px 8px; }
+
+.lesson-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.lesson-row { display: block; }
 .lesson-link {
-  flex: 1; min-width: 0; display: flex; gap: 8px; align-items: baseline;
-  background: none; border: 0; padding: 6px 4px; cursor: pointer;
-  font-family: inherit; font-size: 13px; color: var(--ink-2); text-align: left; line-height: 1.42;
+  appearance: none; border: 0; background: none; cursor: pointer; width: 100%;
+  font-family: var(--f-body); display: flex; gap: 8px; align-items: baseline;
+  padding: 6px 10px; border-radius: 7px; text-align: left; color: var(--ink-2);
+  transition: background .15s, color .15s;
 }
-.lesson-row.current .lesson-link { color: var(--ink); font-weight: 500; }
-.lesson-link:hover { color: var(--ink); }
-.lid { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); flex: none; width: 26px; font-variant-numeric: tabular-nums; }
-.lesson-row.current .lid { color: var(--accent); }
-.lesson-row.is-done .ltitle { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--rule-firm); }
-.dot-ready { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex: none; align-self: center; }
+.lesson-link:hover { background: var(--paper); color: var(--ink); }
+.lesson-row.current .lesson-link { background: var(--accent-wash); color: var(--accent-ink); }
+.lid {
+  font-family: var(--f-mono); font-size: 11px; flex: none; width: 22px;
+  color: var(--accent-ink); font-variant-numeric: tabular-nums;
+}
+.ltitle { font-size: 12.5px; line-height: 1.4; text-align: left; flex: 1; min-width: 0; }
+.lesson-row.is-done .ltitle { color: var(--ink-3); text-decoration: none; }
+.dot-ready { width: 5px; height: 5px; border-radius: 50%; background: var(--done); flex: none; align-self: center; }
+
+.ahead-list { display: flex; flex-direction: column; gap: 3px; }
+.ahead-row {
+  appearance: none; border: 0; background: none; cursor: pointer; width: 100%;
+  font-family: var(--f-body); display: flex; gap: 8px; align-items: baseline;
+  padding: 5px 10px; border-radius: 7px; text-align: left; color: var(--ink-3);
+  transition: background .15s, color .15s;
+}
+.ahead-row:hover { background: var(--paper); color: var(--ink-2); }
+.ahead-num { font-family: var(--f-mono); font-size: 11px; flex: none; width: 22px; }
+.ahead-title { font-size: 12.5px; line-height: 1.4; }
+.ahead-count { opacity: .6; }
+
+.rail-foot {
+  margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--rule);
+  display: flex; flex-direction: column; gap: 1px;
+}
+.rail-setup {
+  appearance: none; border: 0; background: none; cursor: pointer; width: 100%;
+  font-family: var(--f-body); font-size: 12px; color: var(--ink-3);
+  padding: 6px 10px; border-radius: 7px; text-align: left;
+}
+.rail-setup:hover { background: var(--paper); color: var(--ink-2); }
+.rail-setup.current { background: var(--accent-wash); color: var(--accent-ink); }
 
 /* ============================================================
    pane
@@ -740,17 +752,13 @@ figcaption {
 /* ============================================================
    collapsed planned phases — 54 of 55 rows led to one placeholder
    ============================================================ */
-.planned-row {
   display: flex; align-items: center; gap: 8px; width: 100%;
   background: none; border: 0; cursor: pointer; text-align: left;
   font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
   padding: 7px 8px 7px 12px; border-radius: 7px; margin-left: 6px;
 }
-.planned-row:hover { background: var(--surface-2); color: var(--ink-2); }
-.planned-row .pcount {
   font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 500;
 }
-.phase-empty {
   font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
   padding: 2px 8px 10px 12px; margin-left: 6px;
 }
@@ -773,7 +781,6 @@ figcaption {
 /* Nothing in Ahead is interactive, so nothing here takes a hover or a cursor
    that would imply it opens. */
 .ahead-row { padding: 8px 8px 10px; border-radius: 7px; }
-.ahead-top { display: flex; align-items: baseline; gap: 9px; }
 .ahead-num {
   font-family: var(--f-mono); font-size: 11px; font-weight: 600;
   width: 21px; height: 21px; flex: none; border-radius: 5px;
@@ -785,7 +792,6 @@ figcaption {
   font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
   font-variant-numeric: tabular-nums; flex: none;
 }
-.ahead-sub {
   font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
   padding-left: 30px; margin-top: 3px; line-height: 1.4;
 }
@@ -908,9 +914,6 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 .paste-msg.bad { color: var(--danger); }
 
 /* A checkbox the runner owns must not look like one you can set. */
-.tickbox:disabled { cursor: default; }
-.tickbox:disabled::before { border-style: dashed; }
-.tickbox:disabled:hover::before { border-color: var(--rule-firm); }
 
 /* ============================================================
    continue: the one action above the fold (HANDOFF step 3)
@@ -1130,13 +1133,10 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 /* ============================================================
    read-only rail state, and the inline sections control
    ============================================================ */
-.rowstate {
   width: 15px; height: 15px; flex: none; margin: 8px 0 0;
   border-radius: 4px; border: 1.5px solid var(--rule); background: var(--surface-2);
   position: relative;
 }
-.rowstate[data-done="1"] { background: var(--done); border-color: var(--done); }
-.rowstate[data-done="1"]::after {
   content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
   border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(42deg);
 }
@@ -1163,22 +1163,25 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 </style>
 
 <header class="topbar">
-  <button class="brand" id="brand" type="button" title="Back to the overview">
+  <button class="brand" id="brand" type="button" title="Continue">
     <span class="brand-mark">ML From Scratch</span>
-    <span class="brand-sub">foundations &rarr; transformers</span>
   </button>
-  <div class="topstat">
-    <span class="words">lessons complete</span>
-    <b id="stat-count" class="mono">0/55</b>
+
+  <button class="searchbtn" id="searchbtn" type="button" aria-label="Search">
+    <span>Search lessons, notes, terms</span>
+    <kbd>&#8984;K</kbd>
+  </button>
+
+  <div class="topstat" id="topstat" title="Read from site/progress.json — written by the test runner">
+    <span id="stat-count">0 / 55 lessons</span>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
   </div>
-  <button class="iconbtn searchbtn" id="searchbtn" aria-label="Search">
-    <span>Search</span><kbd>&#8984;K</kbd>
-  </button>
+
   <div class="themetoggle" role="group" aria-label="Colour theme">
     <button type="button" id="theme-light" data-theme-set="light">light</button>
     <button type="button" id="theme-dark" data-theme-set="dark">dark</button>
   </div>
+
   <button class="iconbtn railtoggle" id="railtoggle" aria-expanded="false">Curriculum</button>
 </header>
 
@@ -1186,6 +1189,9 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
   <aside class="rail" id="rail">
     <nav class="areas" id="rail-areas" aria-label="Areas"></nav>
     <nav id="rail-nav" aria-label="Lessons"></nav>
+    <div class="rail-foot">
+      <button class="rail-setup" id="rail-setup" type="button">Setup &amp; environment</button>
+    </div>
   </aside>
 
   <main class="pane" id="pane"></main>
@@ -1196,7 +1202,7 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 <div class="palette" id="palette" hidden>
   <div class="palette-box" role="dialog" aria-modal="true" aria-label="Search">
     <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
-           placeholder="Search lessons, sections, exercises, library&hellip;">
+           placeholder="Search lessons, notes, terms&hellip;">
     <div class="palette-results" id="palette-results"></div>
     <div class="palette-foot">&uarr;&darr; move &middot; &crarr; open &middot; esc close</div>
   </div>
@@ -2899,7 +2905,9 @@ var Widgets = (function () {
   var AREAS = [
     { kind: "continue", label: "Continue", meta: function () { return ""; } },
     { kind: "path", label: "Path", meta: function () { return String(TOTAL); } },
-    { kind: "practice", label: "Practice", meta: function () { return String(allExercises().length); } },
+    { kind: "practice", label: "Practice", meta: function () {
+        return progressData ? String(redCount()) : String(allExercises().length);
+      } },
     { kind: "library", label: "Library", meta: function () { return String(LIBRARY.length); } }
   ];
 
@@ -2907,50 +2915,51 @@ var Widgets = (function () {
     railAreas.textContent = "";
     AREAS.forEach(function (a) {
       var active = view.kind === a.kind ||
-                   (a.kind === "continue" && view.kind === "setup") ||
                    (a.kind === "path" && (view.kind === "phase" || view.kind === "lesson"));
       var b = button("area" + (active ? " current" : ""), null, function () { go(a.kind); });
       b.setAttribute("aria-current", active ? "page" : "false");
       b.appendChild(el("span", "area-label", a.label));
       var m = a.meta();
-      if (m) b.appendChild(el("span", "area-meta", m));
+      if (m) {
+        var meta = el("span", "area-meta" + (a.kind === "practice" && redCount() ? " is-red" : ""), m);
+        b.appendChild(meta);
+      }
       railAreas.appendChild(b);
     });
+    document.getElementById("rail-setup").classList.toggle("current", view.kind === "setup");
+  }
+
+  /* Exercises the runner has marked failing, across every written lesson. */
+  function redCount() {
+    if (!progressData) return 0;
+    var n = 0;
+    writtenLessons().forEach(function (l) {
+      var lt = lessonTests(l.id);
+      if (!lt) return;
+      lt.exercises.forEach(function (e) { if (e.status === "fail") n++; });
+    });
+    return n;
   }
 
   function buildRail() {
     buildAreas();
     railNav.textContent = "";
 
-    /* Two zones. Everything in the first opens real content; the second is a
-       phase-level summary with nothing clickable, because there is nothing
-       behind it yet. Written-ness comes from build.py reading the disk, so
-       adding site/src/lessons/1.2/ moves 1.2 across on the next build with no
-       other edit. */
-    var written = allLessons.filter(function (l) { return l.written; });
+    var written = writtenLessons();
     var planned = allLessons.length - written.length;
 
-    railNav.appendChild(zoneHead("Available now", String(written.length)));
-
+    railNav.appendChild(el("div", "rail-zone", "Available now"));
     if (written.length) {
       var list = el("ul", "lesson-list");
       written.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (isComplete(l) ? " is-done" : ""));
-
-        /* Read-only. A 15px checkbox butted against the link caused accidental
-           ticks, and completion is a lesson-page act. */
-        var state = el("span", "rowstate");
-        state.setAttribute("data-done", isComplete(l) ? "1" : "0");
-        state.title = isComplete(l) ? "Complete" : "Not complete";
-        row.appendChild(state);
-
         var link = button("lesson-link", null, function () { goLesson(l.id); });
         link.appendChild(el("span", "lid", l.id));
         link.appendChild(el("span", "ltitle", l.title));
+        if (isComplete(l)) link.appendChild(el("span", "dot-ready"));
         row.appendChild(link);
-
         list.appendChild(row);
       });
       railNav.appendChild(list);
@@ -2960,27 +2969,22 @@ var Widgets = (function () {
 
     if (!planned) return;
 
-    railNav.appendChild(zoneHead("Ahead", planned + " planned"));
+    railNav.appendChild(el("div", "rail-zone", "Ahead"));
+    var ahead = el("div", "ahead-list");
     phases.forEach(function (p) {
       var count = p.lessons.filter(function (l) { return !l.written; }).length;
       if (!count) return;
-      var row = el("div", "ahead-row");
-      row.title = "Milestone: " + p.milestone;
-      var top = el("div", "ahead-top");
-      top.appendChild(el("span", "ahead-num", String(p.number)));
-      top.appendChild(el("span", "ahead-title", p.title));
-      top.appendChild(el("span", "ahead-count", String(count)));
-      row.appendChild(top);
-      row.appendChild(el("div", "ahead-sub", p.subtitle));
-      railNav.appendChild(row);
+      /* Clickable, because a phase page is real content — unlike the
+         placeholder these rows used to lead to. */
+      var row = button("ahead-row", null, function () { goPhase(p.id); });
+      row.title = p.milestone;
+      row.appendChild(el("span", "ahead-num", String(p.number)));
+      var title = el("span", "ahead-title", p.title);
+      title.appendChild(el("span", "ahead-count", " \u00b7 " + count + " planned"));
+      row.appendChild(title);
+      ahead.appendChild(row);
     });
-  }
-
-  function zoneHead(label, meta) {
-    var h = el("div", "rail-zone");
-    h.appendChild(el("span", "eyebrow", label));
-    h.appendChild(el("span", "eyebrow", meta));
-    return h;
+    railNav.appendChild(ahead);
   }
 
   /* The ruler moved off the landing page: a 55-tick chart of the whole
@@ -3876,17 +3880,14 @@ var Widgets = (function () {
     if (live) buildToc(live);
 
     var totals = testTotals();
-    var words = document.querySelector(".topstat .words");
     if (totals && totals.total) {
-      document.getElementById("stat-count").textContent = totals.passed + "/" + totals.total;
+      document.getElementById("stat-count").textContent =
+        totals.passed + " / " + totals.total + " tests";
       document.getElementById("stat-bar").style.width = (totals.passed / totals.total * 100) + "%";
-      if (words) words.textContent = "tests passing";
     } else {
       var n = writtenLessons().filter(isComplete).length;
-      var w = writtenLessons().length || 1;
-      document.getElementById("stat-count").textContent = n + "/" + TOTAL;
-      document.getElementById("stat-bar").style.width = (n / w * 100) + "%";
-      if (words) words.textContent = "lessons complete";
+      document.getElementById("stat-count").textContent = n + " / " + TOTAL + " lessons";
+      document.getElementById("stat-bar").style.width = (n / TOTAL * 100) + "%";
     }
     buildRail();
 
@@ -3902,6 +3903,7 @@ var Widgets = (function () {
 
   document.getElementById("brand").addEventListener("click", goOverview);
   document.getElementById("searchbtn").addEventListener("click", openPalette);
+  document.getElementById("rail-setup").addEventListener("click", function () { go("setup"); });
   toggle.addEventListener("click", function () {
     rail.hidden = !rail.hidden;
     toggle.setAttribute("aria-expanded", rail.hidden ? "false" : "true");

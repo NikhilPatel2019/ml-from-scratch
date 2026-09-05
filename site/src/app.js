@@ -500,7 +500,9 @@
   var AREAS = [
     { kind: "continue", label: "Continue", meta: function () { return ""; } },
     { kind: "path", label: "Path", meta: function () { return String(TOTAL); } },
-    { kind: "practice", label: "Practice", meta: function () { return String(allExercises().length); } },
+    { kind: "practice", label: "Practice", meta: function () {
+        return progressData ? String(redCount()) : String(allExercises().length);
+      } },
     { kind: "library", label: "Library", meta: function () { return String(LIBRARY.length); } }
   ];
 
@@ -508,50 +510,51 @@
     railAreas.textContent = "";
     AREAS.forEach(function (a) {
       var active = view.kind === a.kind ||
-                   (a.kind === "continue" && view.kind === "setup") ||
                    (a.kind === "path" && (view.kind === "phase" || view.kind === "lesson"));
       var b = button("area" + (active ? " current" : ""), null, function () { go(a.kind); });
       b.setAttribute("aria-current", active ? "page" : "false");
       b.appendChild(el("span", "area-label", a.label));
       var m = a.meta();
-      if (m) b.appendChild(el("span", "area-meta", m));
+      if (m) {
+        var meta = el("span", "area-meta" + (a.kind === "practice" && redCount() ? " is-red" : ""), m);
+        b.appendChild(meta);
+      }
       railAreas.appendChild(b);
     });
+    document.getElementById("rail-setup").classList.toggle("current", view.kind === "setup");
+  }
+
+  /* Exercises the runner has marked failing, across every written lesson. */
+  function redCount() {
+    if (!progressData) return 0;
+    var n = 0;
+    writtenLessons().forEach(function (l) {
+      var lt = lessonTests(l.id);
+      if (!lt) return;
+      lt.exercises.forEach(function (e) { if (e.status === "fail") n++; });
+    });
+    return n;
   }
 
   function buildRail() {
     buildAreas();
     railNav.textContent = "";
 
-    /* Two zones. Everything in the first opens real content; the second is a
-       phase-level summary with nothing clickable, because there is nothing
-       behind it yet. Written-ness comes from build.py reading the disk, so
-       adding site/src/lessons/1.2/ moves 1.2 across on the next build with no
-       other edit. */
-    var written = allLessons.filter(function (l) { return l.written; });
+    var written = writtenLessons();
     var planned = allLessons.length - written.length;
 
-    railNav.appendChild(zoneHead("Available now", String(written.length)));
-
+    railNav.appendChild(el("div", "rail-zone", "Available now"));
     if (written.length) {
       var list = el("ul", "lesson-list");
       written.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (isComplete(l) ? " is-done" : ""));
-
-        /* Read-only. A 15px checkbox butted against the link caused accidental
-           ticks, and completion is a lesson-page act. */
-        var state = el("span", "rowstate");
-        state.setAttribute("data-done", isComplete(l) ? "1" : "0");
-        state.title = isComplete(l) ? "Complete" : "Not complete";
-        row.appendChild(state);
-
         var link = button("lesson-link", null, function () { goLesson(l.id); });
         link.appendChild(el("span", "lid", l.id));
         link.appendChild(el("span", "ltitle", l.title));
+        if (isComplete(l)) link.appendChild(el("span", "dot-ready"));
         row.appendChild(link);
-
         list.appendChild(row);
       });
       railNav.appendChild(list);
@@ -561,27 +564,22 @@
 
     if (!planned) return;
 
-    railNav.appendChild(zoneHead("Ahead", planned + " planned"));
+    railNav.appendChild(el("div", "rail-zone", "Ahead"));
+    var ahead = el("div", "ahead-list");
     phases.forEach(function (p) {
       var count = p.lessons.filter(function (l) { return !l.written; }).length;
       if (!count) return;
-      var row = el("div", "ahead-row");
-      row.title = "Milestone: " + p.milestone;
-      var top = el("div", "ahead-top");
-      top.appendChild(el("span", "ahead-num", String(p.number)));
-      top.appendChild(el("span", "ahead-title", p.title));
-      top.appendChild(el("span", "ahead-count", String(count)));
-      row.appendChild(top);
-      row.appendChild(el("div", "ahead-sub", p.subtitle));
-      railNav.appendChild(row);
+      /* Clickable, because a phase page is real content — unlike the
+         placeholder these rows used to lead to. */
+      var row = button("ahead-row", null, function () { goPhase(p.id); });
+      row.title = p.milestone;
+      row.appendChild(el("span", "ahead-num", String(p.number)));
+      var title = el("span", "ahead-title", p.title);
+      title.appendChild(el("span", "ahead-count", " \u00b7 " + count + " planned"));
+      row.appendChild(title);
+      ahead.appendChild(row);
     });
-  }
-
-  function zoneHead(label, meta) {
-    var h = el("div", "rail-zone");
-    h.appendChild(el("span", "eyebrow", label));
-    h.appendChild(el("span", "eyebrow", meta));
-    return h;
+    railNav.appendChild(ahead);
   }
 
   /* The ruler moved off the landing page: a 55-tick chart of the whole
@@ -1477,17 +1475,14 @@
     if (live) buildToc(live);
 
     var totals = testTotals();
-    var words = document.querySelector(".topstat .words");
     if (totals && totals.total) {
-      document.getElementById("stat-count").textContent = totals.passed + "/" + totals.total;
+      document.getElementById("stat-count").textContent =
+        totals.passed + " / " + totals.total + " tests";
       document.getElementById("stat-bar").style.width = (totals.passed / totals.total * 100) + "%";
-      if (words) words.textContent = "tests passing";
     } else {
       var n = writtenLessons().filter(isComplete).length;
-      var w = writtenLessons().length || 1;
-      document.getElementById("stat-count").textContent = n + "/" + TOTAL;
-      document.getElementById("stat-bar").style.width = (n / w * 100) + "%";
-      if (words) words.textContent = "lessons complete";
+      document.getElementById("stat-count").textContent = n + " / " + TOTAL + " lessons";
+      document.getElementById("stat-bar").style.width = (n / TOTAL * 100) + "%";
     }
     buildRail();
 
@@ -1503,6 +1498,7 @@
 
   document.getElementById("brand").addEventListener("click", goOverview);
   document.getElementById("searchbtn").addEventListener("click", openPalette);
+  document.getElementById("rail-setup").addEventListener("click", function () { go("setup"); });
   toggle.addEventListener("click", function () {
     rail.hidden = !rail.hidden;
     toggle.setAttribute("aria-expanded", rail.hidden ? "false" : "true");

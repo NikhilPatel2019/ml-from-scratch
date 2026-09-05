@@ -1,20 +1,23 @@
 <header class="topbar">
-  <button class="brand" id="brand" type="button" title="Back to the overview">
+  <button class="brand" id="brand" type="button" title="Continue">
     <span class="brand-mark">ML From Scratch</span>
-    <span class="brand-sub">foundations &rarr; transformers</span>
   </button>
-  <div class="topstat">
-    <span class="words">lessons complete</span>
-    <b id="stat-count" class="mono">0/55</b>
+
+  <button class="searchbtn" id="searchbtn" type="button" aria-label="Search">
+    <span>Search lessons, notes, terms</span>
+    <kbd>&#8984;K</kbd>
+  </button>
+
+  <div class="topstat" id="topstat" title="Read from site/progress.json — written by the test runner">
+    <span id="stat-count">0 / 55 lessons</span>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
   </div>
-  <button class="iconbtn searchbtn" id="searchbtn" aria-label="Search">
-    <span>Search</span><kbd>&#8984;K</kbd>
-  </button>
+
   <div class="themetoggle" role="group" aria-label="Colour theme">
     <button type="button" id="theme-light" data-theme-set="light">light</button>
     <button type="button" id="theme-dark" data-theme-set="dark">dark</button>
   </div>
+
   <button class="iconbtn railtoggle" id="railtoggle" aria-expanded="false">Curriculum</button>
 </header>
 
@@ -22,6 +25,9 @@
   <aside class="rail" id="rail">
     <nav class="areas" id="rail-areas" aria-label="Areas"></nav>
     <nav id="rail-nav" aria-label="Lessons"></nav>
+    <div class="rail-foot">
+      <button class="rail-setup" id="rail-setup" type="button">Setup &amp; environment</button>
+    </div>
   </aside>
 
   <main class="pane" id="pane"></main>
@@ -32,7 +38,7 @@
 <div class="palette" id="palette" hidden>
   <div class="palette-box" role="dialog" aria-modal="true" aria-label="Search">
     <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
-           placeholder="Search lessons, sections, exercises, library&hellip;">
+           placeholder="Search lessons, notes, terms&hellip;">
     <div class="palette-results" id="palette-results"></div>
     <div class="palette-foot">&uarr;&darr; move &middot; &crarr; open &middot; esc close</div>
   </div>
