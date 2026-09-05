@@ -1086,57 +1086,66 @@
     return r ? r.status : "not_run";
   }
 
-  /* ---------- library ---------- */
+  /* ---------- library — ported from the design canvas ---------- */
   var libKind = "all";
 
   function buildLibrary() {
     var wrap = el("div", "wrap");
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow", LIBRARY.length + " items"));
-    hero.appendChild(el("h1", null, "Everything you have collected"));
-    hero.appendChild(el("p", "lede",
-      "Every resource the curriculum cites, browsable on its own. Six months in, the " +
-      "question is where did I read that, not which lesson cited it."));
-    wrap.appendChild(hero);
+    wrap.appendChild(el("div", "hero-eyebrow", "Library"));
+    wrap.appendChild(el("h1", "hero-h1", "Everything you have collected"));
+    wrap.appendChild(el("p", "hero-lede",
+      "Papers, videos, courses and repositories. Tagged by lesson, but findable " +
+      "when you have forgotten which lesson it was."));
 
     var kinds = ["all"];
     LIBRARY.forEach(function (it) { if (kinds.indexOf(it.kind) < 0) kinds.push(it.kind); });
-    var ctrls = el("div", "ctrls");
-    ctrls.style.marginTop = "22px";
+    var filters = el("div", "libfilters");
     kinds.forEach(function (k) {
-      ctrls.appendChild(button("pill" + (libKind === k ? " on" : ""), k, function () {
-        libKind = k;
-        render();
-      }));
+      var n = k === "all" ? LIBRARY.length
+        : LIBRARY.filter(function (it) { return it.kind === k; }).length;
+      var b = button("filter" + (libKind === k ? " on" : ""), null,
+        function () { libKind = k; render(); });
+      b.appendChild(document.createTextNode(k + " "));
+      b.appendChild(el("b", null, String(n)));
+      b.setAttribute("aria-pressed", libKind === k ? "true" : "false");
+      filters.appendChild(b);
     });
-    wrap.appendChild(ctrls);
+    wrap.appendChild(filters);
 
     var list = el("div", "libitems");
     LIBRARY.filter(function (it) { return libKind === "all" || it.kind === libKind; })
       .forEach(function (it) {
         var row = el("div", "libitem");
+        row.appendChild(el("span", "libkind", it.kind));
+
+        var body = el("div", "libbody");
         var top = el("div", "libtop");
-        top.appendChild(el("span", "chip", it.kind));
+        /* The design draws the title as plain text; it stays a link, because a
+           library you cannot open is a list. At rest the two look the same. */
         var a = el("a", "libtitle", it.title);
         a.href = it.url;
         a.target = "_blank";
         a.rel = "noopener";
         top.appendChild(a);
-        row.appendChild(top);
+        if (it.by) top.appendChild(el("span", "libby", it.by));
+        body.appendChild(top);
+        if (it.note) body.appendChild(el("p", "libnote", it.note));
 
         var tags = el("div", "libtags");
         (it.lessons || []).forEach(function (lid) {
           var l = lessonById(lid);
           if (!l) return;
           tags.appendChild(l.written
-            ? button("libtag is-link", lid + " " + l.title, function () { goLesson(lid); })
+            ? button("libtag", lid + " " + l.title, function () { goLesson(lid); })
             : el("span", "libtag", lid + " " + l.title));
         });
         (it.phases || []).forEach(function (n) {
           var ph = phases.filter(function (x) { return x.number === n; })[0];
           if (ph) tags.appendChild(button("libtag", "Phase " + n, function () { goPhase(ph.id); }));
         });
-        if (tags.children.length) row.appendChild(tags);
+        if (tags.children.length) body.appendChild(tags);
+
+        row.appendChild(body);
         list.appendChild(row);
       });
     wrap.appendChild(list);

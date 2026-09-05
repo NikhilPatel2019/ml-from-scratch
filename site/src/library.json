@@ -13,7 +13,9 @@
       "phases": [
         1,
         3
-      ]
+      ],
+      "by": "Grant Sanderson",
+      "note": "Watch this before writing a single line of lesson 1.1. It gives you the picture — vectors as arrows, matrices as movements — that the code then makes real."
     },
     {
       "id": "3blue1brown-essence-of-calculus",
@@ -28,7 +30,9 @@
       "phases": [
         1,
         3
-      ]
+      ],
+      "by": "Grant Sanderson",
+      "note": "The derivative as a thing you can see rather than a rule you memorise. Everything in phase 1 about slopes and gradients assumes this picture."
     },
     {
       "id": "3blue1brown-neural-networks-includes-an-outs",
@@ -39,7 +43,9 @@
       "phases": [
         1,
         3
-      ]
+      ],
+      "by": "Grant Sanderson",
+      "note": "The clearest account of backpropagation anywhere, and the attention series at the end is the best transformer explainer that exists."
     },
     {
       "id": "statquest-with-josh-starmer",
@@ -49,7 +55,9 @@
       "lessons": [],
       "phases": [
         2
-      ]
+      ],
+      "by": "Josh Starmer",
+      "note": "Short, cheerful, and relentlessly concrete. When a classical-ML idea refuses to land, there is almost always a StatQuest that fixes it in ten minutes."
     },
     {
       "id": "andrej-karpathy-neural-networks-zero-to-hero",
@@ -59,7 +67,9 @@
       "lessons": [],
       "phases": [
         3
-      ]
+      ],
+      "by": "Andrej Karpathy",
+      "note": "Builds autograd, then a language model, from nothing, live, with every mistake left in. The closest thing to this curriculum's method on video."
     },
     {
       "id": "dive-into-deep-learning",
@@ -69,7 +79,9 @@
       "lessons": [],
       "phases": [
         3
-      ]
+      ],
+      "by": "Zhang, Lipton, Li, Smola",
+      "note": "A full textbook where every equation is followed by the code that runs it. The reference to reach for when you want depth on a specific method."
     },
     {
       "id": "jay-alammar-the-illustrated-transformer",
@@ -79,7 +91,9 @@
       "lessons": [],
       "phases": [
         4
-      ]
+      ],
+      "by": "Jay Alammar",
+      "note": "The diagrams most people picture when they think about transformers. Read it before the paper, not after."
     },
     {
       "id": "the-annotated-transformer-harvard-nlp",
@@ -89,7 +103,9 @@
       "lessons": [],
       "phases": [
         4
-      ]
+      ],
+      "by": "Harvard NLP",
+      "note": "The Attention Is All You Need paper, line by line, with working code beside each paragraph. Read it once you can already write a small model."
     },
     {
       "id": "sebastian-raschka-s-blog",
@@ -99,7 +115,9 @@
       "lessons": [],
       "phases": [
         4
-      ]
+      ],
+      "by": "Sebastian Raschka",
+      "note": "Careful, current writing on how LLMs actually work, with the benchmarks and caveats other posts leave out."
     },
     {
       "id": "distill-pub",
@@ -110,7 +128,9 @@
       "phases": [
         3,
         4
-      ]
+      ],
+      "by": "Distill",
+      "note": "Interactive papers you can poke at. No longer publishing, but what is there is still the high-water mark for explaining a method visually."
     },
     {
       "id": "chris-olah-s-blog",
@@ -121,7 +141,9 @@
       "phases": [
         3,
         4
-      ]
+      ],
+      "by": "Chris Olah",
+      "note": "The LSTM and embedding posts are ten years old and still the best first explanation of either. Start with Understanding LSTMs."
     },
     {
       "id": "deep-learning-goodfellow-bengio-and-courvill",
@@ -132,7 +154,9 @@
       "phases": [
         3,
         4
-      ]
+      ],
+      "by": "Goodfellow, Bengio, Courville",
+      "note": "The standard reference. Dense, and not a first read — but when you need the formal statement of something, it is here and it is free."
     },
     {
       "id": "mlu-explain-amazon-s-machine-learning-univer",
@@ -147,7 +171,9 @@
       ],
       "phases": [
         2
-      ]
+      ],
+      "by": "Amazon MLU",
+      "note": "Short visual essays on the ideas that are easy to nod along to and hard to actually hold: bias-variance, cross-validation, ROC."
     },
     {
       "id": "sebastian-raschka-build-a-large-language-mod",
@@ -157,7 +183,9 @@
       "lessons": [],
       "phases": [
         4
-      ]
+      ],
+      "by": "Sebastian Raschka",
+      "note": "Builds a GPT end to end in PyTorch, one component per chapter. The natural sequel to this curriculum's phase 4."
     },
     {
       "id": "vizuara-building-llms-from-scratch",
@@ -167,7 +195,9 @@
       "lessons": [],
       "phases": [
         4
-      ]
+      ],
+      "by": "Vizuara",
+      "note": "Long-form walkthroughs of LLM internals, worked slowly enough to follow along by typing rather than watching."
     },
     {
       "id": "chip-huyen-ai-engineering-building-applicati",
@@ -178,7 +208,9 @@
       "phases": [
         4,
         5
-      ]
+      ],
+      "by": "Chip Huyen",
+      "note": "What changes when a model becomes a product: evaluation, cost, latency, failure modes. Phase 5 territory, and the notebooks are open."
     },
     {
       "id": "jamwithai-production-agentic-rag-course",
@@ -189,7 +221,9 @@
       "phases": [
         4,
         5
-      ]
+      ],
+      "by": "jamwithai",
+      "note": "A working retrieval-augmented agent rather than a toy demo, with the retrieval and evaluation parts taken seriously."
     },
     {
       "id": "fareedkhan-dev-all-agentic-architectures",
@@ -200,7 +234,9 @@
       "phases": [
         4,
         5
-      ]
+      ],
+      "by": "FareedKhan-dev",
+      "note": "A catalogue of agent patterns implemented side by side, useful for seeing what the choices actually are before picking one."
     },
     {
       "id": "kaggle-learn-and-competitions",
@@ -210,7 +246,9 @@
       "lessons": [],
       "phases": [
         2
-      ]
+      ],
+      "by": "Kaggle",
+      "note": "Where you find out whether it transfers. The micro-courses are thin; the competitions and public notebooks are the real material."
     },
     {
       "id": "papers-with-code",
@@ -220,7 +258,9 @@
       "lessons": [],
       "phases": [
         2
-      ]
+      ],
+      "by": "Papers with Code",
+      "note": "A paper with the implementation attached. The fastest route from 'I read about this' to 'I ran this'."
     },
     {
       "id": "andrew-ng-machine-learning-specialization-de",
@@ -231,7 +271,9 @@
       "phases": [
         1,
         2
-      ]
+      ],
+      "by": "Andrew Ng, DeepLearning.AI",
+      "note": "The canonical first course. Our phase 2 covers the same ground by building it instead — useful as a second angle, not a substitute."
     },
     {
       "id": "nptel-artificial-intelligence-search-methods",
@@ -239,7 +281,9 @@
       "title": "NPTEL, Artificial Intelligence: Search Methods for Problem Solving — Prof. Deepak Khemani, IIT Madras",
       "url": "https://onlinecourses.nptel.ac.in/noc26_cs182/",
       "lessons": [],
-      "phases": []
+      "phases": [],
+      "by": "Deepak Khemani, IIT Madras",
+      "note": "Classical AI: search, heuristics, planning. Not on the path to a neural network, and worth knowing anyway — it is the half of AI that predates it."
     },
     {
       "id": "keith-galli-complete-python-numpy-tutorial",
@@ -251,7 +295,9 @@
       ],
       "phases": [
         1
-      ]
+      ],
+      "by": "Keith Galli",
+      "note": "One sitting, and lesson 1.1 stops being about NumPy syntax and starts being about vectors. Watch it first if you have never used arrays."
     }
   ]
 }
