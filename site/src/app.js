@@ -631,21 +631,13 @@
   }
 
   /* ---------- continue (landing) ---------- */
-  /* ---------- continue: the one thing to do next ----------
-     This page used to explain the curriculum three times at three levels of
-     zoom, with "how this works" sitting permanently between the reader and the
-     only thing they came for. That material moved to Setup, which is one click
-     away and never in the way twice. */
+  /* ---------- continue — ported from the design canvas ---------- */
 
-  function copyButton(text, target) {
-    var b = button("copybtn", "copy", function () {
+  function copyButton(text, target, cls) {
+    var b = button(cls || "copybtn", "copy", function () {
       var reset = function () { b.textContent = "copy"; b.classList.remove("ok", "warn"); };
-
-      /* Clipboard access needs a secure context and a real user gesture, and can
-         still be refused by embedder policy. When it is, select the command so
-         Ctrl+C works — a fallback that only changes a label helps nobody. */
       var fallback = function () {
-        b.textContent = "press Ctrl+C";
+        b.textContent = "Ctrl+C";
         b.classList.add("warn");
         try {
           var range = document.createRange();
@@ -656,7 +648,6 @@
         } catch (e) {}
         setTimeout(reset, 2600);
       };
-
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(function () {
@@ -681,146 +672,197 @@
     return row;
   }
 
+  /* The design's command control: the text and the copy affordance are one
+     chip, so the whole thing reads as a thing you take. */
+  function commandChip(cmd) {
+    var chip = el("button", "cmdchip");
+    chip.type = "button";
+    var code = el("span", null, cmd);
+    chip.appendChild(code);
+    var label = el("span", "copylabel", "copy");
+    chip.appendChild(label);
+    chip.addEventListener("click", function () {
+      var reset = function () { label.textContent = "copy"; label.classList.remove("ok", "warn"); };
+      var fallback = function () {
+        label.textContent = "Ctrl+C";
+        label.classList.add("warn");
+        try {
+          var range = document.createRange();
+          range.selectNodeContents(code);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } catch (e) {}
+        setTimeout(reset, 2600);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(cmd).then(function () {
+            label.textContent = "copied";
+            label.classList.add("ok");
+            setTimeout(reset, 1400);
+          }, fallback);
+          return;
+        }
+      } catch (e) {}
+      fallback();
+    });
+    return chip;
+  }
+
   function buildOverview() {
     var wrap = el("div", "wrap");
     var next = nextLesson();
 
     if (!next) {
-      var doneHero = el("div", "hero");
-      doneHero.appendChild(el("div", "eyebrow", "nothing outstanding"));
-      doneHero.appendChild(el("h1", null, "You are up to date."));
-      doneHero.appendChild(el("p", "lede",
-        "Everything written so far is complete. The rest of the curriculum is on Path."));
-      wrap.appendChild(doneHero);
+      wrap.appendChild(el("div", "hero-eyebrow", "nothing outstanding"));
+      wrap.appendChild(el("h1", "hero-h1", "You are up to date."));
       wrap.appendChild(smallCards(null));
-      wrap.appendChild(setupFooter());
+      wrap.appendChild(paneNote(null));
       return wrap;
     }
 
     var lt = lessonTests(next.id);
-    var red = [];
-    var remaining = 0;
+    var open = [];
     if (lt) {
-      lt.exercises.forEach(function (e) {
-        if (e.status === "pass") return;
-        remaining++;
-        if (e.status === "fail") red.push(e.name);
-      });
+      lt.exercises.forEach(function (e) { if (e.status !== "pass") open.push(e.name); });
     }
 
-    /* The headline is the state, not a slogan. */
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow",
-      "continue · phase " + next.phase.number + " · lesson " + next.id));
-    if (lt && remaining) {
-      hero.appendChild(el("h1", null,
-        remaining + (remaining === 1 ? " exercise left in " : " exercises left in ") + next.id + "."));
-    } else if (lt) {
-      hero.appendChild(el("h1", null, next.id + " is passing. Close it out."));
-    } else {
-      hero.appendChild(el("h1", null, next.title + "."));
-    }
-    hero.appendChild(el("p", "lede", next.summary));
-    wrap.appendChild(hero);
-
-    /* the one card that matters */
-    var card = el("div", "continue-card");
-
-    var tabIdx = activeTab[next.id] || 0;
     var present = SECTIONS[next.id] || [];
-    var lessonSteps = STEPS.filter(function (st) { return present.indexOf(st.name) > -1; });
-    var where = lessonSteps.length
-      ? (lessonSteps[Math.min(tabIdx, lessonSteps.length - 1)] || lessonSteps[0]).label
-      : null;
+    var steps = STEPS.filter(function (s) { return present.indexOf(s.name) > -1; });
+    var at = Math.min(activeTab[next.id] || 0, Math.max(steps.length - 1, 0));
+    var stepName = steps.length ? steps[at].label : null;
     var resumed = activeTab[next.id] != null;
 
-    var top = el("div", "continue-top");
-    var info = el("div");
-    info.appendChild(el("div", "continue-title", next.title));
-    info.appendChild(el("div", "continue-where",
-      where ? (resumed ? "you left off in " + where : "start with the " + where) : "open the lesson"));
-    top.appendChild(info);
-    top.appendChild(button("btn", where ? (resumed ? "Resume " + where : "Open " + where) : "Open lesson",
-      function () { goLesson(next.id); }));
-    card.appendChild(top);
+    wrap.appendChild(el("div", "hero-eyebrow",
+      "Phase " + next.phase.number + " · " + next.phase.title));
+    wrap.appendChild(el("h1", "hero-h1",
+      lt && open.length
+        ? open.length + (open.length === 1 ? " exercise left in " : " exercises left in ") + next.id + "."
+        : lt ? next.id + " is passing. Close it out."
+        : next.title + "."));
 
-    if (lt) {
-      var stat = el("div", "continue-stat");
-      var bar = el("div", "cbar");
-      var fill = el("i");
-      fill.style.width = (lt.tests_total ? lt.tests_passed / lt.tests_total * 100 : 0) + "%";
-      bar.appendChild(fill);
-      stat.appendChild(bar);
-      stat.appendChild(el("span", "cstat-num", lt.tests_passed + " / " + lt.tests_total + " tests passing"));
-      card.appendChild(stat);
+    var card = el("div", "continue-card");
+    var head = el("div", "continue-head");
 
-      if (red.length) {
-        var redrow = el("div", "continue-red");
-        redrow.appendChild(el("span", "eyebrow", "still red"));
-        var names2 = el("div", "redlist");
-        red.forEach(function (n) { names2.appendChild(el("code", "redname", n)); });
-        redrow.appendChild(names2);
-        card.appendChild(redrow);
-      }
-    } else {
-      var hint = el("div", "continue-hint");
-      hint.appendChild(document.createTextNode(
-        "Run this in the repository to see which exercises pass. Nothing here is guessed."));
-      card.appendChild(hint);
+    var meta = el("div", "continue-meta");
+    meta.appendChild(el("div", "continue-kicker", "Continue · lesson " + next.id));
+    if (stepName) {
+      meta.appendChild(el("div", "continue-step",
+        "step " + (at + 1) + " of " + steps.length + " — " + stepName.toLowerCase()));
     }
+    head.appendChild(meta);
+    head.appendChild(el("div", "continue-title", next.title));
+    head.appendChild(el("p", "continue-nudge", lt
+      ? (open.length
+          ? "Pick up where the tests stop. Nothing here is guessed — the numbers come from the runner."
+          : "Everything passes. Answer the closing questions and mark it done.")
+      : next.summary));
 
-    card.appendChild(commandRow("progress " + next.id));
+    var actions = el("div", "continue-actions");
+    var cta = el("button", "btn-primary");
+    cta.type = "button";
+    cta.textContent = stepName
+      ? (resumed ? "Resume " + stepName.toLowerCase() : "Start " + stepName.toLowerCase())
+      : "Open lesson";
+    cta.addEventListener("click", function () { goLesson(next.id); });
+    actions.appendChild(cta);
+    actions.appendChild(commandChip("progress " + next.id));
+    head.appendChild(actions);
+    card.appendChild(head);
+
+    var stats = el("div", "continue-stats");
+
+    var s1 = el("div", "cstat");
+    s1.appendChild(el("div", "cstat-k", "Tests passing"));
+    s1.appendChild(el("div", "cstat-big", lt ? lt.tests_passed + " / " + lt.tests_total : "—"));
+    stats.appendChild(s1);
+
+    var s2 = el("div", "cstat");
+    s2.appendChild(el("div", "cstat-k", "Still open"));
+    s2.appendChild(el("div", "cstat-red", lt
+      ? (open.length ? open.join(", ") : "nothing")
+      : "not run yet"));
+    stats.appendChild(s2);
+
+    var s3 = el("div", "cstat");
+    s3.appendChild(el("div", "cstat-k", "Optional stretch"));
+    s3.appendChild(el("div", "cstat-sub", "stretch.py · not scored"));
+    stats.appendChild(s3);
+
+    card.appendChild(stats);
     wrap.appendChild(card);
 
     wrap.appendChild(smallCards(next));
-    wrap.appendChild(setupFooter());
+    wrap.appendChild(paneNote(next));
     return wrap;
   }
 
-  /* Two small cards, and nothing else. */
   function smallCards(next) {
     var row = el("div", "smallcards");
+    var written = writtenLessons();
+    var doneCount = written.filter(isComplete).length;
 
-    var a = button("scard", null, function () { go("path"); });
-    a.appendChild(el("div", "eyebrow", "where you are"));
-    var totals = testTotals();
-    var doneCount = writtenLessons().filter(isComplete).length;
-    a.appendChild(el("div", "scard-line", totals && totals.total
-      ? totals.passed + " of " + totals.total + " tests passing"
-      : doneCount + " of " + writtenLessons().length + " written lessons complete"));
+    var a = el("div", "scard");
+    var ah = el("div", "scard-head");
+    ah.appendChild(el("div", "scard-k", "Where you are"));
+    ah.appendChild(button("scard-go", "Path →", function () { go("path"); }));
+    a.appendChild(ah);
+    var count = el("div", "scard-count");
+    count.appendChild(el("span", "scard-num", String(doneCount)));
+    count.appendChild(el("span", "scard-of",
+      "of " + TOTAL + " lessons · " + written.length + " written so far"));
+    a.appendChild(count);
+    var bar = el("div", "scard-bar");
+    var fill = el("i");
+    fill.style.width = (TOTAL ? doneCount / TOTAL * 100 : 0) + "%";
+    bar.appendChild(fill);
+    a.appendChild(bar);
     var ph = next ? next.phase : phases[0];
-    a.appendChild(el("p", "scard-sub", "Phase " + ph.number + " · " + ph.milestone));
+    var mile = el("p", "scard-mile");
+    mile.appendChild(el("b", null, "Phase " + ph.number + " milestone. "));
+    mile.appendChild(document.createTextNode(ph.milestone));
+    a.appendChild(mile);
     row.appendChild(a);
 
-    var b = button("scard", null, function () { go("library"); });
-    b.appendChild(el("div", "eyebrow", next ? "library, for " + next.id : "in your library"));
+    var b = el("div", "scard");
+    var bh = el("div", "scard-head");
+    bh.appendChild(el("div", "scard-k", "In your library"));
+    bh.appendChild(button("scard-go", "Library →", function () { go("library"); }));
+    b.appendChild(bh);
     var picked = LIBRARY.filter(function (it) {
       return next && (it.lessons || []).indexOf(next.id) > -1;
     });
-    if (picked.length < 3) {
-      LIBRARY.forEach(function (it) {
-        if (picked.length < 3 && picked.indexOf(it) < 0) picked.push(it);
-      });
-    }
-    picked.slice(0, 3).forEach(function (it) {
-      b.appendChild(el("div", "scard-item", it.title));
+    LIBRARY.forEach(function (it) {
+      if (picked.length < 3 && picked.indexOf(it) < 0) picked.push(it);
     });
-    b.appendChild(el("p", "scard-sub", LIBRARY.length + " items in all"));
+    var list = el("div", "scard-list");
+    picked.slice(0, 3).forEach(function (it) {
+      var item = el("div", "scard-item");
+      item.appendChild(el("span", "scard-kind", it.kind));
+      item.appendChild(el("span", "scard-title", it.title));
+      list.appendChild(item);
+    });
+    b.appendChild(list);
     row.appendChild(b);
 
     return row;
   }
 
-  function setupFooter() {
-    var foot = el("div", "foot");
-    foot.appendChild(el("span", null, "First time here, or on a new machine?"));
-    foot.appendChild(button("linkbtn", "Setup and how this works", function () { go("setup"); }));
-    return foot;
+  function paneNote(next) {
+    var p = el("p", "pane-note");
+    p.appendChild(document.createTextNode("Progress is read from "));
+    p.appendChild(el("b", null, "site/progress.json"));
+    p.appendChild(document.createTextNode(", written by "));
+    p.appendChild(el("b", null, "progress --json"));
+    p.appendChild(document.createTextNode(
+      ". This page never invents a pass. Self-paced — no streaks, no deadlines."));
+    return p;
   }
 
   /* ---------- setup: read once, then out of the way ---------- */
   function buildSetup() {
-    var wrap = el("div", "wrap");
+    var wrap = el("div", "wrap is-setup");
     var hero = el("div", "hero");
     hero.appendChild(el("div", "eyebrow", "read this once"));
     hero.appendChild(el("h1", null, "How this works, and where the code lives"));
@@ -883,7 +925,7 @@
 
   /* ---------- path: the shape of the whole thing ---------- */
   function buildPath() {
-    var wrap = el("div", "wrap");
+    var wrap = el("div", "wrap is-path");
     var hero = el("div", "hero");
     hero.appendChild(el("div", "eyebrow", "the whole curriculum"));
     hero.appendChild(el("h1", null, "Five phases, " + TOTAL + " lessons"));
@@ -1236,7 +1278,7 @@
   }
 
   function buildLesson(l) {
-    var wrap = el("div", "wrap");
+    var wrap = el("div", "wrap is-lesson");
 
     var head = el("div", "lesson-head");
     var crumbs = el("div", "crumbs");
