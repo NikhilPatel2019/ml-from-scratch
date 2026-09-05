@@ -1,6 +1,6 @@
 # Restructure brief — ML From Scratch site
 
-> **Status.** Steps 1 and 2 done. The dark-mode toggle from step 8 landed early. Lesson
+> **Status.** Steps 1, 2 and 5 done (5 pulled forward: steps 3, 4 and 6 all display test state, so building them against a placeholder then revisiting all three was the more expensive order). The dark-mode toggle from step 8 landed early. Lesson
 > ids are 1-based (phases 1–5); this brief has been renumbered to match.
 > Decision on step 5: the published site shows the curriculum, a local run reads
 > `progress.json`.
@@ -137,7 +137,7 @@ step you left. The stepper communicates progress within a lesson at a glance.
 
 ---
 
-## Step 5 — Real test results, one source of truth
+## Step 5 — Real test results, one source of truth  ✅ done
 
 **Problem.** Seven functions, a test runner, seven pass/fail results, and none of it appears in the
 UI. Meanwhile step 04 of "How this works" tells the user the site's progress is self-reported and that
@@ -229,7 +229,7 @@ through.
 - [ ] Nothing in the UI is time-based.
 - [ ] Home page's largest element is the next action.
 - [ ] No prose explains the order of steps.
-- [ ] Progress shown = tests passed, or explicitly labelled as a manual override.
-- [ ] Site works with `progress.json` missing.
+- [x] Progress shown = tests passed, or explicitly labelled as a manual override.
+- [x] Site works with `progress.json` missing.
 - [ ] Light and dark both switchable and both legible.
 - [ ] Still one self-contained `index.html` from `python build.py`.

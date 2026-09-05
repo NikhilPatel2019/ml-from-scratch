@@ -55,12 +55,12 @@
     for (var i = 0; i < allLessons.length; i++) if (allLessons[i].id === id) return allLessons[i];
     return null;
   }
-  function phaseDone(p) { return p.lessons.filter(function (l) { return done[l.id]; }).length; }
-  function totalDone() { return Object.keys(done).length; }
+  function phaseDone(p) { return p.lessons.filter(isComplete).length; }
+  function totalDone() { return writtenLessons().filter(isComplete).length; }
   function writtenLessons() { return allLessons.filter(function (l) { return l.written; }); }
   function nextLesson() {
     var pool = writtenLessons();
-    for (var i = 0; i < pool.length; i++) if (!done[pool[i].id]) return pool[i];
+    for (var i = 0; i < pool.length; i++) if (!isComplete(pool[i])) return pool[i];
     return null;
   }
   /* ---------- resume where you left off ----------
@@ -127,6 +127,111 @@
     });
   }
 
+  /* ---------- real test results ----------
+     Written by `progress --json`, which runs the tests. Absent on the published
+     site and on a fresh clone, and that is the normal case: everything below
+     degrades to the hand-ticked behaviour rather than inventing a pass. */
+  var PROG_KEY = "mlfs:pasted-progress:v1";
+  var progressData = null;
+
+  function loadProgress() {
+    try {
+      var pasted = JSON.parse(localStorage.getItem(PROG_KEY) || "null");
+      if (pasted && pasted.lessons) progressData = pasted;
+    } catch (e) {}
+
+    if (typeof fetch !== "function") return;
+    /* file:// blocks this, and the published site has no such file. Both land in
+       the catch, which is why there is a paste box on Practice. */
+    fetch("progress.json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.lessons) return;
+        progressData = d;
+        render();
+      })
+      .catch(function () {});
+  }
+
+  function lessonTests(id) {
+    return (progressData && progressData.lessons && progressData.lessons[id]) || null;
+  }
+  function exerciseResult(lessonId, name) {
+    var lt = lessonTests(lessonId);
+    if (!lt) return null;
+    for (var i = 0; i < lt.exercises.length; i++) {
+      if (lt.exercises[i].name === name) return lt.exercises[i];
+    }
+    return null;
+  }
+  function testTotals() {
+    if (!progressData) return null;
+    var passed = 0, total = 0;
+    Object.keys(progressData.lessons).forEach(function (k) {
+      passed += progressData.lessons[k].tests_passed;
+      total += progressData.lessons[k].tests_total;
+    });
+    return { passed: passed, total: total };
+  }
+  /* Completion is derived from the runner where the runner has spoken; the hand
+     tick is only a fallback, and the UI says so wherever it is the source. */
+  function isComplete(l) {
+    var lt = lessonTests(l.id);
+    if (lt && lt.tests_total) return lt.tests_passed === lt.tests_total;
+    return !!done[l.id];
+  }
+  function completionIsDerived(l) {
+    var lt = lessonTests(l.id);
+    return !!(lt && lt.tests_total);
+  }
+
+  function pasteBox() {
+    var wrap = el("details", "solution");
+    wrap.style.marginTop = "18px";
+    var sum = el("summary", null, "Paste results instead");
+    wrap.appendChild(sum);
+    var body = el("div");
+    body.style.padding = "14px 16px";
+    body.appendChild(el("p", "why",
+      "Opening this page straight from a file, rather than through a local server, " +
+      "stops it reading progress.json. Run progress --json and paste the output here; " +
+      "it is kept in this browser only."));
+    var ta = document.createElement("textarea");
+    ta.rows = 5;
+    ta.className = "pastebox";
+    ta.placeholder = '{ "generated": "...", "lessons": { ... } }';
+    body.appendChild(ta);
+    var msg = el("div", "paste-msg");
+    var row = el("div", "ctrls");
+    row.appendChild(button("btn", "Load results", function () {
+      var parsed;
+      try {
+        parsed = JSON.parse(ta.value);
+      } catch (e) {
+        msg.textContent = "That is not valid JSON.";
+        msg.className = "paste-msg bad";
+        return;
+      }
+      if (!parsed || !parsed.lessons) {
+        msg.textContent = "No lessons key — is this the output of progress --json?";
+        msg.className = "paste-msg bad";
+        return;
+      }
+      try { localStorage.setItem(PROG_KEY, JSON.stringify(parsed)); } catch (e) {}
+      progressData = parsed;
+      render();
+    }));
+    row.appendChild(button("btn ghost", "Forget", function () {
+      try { localStorage.removeItem(PROG_KEY); } catch (e) {}
+      progressData = null;
+      render();
+    }));
+    body.appendChild(row);
+    body.appendChild(msg);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
   /* ---------- rail ---------- */
   var railNav = document.getElementById("rail-nav");
   var railAreas = document.getElementById("rail-areas");
@@ -173,12 +278,16 @@
       written.forEach(function (l) {
         var row = el("li", "lesson-row" +
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
-          (done[l.id] ? " is-done" : ""));
+          (isComplete(l) ? " is-done" : ""));
 
         var box = el("input", "tickbox");
         box.type = "checkbox";
-        box.checked = !!done[l.id];
-        box.setAttribute("aria-label", "Mark lesson " + l.id + " complete");
+        box.checked = isComplete(l);
+        box.disabled = completionIsDerived(l);
+        box.title = box.disabled
+          ? "Set by the test runner"
+          : "Mark lesson " + l.id + " complete by hand";
+        box.setAttribute("aria-label", box.title);
         box.addEventListener("change", function () { toggleDone(l.id); });
         row.appendChild(box);
 
@@ -241,7 +350,7 @@
       var ticks = el("div", "ticks");
       p.lessons.forEach(function (l) {
         var t = el("span", "tick");
-        t.setAttribute("data-state", done[l.id] ? "done" : (l.written ? "ready" : "planned"));
+        t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
         t.title = l.id + " — " + l.title;
         ticks.appendChild(t);
       });
@@ -440,9 +549,13 @@
   }
 
   /* ---------- practice: every exercise in one view ---------- */
+  var practiceFilter = "all";
+
   function buildPractice() {
     var wrap = el("div", "wrap");
     var rows = allExercises();
+    var totals = testTotals();
+
     var hero = el("div", "hero");
     hero.appendChild(el("div", "eyebrow",
       rows.length + " exercises across " + writtenLessons().length + " written lessons"));
@@ -452,37 +565,90 @@
       "remember which lesson they belong to."));
     wrap.appendChild(hero);
 
-    var note = el("div", "callout");
-    note.appendChild(el("span", "lbl", "Status is not wired up yet"));
-    note.appendChild(el("p", null,
-      "Pass and fail come from the test runner, not from this page. Until the progress " +
-      "command writes progress.json, every exercise below reads as not run. The names and " +
-      "descriptions are parsed from your exercises.py, so this list cannot drift from the code."));
-    wrap.appendChild(note);
+    if (!progressData) {
+      var note = el("div", "callout");
+      note.appendChild(el("span", "lbl", "No results yet"));
+      note.appendChild(el("p", null,
+        "Pass and fail come from the test runner, never from this page. Run " +
+        "progress --json in the repository and reload; until then every exercise " +
+        "below reads as not run."));
+      var cmd = el("div", "codeblock");
+      cmd.appendChild(el("pre", null, "progress --json"));
+      note.appendChild(cmd);
+      note.appendChild(pasteBox());
+      wrap.appendChild(note);
+    } else {
+      var bar = el("div", "nextup");
+      var b = el("div", "body");
+      b.appendChild(el("div", "t", totals.passed + " of " + totals.total + " tests passing"));
+      b.appendChild(el("div", "s", "From the runner at " +
+        String(progressData.generated || "").replace("T", " ").replace("+00:00", " UTC")));
+      bar.appendChild(b);
+      bar.appendChild(button("btn ghost", "Forget results", function () {
+        try { localStorage.removeItem(PROG_KEY); } catch (e) {}
+        progressData = null;
+        render();
+      }));
+      wrap.appendChild(bar);
 
+      var ctrls = el("div", "ctrls");
+      ctrls.style.marginTop = "20px";
+      [["all", "all"], ["fail", "failing"], ["not_run", "not run"], ["pass", "passing"]]
+        .forEach(function (f) {
+          ctrls.appendChild(button("pill" + (practiceFilter === f[0] ? " on" : ""), f[1],
+            function () { practiceFilter = f[0]; render(); }));
+        });
+      wrap.appendChild(ctrls);
+    }
+
+    var shown = 0;
     writtenLessons().forEach(function (l) {
       if (!l.exercises || !l.exercises.length) return;
+
+      var visible = l.exercises.filter(function (e) {
+        if (practiceFilter === "all" || !progressData) return true;
+        var r = exerciseResult(l.id, e.name);
+        return (r ? r.status : "not_run") === practiceFilter;
+      });
+      if (!visible.length) return;
+      shown += visible.length;
+
       var sec = el("div", "section");
       var h = el("div", "practice-head");
       h.appendChild(el("span", "lid", l.id));
       h.appendChild(button("practice-lesson", l.title, function () { goLesson(l.id); }));
-      h.appendChild(el("span", "practice-count", l.exercises.length + " exercises"));
+      var lt = lessonTests(l.id);
+      h.appendChild(el("span", "practice-count", lt
+        ? lt.tests_passed + "/" + lt.tests_total + " passing"
+        : l.exercises.length + " exercises"));
       sec.appendChild(h);
 
       var list = el("div", "exrows");
-      l.exercises.forEach(function (e) {
-        var row = el("div", "exrow");
-        row.appendChild(el("span", "exmark"));
+      visible.forEach(function (e) {
+        var r = exerciseResult(l.id, e.name);
+        var status = r ? r.status : "not_run";
+        var row = el("div", "exrow" + (e.optional ? " is-optional" : ""));
+        var mark = el("span", "exmark");
+        mark.setAttribute("data-status", status);
+        row.appendChild(mark);
+
         var body = el("div", "exbody");
         body.appendChild(el("div", "exname", e.name));
         body.appendChild(el("div", "exsum", e.summary));
+        if (r && r.message) body.appendChild(el("div", "exmsg", r.message));
         row.appendChild(body);
-        row.appendChild(el("span", "exstat", "not run"));
+
+        row.appendChild(el("span", "exstat is-" + status,
+          status === "pass" ? "pass" : status === "fail" ? "fail" : "not run"));
         list.appendChild(row);
       });
       sec.appendChild(list);
       wrap.appendChild(sec);
     });
+
+    if (!shown && progressData) {
+      wrap.appendChild(el("div", "rail-empty", "Nothing matches that filter."));
+    }
     return wrap;
   }
 
@@ -753,9 +919,19 @@
     var live = pane.querySelector(".panel:not([hidden])") || pane.querySelector(".wrap");
     if (live) buildToc(live);
 
-    var n = totalDone();
-    document.getElementById("stat-count").textContent = n + "/" + TOTAL;
-    document.getElementById("stat-bar").style.width = (n / TOTAL * 100) + "%";
+    var totals = testTotals();
+    var words = document.querySelector(".topstat .words");
+    if (totals && totals.total) {
+      document.getElementById("stat-count").textContent = totals.passed + "/" + totals.total;
+      document.getElementById("stat-bar").style.width = (totals.passed / totals.total * 100) + "%";
+      if (words) words.textContent = "tests passing";
+    } else {
+      var n = writtenLessons().filter(isComplete).length;
+      var w = writtenLessons().length || 1;
+      document.getElementById("stat-count").textContent = n + "/" + TOTAL;
+      document.getElementById("stat-bar").style.width = (n / w * 100) + "%";
+      if (words) words.textContent = "lessons complete";
+    }
     buildRail();
 
     if (window.matchMedia("(max-width: 940px)").matches) {
@@ -816,5 +992,6 @@
 
   if (narrow.matches) rail.hidden = true;
   restoreView();
+  loadProgress();
   render();
 })();

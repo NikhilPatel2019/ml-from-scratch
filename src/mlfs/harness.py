@@ -11,6 +11,7 @@ The same file is importable by pytest, so `pytest` works on this repo too.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,6 +76,10 @@ class Result:
     name: str
     status: str
     message: str = ""
+    #: the exercise this test covers, e.g. test_6_cosine_similarity -> cosine_similarity.
+    #: The site groups by this, so it has to be the function name in exercises.py,
+    #: not the human label.
+    exercise: str = ""
 
     @property
     def ok(self) -> bool:
@@ -102,20 +107,26 @@ def collect(module) -> list[tuple[str, callable]]:
     ]
 
 
+def exercise_name(test_name: str) -> str:
+    """test_6_cosine_similarity -> cosine_similarity."""
+    return re.sub(r"^test_\d+_", "", test_name)
+
+
 def run(module) -> list[Result]:
     results = []
     for name, fn in collect(module):
         label = (fn.__doc__ or name).strip().splitlines()[0]
+        ex = exercise_name(name)
         try:
             fn()
         except NotImplementedError:
-            results.append(Result(label, TODO, "not written yet"))
+            results.append(Result(label, TODO, "not written yet", ex))
         except AssertionError as e:
-            results.append(Result(label, FAIL, str(e) or "assertion failed"))
+            results.append(Result(label, FAIL, str(e) or "assertion failed", ex))
         except Exception as e:  # a real bug in their code
-            results.append(Result(label, FAIL, f"{type(e).__name__}: {e}"))
+            results.append(Result(label, FAIL, f"{type(e).__name__}: {e}", ex))
         else:
-            results.append(Result(label, PASS))
+            results.append(Result(label, PASS, "", ex))
     return results
 
 

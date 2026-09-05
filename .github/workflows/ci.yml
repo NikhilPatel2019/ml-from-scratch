@@ -79,8 +79,9 @@ jobs:
           out = subprocess.run([sys.executable, "-m", "mlfs.cli", "--json"],
                                capture_output=True, text=True, check=True).stdout
           data = json.loads(out)
-          total = sum(len(p["lessons"]) for p in data["phases"])
-          print(f"ok: {total} lessons reported")
+          assert "lessons" in data and "generated" in data, data.keys()
+          n = sum(v["tests_total"] for v in data["lessons"].values())
+          print(f"ok: {len(data['lessons'])} lessons, {n} tests reported")
 
       # site/index.html is generated. If someone edits it by hand, or edits the
       # source and forgets to rebuild, the committed file stops matching its
