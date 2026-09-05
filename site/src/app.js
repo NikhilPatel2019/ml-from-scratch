@@ -951,55 +951,45 @@
     return wrap;
   }
 
-  /* ---------- one phase ---------- */
+  /* ---------- one phase — ported from the design canvas ---------- */
   function buildPhase(ph) {
     var wrap = el("div", "wrap");
-    var head = el("div", "lesson-head");
-    var crumbs = el("div", "crumbs");
+
+    var crumbs = el("div", "crumbs spaced");
     crumbs.appendChild(button("crumb", "Path", function () { go("path"); }));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    crumbs.appendChild(el("span", "chip", "Phase " + ph.number));
-    head.appendChild(crumbs);
-    head.appendChild(el("h1", null, ph.title));
-    head.appendChild(el("p", "lede", ph.subtitle));
+    crumbs.appendChild(el("span", "crumb-now", "Phase " + ph.number));
+    wrap.appendChild(crumbs);
+
+    wrap.appendChild(el("div", "hero-eyebrow", "Phase " + ph.number + " · " + ph.subtitle));
+    wrap.appendChild(el("h1", "hero-h1", ph.title));
+    wrap.appendChild(el("p", "hero-lede phase-lede", ph.blurb));
+    wrap.appendChild(milestoneStrip(ph.milestone, "phase-mile"));
+
+    var written = ph.lessons.filter(function (l) { return l.written; }).length;
+    var head = el("div", "list-head");
+    head.appendChild(el("h2", null, "Lessons"));
+    head.appendChild(el("span", "list-count", ph.lessons.length + " lessons · " +
+      (written ? written + " written" : "none written yet")));
     wrap.appendChild(head);
 
-    var intro = el("div", "prose");
-    intro.appendChild(el("p", null, ph.blurb));
-    wrap.appendChild(intro);
-
-    var mile = el("div", "callout");
-    mile.appendChild(el("span", "lbl", "Milestone"));
-    mile.appendChild(el("p", null, ph.milestone));
-    wrap.appendChild(mile);
-
-    var idx = phases.indexOf(ph);
-    var assumes = el("div", "assumes");
-    assumes.appendChild(el("span", "eyebrow", "assumes"));
-    assumes.appendChild(el("p", null, idx === 0
-      ? "Nothing. You can program; no maths is taken for granted."
-      : "Phase " + phases[idx - 1].number + ": " + phases[idx - 1].milestone));
-    wrap.appendChild(assumes);
-
-
-    var sec = el("div", "section");
-    sec.appendChild(el("h2", null, "Lessons"));
     var list = el("div", "phase-lessons");
     ph.lessons.forEach(function (l) {
+      var done = isComplete(l);
       var row = l.written
         ? button("plesson", null, function () { goLesson(l.id); })
         : el("div", "plesson is-planned");
-      var top = el("div", "plesson-top");
-      top.appendChild(el("span", "lid", l.id));
-      top.appendChild(el("span", "plesson-title", l.title));
-      top.appendChild(el("span", "chip " + (l.written ? "ready" : "plan"),
-        l.written ? "ready" : "planned"));
-      row.appendChild(top);
-      row.appendChild(el("p", "plesson-sum", l.summary));
+      row.appendChild(el("span", "plesson-id", l.id));
+      var body = el("span", "plesson-body");
+      body.appendChild(el("span", "plesson-title", l.title));
+      body.appendChild(el("span", "plesson-sum", l.summary));
+      row.appendChild(body);
+      row.appendChild(el("span",
+        "plesson-tag " + (done ? "done" : l.written ? "ready" : "plan"),
+        done ? "complete" : l.written ? "written" : "planned"));
       list.appendChild(row);
     });
-    sec.appendChild(list);
-    wrap.appendChild(sec);
+    wrap.appendChild(list);
     return wrap;
   }
 

@@ -411,13 +411,6 @@ code, kbd { font-family: var(--f-mono); }
    lesson
    ============================================================ */
 .lesson-head { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 30px; }
-.crumbs { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 13px; }
-.crumb {
-  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
-  background: none; border: 0; padding: 2px 0; cursor: pointer;
-}
-.crumb:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
-.crumb-sep { color: var(--rule-firm); font-size: 12px; }
 .chip {
   font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .05em;
   text-transform: uppercase; padding: 3px 8px; border-radius: 5px;
@@ -835,7 +828,6 @@ figcaption {
   padding-left: 30px; margin-top: 3px; line-height: 1.4;
 }
 
-.crumb-static { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); }
 
 
 /* ============================================================
@@ -858,26 +850,74 @@ figcaption {
 .area.current .area-meta { color: var(--accent-ink); }
 
 /* phase page */
-.assumes {
-  margin-top: 1.4em; padding: 14px 18px; border-radius: 10px;
-  background: var(--surface-2); border: 1px solid var(--rule);
-}
-.assumes p { margin: 5px 0 0; font-size: 14.5px; color: var(--ink-2); max-width: 64ch; }
 
-.phase-lessons { display: grid; gap: 1px; margin-top: 20px; background: var(--rule);
-  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden; }
+/* ============================================================
+   phase — ported from the design canvas
+   ============================================================ */
+/* One crumb bar, shared by the phase and lesson pages. */
+.crumbs {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+}
+.crumbs.spaced { margin-bottom: 14px; }
+.crumb {
+  appearance: none; border: 0; background: none; padding: 0; cursor: pointer;
+  font: inherit; color: var(--accent-ink);
+}
+.crumb:hover { color: var(--accent); }
+.crumb-sep { color: var(--rule-firm); }
+.crumb-now { color: var(--ink); }
+
+.phase-mile {
+  margin-top: 20px; display: flex; gap: 12px; align-items: baseline;
+  padding: 15px 18px; background: var(--active-wash);
+  border: 1px solid color-mix(in srgb, var(--active) 30%, transparent);
+  border-radius: 10px; max-width: 76ch;
+}
+.phase-mile .milestone-k { padding-top: 2px; }
+.phase-mile .milestone-t { font-size: 15.5px; line-height: 1.55; }
+
+.list-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin: 32px 0 12px; gap: 12px; flex-wrap: wrap;
+}
+.list-head h2 {
+  font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+.list-count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+
+/* Hairline gaps over a ruled background: one border, not one per row. */
+.phase-lessons {
+  display: grid; gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden;
+}
 .plesson {
-  display: block; width: 100%; text-align: left; font-family: inherit;
-  background: var(--surface); border: 0; padding: 15px 20px; cursor: pointer;
-  transition: background .15s;
+  display: flex; gap: 14px; align-items: flex-start; width: 100%;
+  padding: 15px 18px; background: var(--surface);
+  appearance: none; border: 0; text-align: left; font-family: var(--f-body);
+  color: var(--ink); cursor: pointer; transition: background .15s;
 }
 .plesson:hover { background: var(--surface-2); }
 .plesson.is-planned { cursor: default; }
 .plesson.is-planned:hover { background: var(--surface); }
-.plesson-top { display: flex; align-items: baseline; gap: 10px; }
-.plesson-title { font-size: 15px; font-weight: 600; color: var(--ink); flex: 1; min-width: 0; }
-.plesson.is-planned .plesson-title { color: var(--ink-2); font-weight: 500; }
-.plesson-sum { margin: 5px 0 0 36px; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; max-width: 68ch; }
+.plesson-id {
+  font-family: var(--f-mono); font-size: 12px; flex: none; width: 34px;
+  padding-top: 1px; color: var(--accent-ink);
+}
+.plesson.is-planned .plesson-id { color: var(--ink-3); }
+.plesson-body { flex: 1; min-width: 0; text-align: left; }
+.plesson-title { display: block; font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--ink); }
+.plesson.is-planned .plesson-title { color: var(--ink-2); }
+.plesson-sum { display: block; font-size: 13.5px; line-height: 1.5; color: var(--ink-3); margin-top: 3px; }
+.plesson-tag {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .08em;
+  text-transform: uppercase; border: 1px solid var(--rule); border-radius: 4px;
+  padding: 3px 7px; flex: none; color: var(--ink-3); background: var(--surface-2);
+}
+.plesson-tag.ready { background: var(--accent-wash); color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+.plesson-tag.done { background: var(--done-wash); color: var(--done); border-color: color-mix(in srgb, var(--done) 30%, transparent); }
+.phase-lede { line-height: 1.65; margin-top: 13px; max-width: 70ch; }
 
 /* practice */
 .practice-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px;
@@ -3464,55 +3504,45 @@ var Widgets = (function () {
     return wrap;
   }
 
-  /* ---------- one phase ---------- */
+  /* ---------- one phase — ported from the design canvas ---------- */
   function buildPhase(ph) {
     var wrap = el("div", "wrap");
-    var head = el("div", "lesson-head");
-    var crumbs = el("div", "crumbs");
+
+    var crumbs = el("div", "crumbs spaced");
     crumbs.appendChild(button("crumb", "Path", function () { go("path"); }));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    crumbs.appendChild(el("span", "chip", "Phase " + ph.number));
-    head.appendChild(crumbs);
-    head.appendChild(el("h1", null, ph.title));
-    head.appendChild(el("p", "lede", ph.subtitle));
+    crumbs.appendChild(el("span", "crumb-now", "Phase " + ph.number));
+    wrap.appendChild(crumbs);
+
+    wrap.appendChild(el("div", "hero-eyebrow", "Phase " + ph.number + " · " + ph.subtitle));
+    wrap.appendChild(el("h1", "hero-h1", ph.title));
+    wrap.appendChild(el("p", "hero-lede phase-lede", ph.blurb));
+    wrap.appendChild(milestoneStrip(ph.milestone, "phase-mile"));
+
+    var written = ph.lessons.filter(function (l) { return l.written; }).length;
+    var head = el("div", "list-head");
+    head.appendChild(el("h2", null, "Lessons"));
+    head.appendChild(el("span", "list-count", ph.lessons.length + " lessons · " +
+      (written ? written + " written" : "none written yet")));
     wrap.appendChild(head);
 
-    var intro = el("div", "prose");
-    intro.appendChild(el("p", null, ph.blurb));
-    wrap.appendChild(intro);
-
-    var mile = el("div", "callout");
-    mile.appendChild(el("span", "lbl", "Milestone"));
-    mile.appendChild(el("p", null, ph.milestone));
-    wrap.appendChild(mile);
-
-    var idx = phases.indexOf(ph);
-    var assumes = el("div", "assumes");
-    assumes.appendChild(el("span", "eyebrow", "assumes"));
-    assumes.appendChild(el("p", null, idx === 0
-      ? "Nothing. You can program; no maths is taken for granted."
-      : "Phase " + phases[idx - 1].number + ": " + phases[idx - 1].milestone));
-    wrap.appendChild(assumes);
-
-
-    var sec = el("div", "section");
-    sec.appendChild(el("h2", null, "Lessons"));
     var list = el("div", "phase-lessons");
     ph.lessons.forEach(function (l) {
+      var done = isComplete(l);
       var row = l.written
         ? button("plesson", null, function () { goLesson(l.id); })
         : el("div", "plesson is-planned");
-      var top = el("div", "plesson-top");
-      top.appendChild(el("span", "lid", l.id));
-      top.appendChild(el("span", "plesson-title", l.title));
-      top.appendChild(el("span", "chip " + (l.written ? "ready" : "plan"),
-        l.written ? "ready" : "planned"));
-      row.appendChild(top);
-      row.appendChild(el("p", "plesson-sum", l.summary));
+      row.appendChild(el("span", "plesson-id", l.id));
+      var body = el("span", "plesson-body");
+      body.appendChild(el("span", "plesson-title", l.title));
+      body.appendChild(el("span", "plesson-sum", l.summary));
+      row.appendChild(body);
+      row.appendChild(el("span",
+        "plesson-tag " + (done ? "done" : l.written ? "ready" : "plan"),
+        done ? "complete" : l.written ? "written" : "planned"));
       list.appendChild(row);
     });
-    sec.appendChild(list);
-    wrap.appendChild(sec);
+    wrap.appendChild(list);
     return wrap;
   }
 
