@@ -1086,39 +1086,7 @@
         : "No exercises yet — no lesson has been written."));
     }
     shown.forEach(function (r) {
-      var l = r.lesson, e = r.ex;
-      var status = statusOf(l.id, e.name);
-      var res = exerciseResult(l.id, e.name);
-      var row = el("div", "exrow");
-
-      var mark = el("span", "exmark",
-        status === "pass" ? "✓" : status === "fail" ? "✕" : "·");
-      mark.setAttribute("data-status", status);
-      mark.setAttribute("aria-hidden", "true");
-      row.appendChild(mark);
-
-      var body = el("div", "exbody");
-      var head = el("div", "exhead");
-      head.appendChild(el("code", "exname", e.name));
-      head.appendChild(el("span", "exwhere",
-        "lesson " + l.id + " · #" + (l.exercises.indexOf(e) + 1)));
-      if (e.optional) head.appendChild(el("span", "exopt", "optional"));
-      body.appendChild(head);
-      body.appendChild(el("span", "exsum", e.summary));
-      if (res && res.message) body.appendChild(el("span", "exmsg", res.message));
-      row.appendChild(body);
-
-      row.appendChild(el("span", "exstat is-" + status,
-        status === "pass" ? "passing" : status === "fail" ? "failing" : "not run"));
-
-      var bans = el("span", "exbans");
-      (e.forbids || []).forEach(function (b, i) {
-        if (i) bans.appendChild(el("br"));
-        bans.appendChild(document.createTextNode(b));
-      });
-      row.appendChild(bans);
-
-      list.appendChild(row);
+      list.appendChild(exerciseRow(r.lesson, r.ex, true));
     });
     wrap.appendChild(list);
 
@@ -1136,9 +1104,48 @@
     return wrap;
   }
 
+  /* One exercise row, drawn the same way on Practice and inside a lesson.
+     Everything it says about status comes from the runner. */
   function statusOf(lessonId, name) {
     var r = exerciseResult(lessonId, name);
     return r ? r.status : "not_run";
+  }
+
+  function exerciseRow(l, e, showLesson) {
+    var res = exerciseResult(l.id, e.name);
+    var status = res ? res.status : "not_run";
+    var row = el("div", "exrow is-" + status + (e.optional ? " is-optional" : ""));
+
+    var mark = el("span", "exmark", status === "pass" ? "✓" : status === "fail" ? "!" : "");
+    mark.setAttribute("data-status", status);
+    mark.setAttribute("aria-hidden", "true");
+    row.appendChild(mark);
+
+    var body = el("div", "exbody");
+    var head = el("div", "exhead");
+    head.appendChild(el("code", "exname", e.name));
+    if (showLesson) {
+      head.appendChild(el("span", "exwhere",
+        "lesson " + l.id + " · #" + ((l.exercises || []).indexOf(e) + 1)));
+    }
+    if (e.optional) head.appendChild(el("span", "exopt", "optional"));
+    body.appendChild(head);
+    body.appendChild(el("span", "exsum", e.summary));
+    if (res && res.message) body.appendChild(el("span", "exmsg", res.message));
+    row.appendChild(body);
+
+    row.appendChild(el("span", "exstat is-" + status,
+      status === "pass" ? res.tests_total + (res.tests_total === 1 ? " test passes" : " tests pass")
+        : status === "fail" ? (res.tests_total - res.tests_passed) + " of " + res.tests_total + " failing"
+        : e.optional ? "not scored" : "todo"));
+
+    var bans = el("span", "exbans");
+    (e.forbids || []).forEach(function (b, i) {
+      if (i) bans.appendChild(el("br"));
+      bans.appendChild(document.createTextNode(b));
+    });
+    row.appendChild(bans);
+    return row;
   }
 
   /* ---------- library — ported from the design canvas ---------- */
@@ -1207,9 +1214,9 @@
     return wrap;
   }
 
-  /* ---------- lesson: a sequence, not a set of alternatives ----------
-     Tabs said "alternatives, any order" and held no state, so the prose had to
-     keep explaining an order the interface contradicted. These are steps. */
+  /* ---------- lesson — ported from the design canvas ----------
+     Four steps, taken in order. The header sits on paper; the steps are tabs
+     joined to a --surface band, so the step you are on reads as the page. */
   var STEPS = [
     { name: "lesson", label: "Read" },
     { name: "exercises", label: "Implement" },
@@ -1217,8 +1224,13 @@
     { name: "closeout", label: "Close out" }
   ];
   var SEEN_STEPS_KEY = "mlfs:seen-steps:v1";
+  var ANSWERED_KEY = "mlfs:answered:v1";
   var seenSteps = (function () {
     try { return JSON.parse(localStorage.getItem(SEEN_STEPS_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  })();
+  var answered = (function () {
+    try { return JSON.parse(localStorage.getItem(ANSWERED_KEY) || "{}") || {}; }
     catch (e) { return {}; }
   })();
 
@@ -1232,92 +1244,255 @@
     return (seenSteps[lessonId] || []).indexOf(stepName) > -1;
   }
 
-  /* Standing is only shown where something real is known. */
-  function stepStanding(l, name) {
-    if (name === "exercises") {
-      var lt = lessonTests(l.id);
-      if (lt) return lt.tests_passed + " of " + lt.tests_total;
-      return (l.exercises || []).length ? String((l.exercises || []).length) : "";
-    }
-    if (name === "closeout") return isComplete(l) ? "done" : "";
-    return hasSeen(l.id, name) ? "seen" : "";
-  }
-
-  /* Step 6: one row per exercise, with whatever the runner actually said. */
-  function exerciseRows(l) {
-    var box = el("div", "exercise-block");
-    box.appendChild(commandRow("progress " + l.id));
-
+  function testCounts(l) {
     var lt = lessonTests(l.id);
-    if (!lt) {
-      box.appendChild(el("p", "exnote",
-        "Run that to see which of these pass. Until you do, every row reads as not run — " +
-        "this page never invents a result."));
-    }
-
-    var list = el("div", "exrows");
-    (l.exercises || []).forEach(function (e) {
-      var r = exerciseResult(l.id, e.name);
-      var status = r ? r.status : "not_run";
-      var row = el("div", "exrow" + (e.optional ? " is-optional" : ""));
-      var mark = el("span", "exmark");
-      mark.setAttribute("data-status", status);
-      row.appendChild(mark);
-      var body = el("div", "exbody");
-      body.appendChild(el("div", "exname", e.name));
-      body.appendChild(el("div", "exsum", e.summary));
-      if (r && r.message) body.appendChild(el("div", "exmsg", r.message));
-      row.appendChild(body);
-      row.appendChild(el("span", "exstat is-" + status,
-        status === "pass" ? (r.tests_passed + "/" + r.tests_total)
-          : status === "fail" ? "fail" : "not run"));
-      list.appendChild(row);
+    if (lt) return { passed: lt.tests_passed, total: lt.tests_total, run: true };
+    return { passed: 0, total: (l.exercises || []).length, run: false };
+  }
+  function notPassing(l) {
+    return (l.exercises || []).filter(function (e) {
+      return !e.optional && statusOf(l.id, e.name) !== "pass";
     });
-    box.appendChild(list);
-    return box;
   }
 
-  /* Every step ends by naming the next action. */
+  /* What the step button says under "Step N". */
+  function stepState(l, name) {
+    var c = testCounts(l);
+    if (name === "lesson") return hasSeen(l.id, name) ? "read" : "not read";
+    if (name === "exercises") return c.run ? c.passed + " of " + c.total : c.total + " to write";
+    if (name === "walkthrough") return isComplete(l) ? "open" : "spoilers";
+    return isComplete(l) ? "done" : "—";
+  }
+  function stepDone(l, name) {
+    var c = testCounts(l);
+    if (name === "lesson") return hasSeen(l.id, name);
+    if (name === "exercises") return c.run && c.passed === c.total && c.total > 0;
+    if (name === "closeout") return isComplete(l);
+    return false;
+  }
+
+  function factsFor(l) {
+    var tpl = document.getElementById("lesson-" + l.id + "-brief");
+    if (!tpl) return null;
+    var frag = tpl.content.cloneNode(true);
+    var grid = frag.querySelector(".facts");
+    if (!grid) return null;
+    /* One cell is live: the count comes from the runner, never from the file. */
+    var live = grid.querySelector("[data-live=\"tests\"]");
+    if (live) {
+      var c = testCounts(l);
+      live.appendChild(document.createTextNode(
+        c.run ? " · " + c.passed + " of " + c.total + " passing" : " · not run yet"));
+    }
+    return grid;
+  }
+
+  /* The right-hand column of step 1: where you are, what it is for, what to
+     read first. Headings are read from the panel, so it cannot drift. */
+  function stepAside(l, panel) {
+    var side = el("aside", "step-side");
+    var inner = el("div", "step-side-inner");
+
+    var heads = [].slice.call(panel.querySelectorAll("h2"));
+    if (heads.length > 1) {
+      inner.appendChild(el("div", "side-k", "On this step"));
+      var list = el("div", "side-toc");
+      var links = heads.map(function (h) {
+        return button("side-link", h.textContent, function () {
+          h.scrollIntoView({ block: "start", behavior: "smooth" });
+        });
+      });
+      links.forEach(function (b) { list.appendChild(b); });
+      inner.appendChild(list);
+
+      var ticking = false;
+      function sync() {
+        ticking = false;
+        var best = 0;
+        heads.forEach(function (h, i) {
+          if (h.getBoundingClientRect().top - 140 <= 0) best = i;
+        });
+        links.forEach(function (b, i) { b.classList.toggle("on", i === best); });
+      }
+      window.addEventListener("scroll", function () {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(sync);
+      }, { passive: true });
+      /* The panel is not in the document yet, so every heading measures at 0.
+         Wait for layout before deciding which one you are next to. */
+      window.requestAnimationFrame(sync);
+    }
+
+    var tpl = document.getElementById("lesson-" + l.id + "-brief");
+    var outcomes = tpl ? [].slice.call(tpl.content.querySelectorAll(".brief-outcomes li")) : [];
+    if (outcomes.length) {
+      inner.appendChild(el("div", "side-k", "Outcomes · " + outcomes.length));
+      inner.appendChild(el("p", "side-body", outcomes.map(function (li) {
+        var strong = li.querySelector("strong");
+        return (strong ? strong.textContent : li.textContent).replace(/\.$/, "");
+      }).join(" · ")));
+    }
+
+    var mats = LIBRARY.filter(function (it) {
+      return (it.lessons || []).indexOf(l.id) > -1;
+    }).slice(0, 4);
+    if (mats.length) {
+      inner.appendChild(el("div", "side-k", "Before you start"));
+      var mlist = el("div", "side-mats");
+      mats.forEach(function (m) {
+        var b = button("side-mat", null, function () { go("library"); });
+        b.appendChild(el("span", "side-mat-k", m.kind));
+        b.appendChild(el("span", "side-mat-t", m.title));
+        mlist.appendChild(b);
+      });
+      inner.appendChild(mlist);
+    }
+
+    if (!inner.children.length) return null;
+    side.appendChild(inner);
+    return side;
+  }
+
+  /* The strip that ends every step by naming the next action. */
   function stepFooter(l, steps, i, show) {
-    var foot = el("div", "stepfoot");
     var name = steps[i].name;
-    var lt = lessonTests(l.id);
+    var foot = el("div", "stepfoot");
     var body = el("div", "body");
+    var c = testCounts(l);
+    var open = notPassing(l);
 
     if (name === "lesson") {
-      body.appendChild(el("div", "t", "Ready to write code?"));
-      body.appendChild(el("div", "s", "The reading is scaffolding. The exercises are the lesson."));
+      body.appendChild(el("b", null, "Next: "));
+      body.appendChild(document.createTextNode(
+        "write the " + (c.total || "") + " functions. Reading is 20% of this; the exercises are the other 80%."));
     } else if (name === "exercises") {
-      var left = lt ? lt.tests_total - lt.tests_passed : null;
-      body.appendChild(el("div", "t", left === null
-        ? "Run the tests when you have written something."
-        : left === 0 ? "All " + lt.tests_total + " tests pass."
-          : left + (left === 1 ? " test" : " tests") + " still to pass."));
-      body.appendChild(el("div", "s", left === 0
-        ? "Now compare your answers with the walkthrough."
-        : "Compare only after you have attempted them — that is what the next step is for."));
+      if (open.length) {
+        body.appendChild(el("b", null, "Next: "));
+        body.appendChild(document.createTextNode("get "));
+        body.appendChild(el("code", null, open[0].name));
+        body.appendChild(document.createTextNode(" green"));
+        if (open.length > 1) {
+          body.appendChild(document.createTextNode(", then " +
+            open.slice(1).map(function (e) { return e.name; }).join(" and ")));
+        }
+        body.appendChild(document.createTextNode("."));
+      } else {
+        body.appendChild(el("b", null, "All " + c.total + " pass. "));
+        body.appendChild(document.createTextNode(
+          "Compare against the walkthrough, then close out."));
+      }
     } else if (name === "walkthrough") {
-      body.appendChild(el("div", "t", "Seen how each one works?"));
-      body.appendChild(el("div", "s", "Close out by answering the questions without looking them up."));
+      body.appendChild(el("b", null, "Next: "));
+      body.appendChild(document.createTextNode("answer the closing questions without looking anything up."));
     } else {
-      body.appendChild(el("div", "t", isComplete(l) ? "Lesson complete." : "Almost there."));
-      body.appendChild(el("div", "s", completionIsDerived(l)
-        ? "Completion here comes from the test runner."
+      body.appendChild(el("b", null, isComplete(l) ? "Lesson complete. " : "Almost there. "));
+      body.appendChild(document.createTextNode(completionIsDerived(l)
+        ? "Completion here follows the test runner."
         : "No test results found, so this one is yours to mark."));
     }
     foot.appendChild(body);
 
     if (i + 1 < steps.length) {
-      foot.appendChild(button("btn", steps[i + 1].label + " →", function () { show(i + 1); }));
-    } else if (!completionIsDerived(l)) {
-      foot.appendChild(button("btn", done[l.id] ? "Mark as not done" : "Mark complete",
-        function () { toggleDone(l.id); }));
+      var next = steps[i + 1];
+      var label = next.name === "walkthrough" ? "I'm stuck — compare →"
+        : next.name === "exercises" ? "Go to the exercises →"
+        : next.label + " →";
+      foot.appendChild(button("btn-primary", label, function () { show(i + 1); }));
     }
     return foot;
   }
 
+  function walkthroughGate(l, openAnyway, backToExercises) {
+    var open = notPassing(l);
+    var c = testCounts(l);
+
+    var box = el("div", "gate");
+    box.appendChild(el("div", "step-kicker", "Step 3 · compare"));
+    box.appendChild(el("h2", "step-h2", !c.run
+      ? "You have not run the tests yet."
+      : open.length === 1 ? "One exercise is still open."
+      : open.length + " exercises are still open."));
+
+    var p1 = el("p");
+    p1.appendChild(document.createTextNode("The walkthrough explains how each solution works, with the code. "));
+    p1.appendChild(el("b", null,
+      "Reading a correct solution produces the feeling of understanding without the substance of it"));
+    p1.appendChild(document.createTextNode(
+      " — you will nod along, it will make complete sense, and you will not be able to " +
+      "reproduce it a week later. Recognition and production are different skills, and " +
+      "only one of them transfers."));
+    box.appendChild(p1);
+
+    var p2 = el("p");
+    p2.appendChild(document.createTextNode("If you are stuck: re-read the docstring, print "));
+    p2.appendChild(el("code", null, ".shape"));
+    p2.appendChild(document.createTextNode(
+      " and the intermediate values, or solve a smaller version on paper first."));
+    box.appendChild(p2);
+
+    var row = el("div", "gate-row");
+    row.appendChild(button("btn-primary", "Back to the exercises", backToExercises));
+    row.appendChild(button("btn-quiet", "Open it anyway", openAnyway));
+    box.appendChild(row);
+    box.appendChild(el("p", "gate-foot",
+      "This gate disappears once every exercise passes."));
+    return box;
+  }
+
+  /* Closing questions become tickable. Ticking one is a claim about you, not
+     about the code, so it is stored here and never mixed with test results. */
+  function wireQuestions(l, panel) {
+    var list = panel.querySelector("ol.checkq");
+    if (!list) return;
+    var mine = answered[l.id] || (answered[l.id] = {});
+    [].slice.call(list.children).forEach(function (li, i) {
+      var text = li.textContent;
+      li.textContent = "";
+      var b = button(null, null, function () {
+        mine[i] = !mine[i];
+        try { localStorage.setItem(ANSWERED_KEY, JSON.stringify(answered)); } catch (e) {}
+        li.classList.toggle("on", !!mine[i]);
+        b.setAttribute("aria-pressed", mine[i] ? "true" : "false");
+        mark.textContent = mine[i] ? "✓" : "";
+      });
+      var mark = el("span", "qmark", mine[i] ? "✓" : "");
+      mark.setAttribute("aria-hidden", "true");
+      b.appendChild(mark);
+      b.appendChild(el("span", null, text));
+      b.setAttribute("aria-pressed", mine[i] ? "true" : "false");
+      li.classList.toggle("on", !!mine[i]);
+      li.appendChild(b);
+    });
+  }
+
+  function completionStrip(l) {
+    var strip = el("div", "completion");
+    var c = testCounts(l);
+    var body = el("div", "body");
+    if (isComplete(l)) {
+      body.appendChild(el("b", null, "Lesson complete."));
+      body.appendChild(document.createTextNode(completionIsDerived(l)
+        ? " All " + c.total + " tests pass."
+        : " Marked by hand — the tests show " + c.passed + " of " + c.total + "."));
+    } else {
+      body.appendChild(el("b", null, c.run
+        ? c.passed + " of " + c.total + " tests passing."
+        : "The tests have not been run."));
+      body.appendChild(document.createTextNode(
+        " Completion follows the tests — it will tick itself when they are green. " +
+        "You can override it, and the override says so."));
+    }
+    strip.appendChild(body);
+    var b = button("btn-mark" + (done[l.id] ? " on" : ""),
+      done[l.id] ? "Remove hand tick" : "Mark complete by hand",
+      function () { toggleDone(l.id); });
+    strip.appendChild(b);
+    return strip;
+  }
+
   function buildLesson(l) {
-    var wrap = el("div", "wrap is-lesson");
+    var root = el("div", "lesson");
 
     var head = el("div", "lesson-head");
     var crumbs = el("div", "crumbs");
@@ -1326,126 +1501,164 @@
     crumbs.appendChild(button("crumb", "Phase " + l.phase.number + " · " + l.phase.title,
       function () { goPhase(l.phase.id); }));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    if (isComplete(l)) crumbs.appendChild(el("span", "chip done", "Complete"));
-    else if (l.written) crumbs.appendChild(el("span", "chip ready", "In progress"));
-    else crumbs.appendChild(el("span", "chip plan", "Not written yet"));
+    crumbs.appendChild(el("span", "crumb-now", l.id));
     head.appendChild(crumbs);
-    head.appendChild(el("h1", null, l.id + " — " + l.title));
-    head.appendChild(el("p", "lede", l.summary));
+    head.appendChild(el("h1", "lesson-h1", l.title));
+    head.appendChild(el("p", "lesson-lede", l.summary));
 
-    var briefTpl = document.getElementById("lesson-" + l.id + "-brief");
-    if (briefTpl) {
-      var brief = el("div", "brief");
-      brief.appendChild(briefTpl.content.cloneNode(true));
-      head.appendChild(brief);
-    }
-    wrap.appendChild(head);
+    var facts = factsFor(l);
+    if (facts) head.appendChild(facts);
 
     var present = SECTIONS[l.id] || [];
     var steps = STEPS.filter(function (s) { return present.indexOf(s.name) > -1; });
 
-    if (steps.length) {
-      if (activeTab[l.id] == null || activeTab[l.id] >= steps.length) activeTab[l.id] = 0;
-
-      var bar = el("div", "stepper");
-      bar.setAttribute("role", "tablist");
-      var panels = el("div", "panels");
-      var entries = [];
-
-      steps.forEach(function (step, i) {
-        var tpl = document.getElementById("lesson-" + l.id + "-" + step.name);
-        var slug = l.id.replace(/\./g, "-") + "-" + step.name;
-
-        var panel = el("section", "panel");
-        panel.id = "panel-" + slug;
-        panel.setAttribute("role", "tabpanel");
-        panel.setAttribute("aria-labelledby", "step-" + slug);
-        panel.tabIndex = 0;
-        if (step.name === "walkthrough" && gateWalkthrough(l)) {
-          panel.appendChild(walkthroughGate(l, function () {
-            unlockedWalkthrough[l.id] = true;
-            render();
-          }, function () {
-            var at = 0;
-            steps.forEach(function (st, n) { if (st.name === "exercises") at = n; });
-            show(at);
-          }));
-        } else if (tpl) {
-          panel.appendChild(tpl.content.cloneNode(true));
-        }
-        panel.hidden = i !== activeTab[l.id];
-        panels.appendChild(panel);
-
-        var b = button("step-btn", null, function () { show(i); });
-        b.id = "step-" + slug;
-        b.setAttribute("role", "tab");
-        b.setAttribute("aria-controls", "panel-" + slug);
-        b.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
-        b.tabIndex = i === activeTab[l.id] ? 0 : -1;
-        b.appendChild(el("span", "step-n", "Step " + (i + 1)));
-        b.appendChild(el("span", "step-label", step.label));
-        var meta = stepStanding(l, step.name);
-        if (meta) b.appendChild(el("span", "step-meta", meta));
-        b.addEventListener("keydown", function (evt) {
-          var d = { ArrowRight: 1, ArrowLeft: -1 }[evt.key];
-          var t = null;
-          if (d != null) t = (i + d + entries.length) % entries.length;
-          else if (evt.key === "Home") t = 0;
-          else if (evt.key === "End") t = entries.length - 1;
-          if (t == null) return;
-          evt.preventDefault();
-          show(t);
-          entries[t].btn.focus();
-        });
-        bar.appendChild(b);
-        entries.push({ btn: b, panel: panel, step: step });
-      });
-
-      stepJump = function (n) {
-        if (n < 0 || n >= entries.length) return false;
-        show(n);
-        entries[n].btn.focus();
-        return true;
-      };
-
-      function show(i) {
-        activeTab[l.id] = i;
-        markSeen(l.id, steps[i].name);
-        entries.forEach(function (e, j) {
-          e.panel.hidden = j !== i;
-          e.btn.classList.toggle("on", j === i);
-          e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
-          e.btn.tabIndex = j === i ? 0 : -1;
-        });
-        saveView();
-        render();
-      }
-      entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
-      markSeen(l.id, steps[activeTab[l.id]].name);
-
-      wrap.appendChild(bar);
-      wrap.appendChild(panels);
-
-      /* the generated exercise rows land inside the Implement step */
-      var mount = panels.querySelector("[data-exercise-rows]");
-      if (mount) mount.appendChild(exerciseRows(l));
-
-      highlight(panels);
-      if (typeof Widgets !== "undefined") Widgets.mount(panels);
-      wrap.appendChild(stepFooter(l, steps, activeTab[l.id], show));
-    } else {
+    if (!steps.length) {
+      root.appendChild(head);
+      var band0 = el("div", "lesson-band");
+      var inner0 = el("div", "lesson-inner");
       var ph = el("div", "placeholder");
-      ph.appendChild(el("div", "eyebrow", "Not written yet"));
-      ph.appendChild(el("h3", null, "This lesson is planned, not published."));
-      ph.appendChild(el("p", null,
-        "Lessons are written one at a time, in order, so that each one can assume exactly " +
-        "what came before it."));
-      ph.appendChild(el("p", null,
-        "When it exists, it will cover: " + l.summary.charAt(0).toLowerCase() + l.summary.slice(1)));
-      wrap.appendChild(ph);
+      ph.appendChild(el("div", "step-kicker", "Not written yet"));
+      ph.appendChild(el("h2", "step-h2", "This lesson is planned, not published."));
+      ph.appendChild(el("p", "step-lead",
+        "Lessons are written one at a time, in order, so that each one can assume " +
+        "exactly what came before it. When it exists, it will cover: " +
+        l.summary.charAt(0).toLowerCase() + l.summary.slice(1)));
+      inner0.appendChild(ph);
+      band0.appendChild(inner0);
+      root.appendChild(band0);
+      return root;
     }
 
-    /* Resources are reference, not a step. */
+    if (activeTab[l.id] == null || activeTab[l.id] >= steps.length) activeTab[l.id] = 0;
+
+    var bar = el("div", "stepper");
+    bar.setAttribute("role", "tablist");
+    var panels = el("div", "panels");
+    var entries = [];
+
+    steps.forEach(function (step, i) {
+      var tpl = document.getElementById("lesson-" + l.id + "-" + step.name);
+      var slug = l.id.replace(/\./g, "-") + "-" + step.name;
+
+      var panel = el("section", "panel");
+      panel.id = "panel-" + slug;
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", "step-" + slug);
+      panel.tabIndex = 0;
+
+      if (step.name === "walkthrough" && gateWalkthrough(l)) {
+        panel.appendChild(walkthroughGate(l, function () {
+          unlockedWalkthrough[l.id] = true;
+          render();
+        }, function () {
+          var at = 0;
+          steps.forEach(function (st, n) { if (st.name === "exercises") at = n; });
+          show(at);
+        }));
+      } else {
+        if (step.name !== "lesson") {
+          var sh = el("div", "step-head");
+          var meta = el("div");
+          meta.appendChild(el("div", "step-kicker",
+            "Step " + (i + 1) + " · " + (step.name === "exercises" ? "in your repo" : step.label.toLowerCase())));
+          meta.appendChild(el("h2", "step-h2", stepHeadline(l, step.name)));
+          sh.appendChild(meta);
+          if (step.name === "exercises") {
+            sh.appendChild(commandChip("progress " + l.id, "cmdchip plain"));
+          }
+          panel.appendChild(sh);
+        }
+        if (tpl) panel.appendChild(tpl.content.cloneNode(true));
+        if (step.name === "closeout") {
+          wireQuestions(l, panel);
+          panel.appendChild(completionStrip(l));
+        }
+      }
+      panel.hidden = i !== activeTab[l.id];
+      panels.appendChild(panel);
+
+      var b = button("step-btn" + (stepDone(l, step.name) ? " is-done" : "") +
+                     (step.name === "walkthrough" && !isComplete(l) ? " is-warn" : ""),
+                     null, function () { show(i); });
+      b.id = "step-" + slug;
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-controls", "panel-" + slug);
+      b.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
+      b.tabIndex = i === activeTab[l.id] ? 0 : -1;
+      b.appendChild(el("span", "step-n", "Step " + (i + 1) + " · " + stepState(l, step.name)));
+      b.appendChild(el("span", "step-label", step.label));
+      b.addEventListener("keydown", function (evt) {
+        var d = { ArrowRight: 1, ArrowLeft: -1 }[evt.key];
+        var t = null;
+        if (d != null) t = (i + d + entries.length) % entries.length;
+        else if (evt.key === "Home") t = 0;
+        else if (evt.key === "End") t = entries.length - 1;
+        if (t == null) return;
+        evt.preventDefault();
+        show(t);
+        entries[t].btn.focus();
+      });
+      bar.appendChild(b);
+      entries.push({ btn: b, panel: panel, step: step });
+    });
+
+    stepJump = function (n) {
+      if (n < 0 || n >= entries.length) return false;
+      show(n);
+      entries[n].btn.focus();
+      return true;
+    };
+
+    function show(i) {
+      activeTab[l.id] = i;
+      markSeen(l.id, steps[i].name);
+      entries.forEach(function (e, j) {
+        e.panel.hidden = j !== i;
+        e.btn.classList.toggle("on", j === i);
+        e.btn.setAttribute("aria-selected", j === i ? "true" : "false");
+        e.btn.tabIndex = j === i ? 0 : -1;
+      });
+      saveView();
+      render();
+    }
+    entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
+    markSeen(l.id, steps[activeTab[l.id]].name);
+    head.appendChild(bar);
+    root.appendChild(head);
+
+    var band = el("div", "lesson-band");
+    var inner = el("div", "lesson-inner");
+    inner.appendChild(panels);
+
+    /* the generated exercise rows land inside the Implement step */
+    var mount = panels.querySelector("[data-exercise-rows]");
+    if (mount) mount.appendChild(exerciseBlock(l));
+
+    highlight(panels);
+    if (typeof Widgets !== "undefined") Widgets.mount(panels);
+
+    var live = entries[activeTab[l.id]];
+    /* The gate is the whole step. A "next" button under it would be a way
+       around the thing the gate exists to slow down. */
+    var gated = live.step.name === "walkthrough" && gateWalkthrough(l);
+    if (!gated) live.panel.appendChild(stepFooter(l, steps, activeTab[l.id], show));
+
+    /* Step 1 is two columns: the reading, and where you are in it. */
+    if (live.step.name === "lesson") {
+      var aside = stepAside(l, live.panel);
+      if (aside) {
+        var cols = el("div", "step1");
+        var main = el("div", "step1-main");
+        while (live.panel.firstChild) main.appendChild(live.panel.firstChild);
+        cols.appendChild(main);
+        cols.appendChild(aside);
+        live.panel.appendChild(cols);
+      }
+    }
+
+    band.appendChild(inner);
+    root.appendChild(band);
+
     var resTpl = document.getElementById("lesson-" + l.id + "-resources");
     if (resTpl) {
       var res = el("details", "resources-foot");
@@ -1453,87 +1666,72 @@
       var rbody = el("div", "resources-body");
       rbody.appendChild(resTpl.content.cloneNode(true));
       res.appendChild(rbody);
-      wrap.appendChild(res);
+      inner.appendChild(res);
       res.addEventListener("toggle", function () { if (res.open) highlight(rbody); });
     }
 
     var pool = writtenLessons();
     var idx = pool.indexOf(l);
-    var foot = el("div", "foot");
+    var foot = el("div", "lesson-foot");
     if (idx > 0) {
       var pv = pool[idx - 1];
       foot.appendChild(button("linkbtn", "← " + pv.id + " " + pv.title, function () { goLesson(pv.id); }));
+    } else {
+      foot.appendChild(el("span", null, "← first lesson"));
     }
     if (idx > -1 && idx + 1 < pool.length) {
       var nx = pool[idx + 1];
       foot.appendChild(button("linkbtn", "Next: " + nx.id + " " + nx.title + " →", function () { goLesson(nx.id); }));
+    } else {
+      var after = nextPlanned(l);
+      foot.appendChild(el("span", null, after
+        ? "next: " + after.id + " " + after.title + " · not written yet →"
+        : "last written lesson →"));
     }
-    if (foot.children.length) wrap.appendChild(foot);
-
-    return wrap;
+    inner.appendChild(foot);
+    return root;
   }
 
-  /* ---------- on-this-page rail ----------
-     Built from whatever is currently visible, so it follows the active tab
-     rather than listing the whole lesson. */
-  var tocCleanup = null;
-
-  function buildToc(scope) {
-    var toc = document.getElementById("toc");
-    if (tocCleanup) { tocCleanup(); tocCleanup = null; }
-    toc.textContent = "";
-
-    var heads = scope ? [].slice.call(scope.querySelectorAll("h2")) : [];
-    if (heads.length < 2) { toc.hidden = true; return; }
-
-    var head = el("div", "toc-head");
-    head.appendChild(el("span", "eyebrow", "On this page"));
-    toc.appendChild(head);
-
-    var list = el("div", "toc-list");
-    var links = heads.map(function (h) {
-      var link = button("toc-link", h.textContent, function () {
-        h.scrollIntoView({ block: "start", behavior: "smooth" });
-      });
-      list.appendChild(link);
-      return link;
-    });
-    toc.appendChild(list);
-    toc.hidden = false;
-
-    /* Below 1280px the aside is hidden — that is most laptops in a window that
-       is not maximised — so the same list appears inline as a control. */
-    var inline = el("details", "toc-inline");
-    inline.appendChild(el("summary", null, "Sections"));
-    var ilist = el("div", "toc-list");
-    heads.forEach(function (h) {
-      ilist.appendChild(button("toc-link", h.textContent, function () {
-        inline.open = false;
-        h.scrollIntoView({ block: "start", behavior: "smooth" });
-      }));
-    });
-    inline.appendChild(ilist);
-    if (scope.firstChild) scope.insertBefore(inline, scope.firstChild);
-    else scope.appendChild(inline);
-
-    /* Highlight whichever heading you have most recently scrolled past. */
-    var ticking = false;
-    function sync() {
-      ticking = false;
-      var line = 140, best = 0;
-      for (var i = 0; i < heads.length; i++) {
-        if (heads[i].getBoundingClientRect().top <= line) best = i;
-      }
-      links.forEach(function (a, i) { a.classList.toggle("on", i === best); });
+  function stepHeadline(l, name) {
+    var c = testCounts(l);
+    if (name === "exercises") {
+      return c.total + (c.total === 1 ? " function. " : " functions. ") +
+        (!c.run ? "None run yet." : c.passed === c.total ? "All passing." : c.passed + " passing.");
     }
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(sync);
+    if (name === "walkthrough") return "What each exercise is really asking";
+    return "You are done when you can answer these without looking anything up";
+  }
+
+  function nextPlanned(l) {
+    var at = allLessons.indexOf(l);
+    return at > -1 && at + 1 < allLessons.length ? allLessons[at + 1] : null;
+  }
+
+  function exerciseBlock(l) {
+    var box = el("div", "exercise-block");
+    if (!lessonTests(l.id)) {
+      box.appendChild(el("p", "exnote",
+        "Run the command above to see which of these pass. Until you do, every row " +
+        "reads as todo — this page never invents a result."));
     }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    tocCleanup = function () { window.removeEventListener("scroll", onScroll); };
-    sync();
+    var list = el("div", "exrows");
+    (l.exercises || []).forEach(function (e) { list.appendChild(exerciseRow(l, e, false)); });
+    box.appendChild(list);
+
+    var note = el("div", "notebox");
+    note.appendChild(el("span", "notebox-k", "The constraints are the lesson"));
+    var p = el("p");
+    p.appendChild(document.createTextNode(
+      "The tests inspect your source, not just your return value. Where a row says "));
+    p.appendChild(el("code", null, "no numpy"));
+    p.appendChild(document.createTextNode(
+      ", you are meant to build the mechanism before you are allowed to call it. Where it says "));
+    p.appendChild(el("code", null, "no loops"));
+    p.appendChild(document.createTextNode(
+      ", a Python loop over a NumPy array costs roughly 200× in speed."));
+    note.appendChild(p);
+    box.appendChild(note);
+    return box;
   }
 
   /* ---------- render ---------- */
@@ -1562,11 +1760,6 @@
     } else {
       pane.appendChild(buildOverview());
     }
-
-    /* The contents rail belongs to a lesson panel. The other screens are the
-       length of one screen and navigate themselves. */
-    var live = view.kind === "lesson" ? pane.querySelector(".panel:not([hidden])") : null;
-    buildToc(live);
 
     var totals = testTotals();
     if (totals && totals.total) {
