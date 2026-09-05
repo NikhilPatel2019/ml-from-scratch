@@ -129,6 +129,28 @@ The fix is one call to `np.clip`. The habit is worth more than the fix:
 **anywhere a mathematical guarantee meets floating point, check the guarantee
 still holds.**
 
+### And even clipped, a zero angle is not exactly zero
+
+Clip the cosine and `arccos` stops returning `nan`. It does not start returning
+`0.0`. Ask for the angle between `[2,2]` and `[10,10]` — the same direction, no
+question about it — and you get `1.2e-06` degrees.
+
+That is not sloppiness in your code. It is `arccos` being **ill-conditioned**
+near 0°, and it is worth understanding once because the same shape of problem
+turns up throughout numerical work.
+
+Near zero, `cos(t) ≈ 1 - t²/2`. The cosine barely moves as the angle moves —
+which means running it backwards, the angle moves *enormously* as the cosine
+moves. A cosine wrong in its last bit, about `1e-16`, comes back as an angle
+wrong by roughly `sqrt(2 × 1e-16)` radians. That is about `1e-6` degrees, which
+is exactly what you see.
+
+So: an angle of 0° and an angle of 180° are the two places `arccos` cannot give
+you full precision, and no amount of care in your own code changes that. The
+tests allow `1e-4` degrees for "is this angle zero" and say so. When you need to
+ask "do these point the same way?" to full precision, ask it of the **cosine**
+— which is well-conditioned there — rather than of the angle.
+
 ## Projection: splitting a vector in two
 
 This is the idea in the lesson with the longest reach, and it starts with a

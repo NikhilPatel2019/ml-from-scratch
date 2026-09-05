@@ -1,0 +1,161 @@
+<div class="prose">
+
+<p class="lead">In 1.1 you built a search engine and it worked. Here is what I did not tell you: there is more than one way to measure "closest", and they do not always agree — not in an edge case, but routinely, on ordinary data, in a way that changes which document your system returns.</p>
+
+<h2>Two questions, not one</h2>
+
+<p>Take two vectors. There are two completely different things you might mean by "how close are these?"</p>
+
+<p><strong>How far apart are they?</strong> Stand at one and walk to the other. That is <strong>distance</strong>, and it is Pythagoras again — the same formula as <code>magnitude</code>, applied to the gap between the two points instead of to one point.</p>
+
+<div class="codeblock">
+<pre><code class="language-python">distance(a, b)  =  |a - b|</code></pre>
+</div>
+
+<p>Read it right to left: subtract to get the vector from <code>b</code> to <code>a</code>, then take its length. You already have <code>magnitude</code>. Distance is <code>magnitude</code> of the difference, and that is the whole of exercises 1 and 2.</p>
+
+<p><strong>Do they point the same way?</strong> Ignore how long each one is; ask only about direction. That is the <strong>angle</strong>, and cosine similarity — which you already wrote — is one step away from it.</p>
+
+<p>Two vectors can be far apart and point identically. Two vectors can be close together and point in different directions. Neither measure is wrong. They answer different questions.</p>
+
+<h2>Where they disagree</h2>
+
+<p>Say documents are represented by two numbers: how much they talk about cooking, and how much they talk about baking.</p>
+
+<figure class="diagram" data-solution="7">
+<svg viewBox="0 0 620 300" role="img" aria-label="Four documents plotted on cooking and baking axes. The query at 2,2, a short document at 1,1 and a long document at 10,10 all lie on the same diagonal ray, so all sit at zero degrees to the query. The long document is nonetheless 11.31 away by distance, the worst of the three, while the short document is 1.41 away.">
+  <defs>
+    <marker id="ar12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="56" y1="250" x2="300" y2="250" class="sep"></line>
+  <line x1="56" y1="250" x2="56" y2="40" class="sep"></line>
+  <text x="300" y="268" class="lbl-sm" text-anchor="end">cooking</text>
+  <text x="56" y="32" class="lbl-sm" text-anchor="middle">baking</text>
+
+  <line x1="56" y1="250" x2="270" y2="46" class="conn" stroke-dasharray="4 4"></line>
+
+  <circle cx="76" cy="230" r="5" class="box-hl"></circle>
+  <text x="86" y="234" class="lbl-sm">short doc</text>
+  <circle cx="256" cy="60" r="5" class="box-hl"></circle>
+  <text x="256" y="48" class="lbl-sm" text-anchor="middle">long doc</text>
+  <circle cx="56" cy="190" r="5" class="box"></circle>
+  <text x="66" y="182" class="lbl-sm">off topic</text>
+  <circle cx="96" cy="210" r="6" class="conn-hl" fill="none"></circle>
+  <text x="106" y="206" class="lbl">query</text>
+
+  <line x1="330" y1="52" x2="592" y2="52" class="sep"></line>
+  <text x="342" y="44" class="lbl-sm">item</text>
+  <text x="500" y="44" class="lbl-sm" text-anchor="end">distance</text>
+  <text x="580" y="44" class="lbl-sm" text-anchor="end">angle</text>
+
+  <text x="342" y="82" class="lbl">short doc</text>
+  <text x="500" y="82" class="lbl" text-anchor="end">1.41</text>
+  <text x="580" y="82" class="lbl" text-anchor="end">0&#176;</text>
+
+  <rect x="330" y="98" width="262" height="30" rx="4" class="box-hl"></rect>
+  <text x="342" y="118" class="lbl-hl">long doc</text>
+  <text x="500" y="118" class="lbl-hl" text-anchor="end">11.31</text>
+  <text x="580" y="118" class="lbl-hl" text-anchor="end">0&#176;</text>
+
+  <text x="342" y="150" class="lbl">off topic</text>
+  <text x="500" y="150" class="lbl" text-anchor="end">2.24</text>
+  <text x="580" y="150" class="lbl" text-anchor="end">45&#176;</text>
+
+  <line x1="330" y1="168" x2="592" y2="168" class="sep"></line>
+  <text x="342" y="196" class="lbl-sm">nearest by distance</text>
+  <text x="580" y="196" class="lbl" text-anchor="end">short doc</text>
+  <text x="342" y="222" class="lbl-sm">nearest by angle</text>
+  <text x="580" y="222" class="lbl" text-anchor="end">short, long</text>
+</svg>
+<figcaption>The long document points <em>exactly</em> where the query points and is the furthest away of the three. Distance punished it for being long. This is the same flaw the raw dot product had in 1.1, wearing different clothes — except here it is not a bug, because measuring how far apart two things are is the entire job of a distance.</figcaption>
+</figure>
+
+<h2>Which one do you want?</h2>
+
+<ul>
+  <li><strong>Text, embeddings, recommendations</strong> — anything where "length" means "amount of document" rather than "amount of the thing" — use the <strong>angle</strong>. A long article about cats and a short article about cats are about the same thing.</li>
+  <li><strong>Positions, coordinates, physical measurements</strong> — anything where magnitude is the signal — use <strong>distance</strong>. Readings of 20&#176;C and 200&#176;C are not "the same, just louder".</li>
+</ul>
+
+<p>There is a shortcut worth knowing. <strong>If every vector is normalised to length 1, the two measures rank identically.</strong> They are not equal — still different numbers — but sorting by one gives the same order as sorting by the other. That is why production vector databases store embeddings pre-normalised: you get to use fast distance-search hardware and still get cosine ranking. <code>stretch.py</code> makes you prove it rather than believe it.</p>
+
+<h2>The identity that connects them</h2>
+
+<p>One equation ties the dot product to geometry, and it is worth committing to memory:</p>
+
+<div class="codeblock">
+<pre><code class="language-python">a . b  =  |a| &#215; |b| &#215; cos(theta)</code></pre>
+</div>
+
+<p>In words: the dot product is the product of the two lengths, scaled by how aligned the directions are. Read it three ways, because each one is used somewhere later.</p>
+
+<ol>
+  <li><strong>Solve for cos(theta)</strong> and you get cosine similarity, which is what you wrote in 1.1. You were not inventing a metric. You were rearranging this.</li>
+  <li><strong>Set theta to 90&#176;.</strong> cos(90&#176;) = 0, so the whole right-hand side is 0. "Dot product of zero means unrelated" is not an analogy — it is this equation.</li>
+  <li><strong>Set both lengths to 1.</strong> The right-hand side becomes just cos(theta), so for unit vectors <em>the dot product already is the cosine</em>, with nothing to divide out.</li>
+</ol>
+
+<h2>Two silent failures</h2>
+
+<p>Both of these bite on the easiest possible input, and neither raises anything.</p>
+
+<p><strong>arccos of a number just outside its domain is <code>nan</code>.</strong> <code>arccos</code> is defined on <code>[-1, 1]</code>. Compute the cosine of a vector with <em>itself</em> and floating point hands you 1.0000000000000002, because the division does not land precisely on 1. Two identical vectors — the easiest case imaginable — is where this bites. One call to <code>np.clip</code> fixes it.</p>
+
+<p><strong>And even clipped, a zero angle is not exactly zero.</strong> Ask for the angle between <code>[2,2]</code> and <code>[10,10]</code> and you get <code>1.2e-06</code> degrees. That is <code>arccos</code> being <em>ill-conditioned</em> near 0&#176;: since <code>cos(t) &#8776; 1 - t&#178;/2</code>, the cosine barely moves as the angle moves, so run backwards the angle moves enormously as the cosine moves. A cosine wrong in its last bit comes back as an angle wrong by about <code>1e-6</code> degrees. When you need "do these point the same way?" to full precision, ask it of the <strong>cosine</strong>, which is well-conditioned there, not of the angle.</p>
+
+<p><strong><code>== 0</code> reports False on a textbook right angle.</strong> Two vectors perpendicular in exact arithmetic give you <code>3.06e-17</code>, because 0.1 + 0.2 is not 0.3 and never was. Compare against a tolerance. Build the reflex here, on four lines you can see all of, rather than at 2am inside something you cannot.</p>
+
+<h2>Projection: splitting a vector in two</h2>
+
+<p>This is the idea with the longest reach in the lesson, and it starts with a picture. Shine a light straight down onto the line through <code>b</code>. The shadow <code>a</code> casts on that line is the <strong>projection of a onto b</strong>.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 240" role="img" aria-label="A vector a drawn from the origin up and to the right. Its shadow on the horizontal line through b is the projection. The vertical gap between a and its shadow is the rejection, which meets b at a right angle.">
+  <defs>
+    <marker id="ar12b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="70" y1="190" x2="330" y2="190" class="conn" marker-end="url(#ar12b)"></line>
+  <text x="338" y="194" class="lbl">b</text>
+
+  <line x1="70" y1="190" x2="240" y2="60" class="conn-hl" marker-end="url(#ar12b)"></line>
+  <text x="248" y="56" class="lbl-hl">a</text>
+
+  <line x1="240" y1="60" x2="240" y2="190" class="conn" stroke-dasharray="4 4"></line>
+  <path d="M 228 190 L 228 178 L 240 178" class="conn" fill="none"></path>
+
+  <line x1="70" y1="204" x2="240" y2="204" class="conn-hl"></line>
+  <text x="155" y="222" class="lbl-hl" text-anchor="middle">the projection</text>
+  <text x="254" y="130" class="lbl-sm">what is left over</text>
+  <text x="254" y="148" class="lbl-sm">(the rejection)</text>
+
+  <rect x="380" y="60" width="212" height="106" rx="4" class="box"></rect>
+  <text x="398" y="88" class="head">how far along b?</text>
+  <text x="398" y="114" class="lbl">(a . b) / (b . b)</text>
+  <text x="398" y="140" class="lbl-sm">one plain number, then</text>
+  <text x="398" y="156" class="lbl-sm">travel that far along b</text>
+</svg>
+<figcaption>Two pieces. The part of <code>a</code> that lies <em>along</em> <code>b</code>, and the part that lies <em>across</em> it. Add them back together and you have <code>a</code> again, exactly. The denominator normalises for how long <code>b</code> is, which is why only <code>b</code>'s <em>direction</em> matters — <code>project([3,3],[1,0])</code> and <code>project([3,3],[5,0])</code> give the same answer.</figcaption>
+</figure>
+
+<p>The leftover — <code>a</code> minus its projection — is the <strong>rejection</strong>, and it is always perpendicular to <code>b</code>. That is exercise 5, and it is one line.</p>
+
+<h2>Why projection matters more than it looks</h2>
+
+<p>"Split a vector into the part explained by a direction, and the part that is not" is one of the most reused moves in the field:</p>
+
+<ul>
+  <li><strong>Least squares regression</strong> finds the projection of your data onto the space your model can reach. The rejection is the residual — your error.</li>
+  <li><strong>PCA</strong> (lesson 2.12) finds the directions that leave the smallest rejection. That is all "principal component" means.</li>
+  <li><strong>Attention</strong> in a transformer decides how much of one token's vector to mix into another. The amount is a dot product; the mixing is projection.</li>
+  <li><strong>Gram-Schmidt</strong>, which you meet near QR decomposition, is literally "project, subtract the projection, repeat".</li>
+</ul>
+
+<p>You are writing four lines. They come back for the rest of the curriculum.</p>
+
+</div>

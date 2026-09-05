@@ -1,0 +1,22 @@
+{
+  "before": [
+    {
+      "title": "3Blue1Brown — ch. 9, “Dot products and duality”",
+      "length": "~14 min",
+      "why": "The one held back from 1.1. The first half is exactly this lesson. Stop at the halfway mark — duality is hard and not needed yet.",
+      "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+    },
+    {
+      "title": "3Blue1Brown — ch. 3, “Linear transformations and matrices”",
+      "length": "~11 min",
+      "why": "Optional here. It is the bridge into 1.3 and 1.4, and seeing it twice will not hurt.",
+      "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+    }
+  ],
+  "after": {
+    "title": "numpy.linalg.norm — the axis parameter",
+    "length": "~5 min read",
+    "why": "Once your code passes. This is how the stretch file collapses an (n, n, d) array to (n, n) without a loop, and it is most of lesson 1.3.",
+    "url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html"
+  }
+}

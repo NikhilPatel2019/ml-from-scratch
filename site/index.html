@@ -1346,7 +1346,7 @@ figcaption {
 
 <script type="application/json" id="curriculum-data">
 
-{"phases":[{"id":"p1","number":1,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"1.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available","written":true,"exercises":[{"name":"dot_loop","summary":"the dot product, by hand","optional":false,"forbids":["no numpy","no sum()"]},{"name":"dot_numpy","summary":"the same thing, vectorised","optional":false,"forbids":["no loops"]},{"name":"magnitude_loop","summary":"magnitude, by hand","optional":false,"forbids":["no numpy"]},{"name":"magnitude","summary":"magnitude, vectorised","optional":false,"forbids":["no loops"]},{"name":"normalise","summary":"normalise","optional":false,"forbids":["no loops"]},{"name":"cosine_similarity","summary":"cosine similarity","optional":false,"forbids":["no loops"]},{"name":"most_similar","summary":"the payoff: a two-line search engine","optional":false,"forbids":[]}],"dir":"lessons/01-foundations/01-vectors","watch":{"before":[{"title":"3Blue1Brown — Essence of Linear Algebra, ch. 1 “Vectors”","length":"~10 min","why":"The geometric picture, animated far better than the demo below. Watch for the three views of a vector; you already have the CS one.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"},{"title":"ch. 2 — Linear combinations, span, and basis vectors","length":"~10 min","why":"Why the numbers in a vector are coordinates rather than just values. Pays off in 1.4, and hugely in 2.12.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"},{"title":"Keith Galli — Complete Python NumPy Tutorial","length":"~1 hr","why":"Purely practical. Type along with the notebook. You can stop after reshaping.","url":"https://github.com/KeithGalli/NumPy"}],"after":{"title":"ch. 9 — Dot products and duality","length":"~14 min","why":"Only once your code passes. The second half, on duality, is genuinely hard and not needed yet — losing the thread there is expected.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"}},"solutions":[{"n":1,"name":"dot_loop","headline":"the definition as an algorithm","mechanism":"Walk both lists together, multiply each pair, accumulate. The length check matters because the operation is undefined for mismatched lengths — there is no sensible answer, so failing loudly beats guessing.","code":"def dot_loop(a: list[float], b: list[float]) -> float:\n    if len(a) != len(b):\n        raise ValueError(\"The lengths of the two lists must be equal.\")\n\n    total = 0.0\n    for i in range(len(a)):\n        total += a[i] * b[i]\n    return total","why":"The accumulator starts at 0.0 rather than 0 so the return type is a float even for integer inputs. Indexing with range(len(a)) is the one place in this lesson where an index is genuinely needed — you are walking two lists in step."},{"n":2,"name":"dot_numpy","headline":"the same result, loop pushed into C","mechanism":"np.dot and np.matmul (also spelled @) agree for 1-D inputs and diverge only in higher dimensions: np.dot sums over the last axis of one and the second-to-last of the other, while matmul broadcasts stacks of matrices. For two vectors, either is right.","code":"def dot_numpy(a: np.ndarray, b: np.ndarray) -> float:\n    return float(np.dot(a, b))","why":"The float() matters more than it looks: without it you return np.float64, which behaves almost like a Python float right up until it does not — it will not JSON-serialise, and it leaks numpy semantics into code that expected a plain number."},{"n":3,"name":"magnitude_loop","headline":"Pythagoras, nothing more","mechanism":"The length of [3, 4] is the hypotenuse of a right triangle with legs 3 and 4. Squaring removes signs so direction cannot cancel length out; the root brings the answer back to the original units.","code":"def magnitude_loop(v: list[float]) -> float:\n    squared = [x ** 2 for x in v]\n    return math.sqrt(sum(squared))","why":"A comprehension plus sum() is idiomatic Python and allowed here — exercise 1 already proved you can accumulate by hand, and the point of this one is Pythagoras. Using a generator, sum(x ** 2 for x in v), is marginally better for very long inputs since it never materialises the intermediate list."},{"n":4,"name":"magnitude","headline":"the same sum, vectorised","mechanism":"square, sum, sqrt — composed into a single expression. Nothing about this changes when the vector has 4096 components instead of two, which is why two-dimensional intuition is worth building.","code":"def magnitude(v: np.ndarray) -> float:\n    return float(np.sqrt(np.sum(np.square(v))))","why":"np.linalg.norm(v) does the same job in one call and is what you would reach for in real code. Write it out at least once, though — seeing square, sum and sqrt compose is where the vectorised style starts to feel natural. Neither version survives extreme inputs: both overflow to inf around 1e200, because both square before summing.","trap":"Both versions overflow to inf around 1e200 — squaring before summing is the reason."},{"n":5,"name":"normalise","headline":"keep the direction, throw away the length","mechanism":"Dividing a vector by its own magnitude leaves it pointing exactly where it was, with length precisely 1. Every such vector lands on the unit circle. The zero vector is the one case with no answer: no direction to preserve, and the division would be by zero.","code":"def normalise(v: np.ndarray) -> np.ndarray:\n    length = magnitude(v)\n    if length == 0:\n        raise ValueError(\"Cannot normalise a zero vector.\")\n    return v / length","why":"Calling magnitude(v) rather than rewriting the formula gives you one source of truth. Naming the local `length` and not `magnitude` matters — a local of the same name shadows the function, and the next person to add a second call inside this function gets a confusing TypeError."},{"n":6,"name":"cosine_similarity","headline":"why the division works","mechanism":"One identity sits underneath the whole exercise: a · b = |a| × |b| × cos θ. The dot product was never purely about agreement — it is agreement scaled by both lengths. Divide both sides by |a| × |b| and the lengths cancel, leaving the angle alone. You are not inventing a metric; you are rearranging an identity to isolate what you actually wanted.","code":"def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:\n    a_magnitude = magnitude(a)\n    b_magnitude = magnitude(b)\n    if a_magnitude == 0 or b_magnitude == 0:\n        raise ValueError(\"Cannot compute cosine similarity with a zero vector.\")\n    return float(np.dot(a, b) / (a_magnitude * b_magnitude))","why":"np.dot(normalise(a), normalise(b)) is equally correct and returns the identical value bit for bit — shorter, and it inherits the zero-vector check from normalise for free. The version above was chosen only because it mirrors the formula in the docstring. The zero check is not required by the tests, but the cosine of an angle with a directionless vector is genuinely undefined, so raising beats returning a made-up number.","trap":"Calling normalise where you meant magnitude gives you an array where a scalar belongs — then `if array == 0` raises “the truth value of an array with more than one element is ambiguous”."},{"n":7,"name":"most_similar","headline":"search, and the version you have not written yet","mechanism":"Short, because exercise 6 did the work. Iterating a dict yields its keys, and key= changes what gets compared, not what gets returned — so the comparison runs over scores while the return value is a name.","code":"def most_similar(query: np.ndarray, library: dict[str, np.ndarray]) -> str:\n    scores = {name: cosine_similarity(query, vector) for name, vector in library.items()}\n    return max(scores, key=scores.get)","why":"This is the definition, not the implementation. Stacking the library into a matrix and running L @ q scores everything in a single call — identical arithmetic, one operation instead of n. That is what a vector database actually runs over millions of rows, and it is what stretch.py asks for.","trap":"max(scores.values()) hands you 0.998 with no way back to which item earned it."}],"headings":[{"step":"lesson","text":"Why we start here"},{"step":"lesson","text":"The Python you need"},{"step":"lesson","text":"A vector is a list of numbers"},{"step":"lesson","text":"The dot product"},{"step":"lesson","text":"The flaw, and the fix"},{"step":"lesson","text":"Why NumPy exists"},{"step":"exercises","text":"What the file looks like"},{"step":"exercises","text":"Then run the benchmark"},{"step":"exercises","text":"Optional: the stretch"},{"step":"exercises","text":"Solutions"},{"step":"walkthrough","text":"Exercise walkthrough"},{"step":"closeout","text":"You are done when"},{"step":"closeout","text":"Write your notes"},{"step":"resources","text":"What to watch"}]},{"id":"1.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned","written":false},{"id":"1.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned","written":false},{"id":"1.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned","written":false},{"id":"1.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned","written":false},{"id":"1.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned","written":false},{"id":"1.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned","written":false},{"id":"1.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned","written":false},{"id":"1.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned","written":false},{"id":"1.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned","written":false},{"id":"1.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned","written":false},{"id":"1.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned","written":false},{"id":"1.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned","written":false}]},{"id":"p2","number":2,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"2.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned","written":false},{"id":"2.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned","written":false},{"id":"2.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned","written":false},{"id":"2.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned","written":false},{"id":"2.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned","written":false},{"id":"2.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned","written":false},{"id":"2.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned","written":false},{"id":"2.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned","written":false},{"id":"2.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned","written":false},{"id":"2.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned","written":false},{"id":"2.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned","written":false},{"id":"2.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 1 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned","written":false},{"id":"2.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned","written":false}]},{"id":"p3","number":3,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"3.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned","written":false},{"id":"3.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned","written":false},{"id":"3.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned","written":false},{"id":"3.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned","written":false},{"id":"3.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned","written":false},{"id":"3.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned","written":false},{"id":"3.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned","written":false},{"id":"3.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned","written":false},{"id":"3.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned","written":false},{"id":"3.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned","written":false},{"id":"3.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned","written":false},{"id":"3.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned","written":false},{"id":"3.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned","written":false},{"id":"3.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned","written":false}]},{"id":"p4","number":4,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"4.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned","written":false},{"id":"4.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned","written":false},{"id":"4.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned","written":false},{"id":"4.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned","written":false},{"id":"4.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned","written":false},{"id":"4.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned","written":false},{"id":"4.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned","written":false},{"id":"4.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned","written":false},{"id":"4.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned","written":false},{"id":"4.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 1.1 comes back around.","status":"planned","written":false},{"id":"4.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned","written":false},{"id":"4.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned","written":false}]},{"id":"p5","number":5,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"5.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned","written":false},{"id":"5.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned","written":false},{"id":"5.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned","written":false}]}],"sections":{"1.1":["brief","lesson","exercises","walkthrough","closeout","resources"]}}
+{"phases":[{"id":"p1","number":1,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"1.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available","written":true,"exercises":[{"name":"dot_loop","summary":"the dot product, by hand","optional":false,"forbids":["no numpy","no sum()"]},{"name":"dot_numpy","summary":"the same thing, vectorised","optional":false,"forbids":["no loops"]},{"name":"magnitude_loop","summary":"magnitude, by hand","optional":false,"forbids":["no numpy"]},{"name":"magnitude","summary":"magnitude, vectorised","optional":false,"forbids":["no loops"]},{"name":"normalise","summary":"normalise","optional":false,"forbids":["no loops"]},{"name":"cosine_similarity","summary":"cosine similarity","optional":false,"forbids":["no loops"]},{"name":"most_similar","summary":"the payoff: a two-line search engine","optional":false,"forbids":[]}],"dir":"lessons/01-foundations/01-vectors","watch":{"before":[{"title":"3Blue1Brown — Essence of Linear Algebra, ch. 1 “Vectors”","length":"~10 min","why":"The geometric picture, animated far better than the demo below. Watch for the three views of a vector; you already have the CS one.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"},{"title":"ch. 2 — Linear combinations, span, and basis vectors","length":"~10 min","why":"Why the numbers in a vector are coordinates rather than just values. Pays off in 1.4, and hugely in 2.12.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"},{"title":"Keith Galli — Complete Python NumPy Tutorial","length":"~1 hr","why":"Purely practical. Type along with the notebook. You can stop after reshaping.","url":"https://github.com/KeithGalli/NumPy"}],"after":{"title":"ch. 9 — Dot products and duality","length":"~14 min","why":"Only once your code passes. The second half, on duality, is genuinely hard and not needed yet — losing the thread there is expected.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"}},"solutions":[{"n":1,"name":"dot_loop","headline":"the definition as an algorithm","mechanism":"Walk both lists together, multiply each pair, accumulate. The length check matters because the operation is undefined for mismatched lengths — there is no sensible answer, so failing loudly beats guessing.","code":"def dot_loop(a: list[float], b: list[float]) -> float:\n    if len(a) != len(b):\n        raise ValueError(\"The lengths of the two lists must be equal.\")\n\n    total = 0.0\n    for i in range(len(a)):\n        total += a[i] * b[i]\n    return total","why":"The accumulator starts at 0.0 rather than 0 so the return type is a float even for integer inputs. Indexing with range(len(a)) is the one place in this lesson where an index is genuinely needed — you are walking two lists in step."},{"n":2,"name":"dot_numpy","headline":"the same result, loop pushed into C","mechanism":"np.dot and np.matmul (also spelled @) agree for 1-D inputs and diverge only in higher dimensions: np.dot sums over the last axis of one and the second-to-last of the other, while matmul broadcasts stacks of matrices. For two vectors, either is right.","code":"def dot_numpy(a: np.ndarray, b: np.ndarray) -> float:\n    return float(np.dot(a, b))","why":"The float() matters more than it looks: without it you return np.float64, which behaves almost like a Python float right up until it does not — it will not JSON-serialise, and it leaks numpy semantics into code that expected a plain number."},{"n":3,"name":"magnitude_loop","headline":"Pythagoras, nothing more","mechanism":"The length of [3, 4] is the hypotenuse of a right triangle with legs 3 and 4. Squaring removes signs so direction cannot cancel length out; the root brings the answer back to the original units.","code":"def magnitude_loop(v: list[float]) -> float:\n    squared = [x ** 2 for x in v]\n    return math.sqrt(sum(squared))","why":"A comprehension plus sum() is idiomatic Python and allowed here — exercise 1 already proved you can accumulate by hand, and the point of this one is Pythagoras. Using a generator, sum(x ** 2 for x in v), is marginally better for very long inputs since it never materialises the intermediate list."},{"n":4,"name":"magnitude","headline":"the same sum, vectorised","mechanism":"square, sum, sqrt — composed into a single expression. Nothing about this changes when the vector has 4096 components instead of two, which is why two-dimensional intuition is worth building.","code":"def magnitude(v: np.ndarray) -> float:\n    return float(np.sqrt(np.sum(np.square(v))))","why":"np.linalg.norm(v) does the same job in one call and is what you would reach for in real code. Write it out at least once, though — seeing square, sum and sqrt compose is where the vectorised style starts to feel natural. Neither version survives extreme inputs: both overflow to inf around 1e200, because both square before summing.","trap":"Both versions overflow to inf around 1e200 — squaring before summing is the reason."},{"n":5,"name":"normalise","headline":"keep the direction, throw away the length","mechanism":"Dividing a vector by its own magnitude leaves it pointing exactly where it was, with length precisely 1. Every such vector lands on the unit circle. The zero vector is the one case with no answer: no direction to preserve, and the division would be by zero.","code":"def normalise(v: np.ndarray) -> np.ndarray:\n    length = magnitude(v)\n    if length == 0:\n        raise ValueError(\"Cannot normalise a zero vector.\")\n    return v / length","why":"Calling magnitude(v) rather than rewriting the formula gives you one source of truth. Naming the local `length` and not `magnitude` matters — a local of the same name shadows the function, and the next person to add a second call inside this function gets a confusing TypeError."},{"n":6,"name":"cosine_similarity","headline":"why the division works","mechanism":"One identity sits underneath the whole exercise: a · b = |a| × |b| × cos θ. The dot product was never purely about agreement — it is agreement scaled by both lengths. Divide both sides by |a| × |b| and the lengths cancel, leaving the angle alone. You are not inventing a metric; you are rearranging an identity to isolate what you actually wanted.","code":"def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:\n    a_magnitude = magnitude(a)\n    b_magnitude = magnitude(b)\n    if a_magnitude == 0 or b_magnitude == 0:\n        raise ValueError(\"Cannot compute cosine similarity with a zero vector.\")\n    return float(np.dot(a, b) / (a_magnitude * b_magnitude))","why":"np.dot(normalise(a), normalise(b)) is equally correct and returns the identical value bit for bit — shorter, and it inherits the zero-vector check from normalise for free. The version above was chosen only because it mirrors the formula in the docstring. The zero check is not required by the tests, but the cosine of an angle with a directionless vector is genuinely undefined, so raising beats returning a made-up number.","trap":"Calling normalise where you meant magnitude gives you an array where a scalar belongs — then `if array == 0` raises “the truth value of an array with more than one element is ambiguous”."},{"n":7,"name":"most_similar","headline":"search, and the version you have not written yet","mechanism":"Short, because exercise 6 did the work. Iterating a dict yields its keys, and key= changes what gets compared, not what gets returned — so the comparison runs over scores while the return value is a name.","code":"def most_similar(query: np.ndarray, library: dict[str, np.ndarray]) -> str:\n    scores = {name: cosine_similarity(query, vector) for name, vector in library.items()}\n    return max(scores, key=scores.get)","why":"This is the definition, not the implementation. Stacking the library into a matrix and running L @ q scores everything in a single call — identical arithmetic, one operation instead of n. That is what a vector database actually runs over millions of rows, and it is what stretch.py asks for.","trap":"max(scores.values()) hands you 0.998 with no way back to which item earned it."}],"headings":[{"step":"lesson","text":"Why we start here"},{"step":"lesson","text":"The Python you need"},{"step":"lesson","text":"A vector is a list of numbers"},{"step":"lesson","text":"The dot product"},{"step":"lesson","text":"The flaw, and the fix"},{"step":"lesson","text":"Why NumPy exists"},{"step":"exercises","text":"What the file looks like"},{"step":"exercises","text":"Then run the benchmark"},{"step":"exercises","text":"Optional: the stretch"},{"step":"exercises","text":"Solutions"},{"step":"walkthrough","text":"Exercise walkthrough"},{"step":"closeout","text":"You are done when"},{"step":"closeout","text":"Write your notes"},{"step":"resources","text":"What to watch"}]},{"id":"1.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"available","written":true,"exercises":[{"name":"distance_loop","summary":"Euclidean distance, by hand","optional":false,"forbids":["no numpy"]},{"name":"distance","summary":"the same thing, vectorised","optional":false,"forbids":["no loops"]},{"name":"angle_between","summary":"the angle between two vectors, in DEGREES","optional":false,"forbids":["no loops"]},{"name":"project","summary":"the projection of a onto b","optional":false,"forbids":["no loops"]},{"name":"reject","summary":"the part of a that b cannot explain","optional":false,"forbids":["no loops"]},{"name":"is_orthogonal","summary":"do these two vectors have nothing to say about each other?","optional":false,"forbids":["no loops"]},{"name":"nearest","summary":"the payoff: the same search, by distance instead of angle","optional":false,"forbids":[]}],"dir":"lessons/01-foundations/02-geometry","watch":{"before":[{"title":"3Blue1Brown — ch. 9, “Dot products and duality”","length":"~14 min","why":"The one held back from 1.1. The first half is exactly this lesson. Stop at the halfway mark — duality is hard and not needed yet.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"},{"title":"3Blue1Brown — ch. 3, “Linear transformations and matrices”","length":"~11 min","why":"Optional here. It is the bridge into 1.3 and 1.4, and seeing it twice will not hurt.","url":"https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"}],"after":{"title":"numpy.linalg.norm — the axis parameter","length":"~5 min read","why":"Once your code passes. This is how the stretch file collapses an (n, n, d) array to (n, n) without a loop, and it is most of lesson 1.3.","url":"https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html"}},"headings":[{"step":"lesson","text":"Two questions, not one"},{"step":"lesson","text":"Where they disagree"},{"step":"lesson","text":"Which one do you want?"},{"step":"lesson","text":"The identity that connects them"},{"step":"lesson","text":"Two silent failures"},{"step":"lesson","text":"Projection: splitting a vector in two"},{"step":"lesson","text":"Why projection matters more than it looks"},{"step":"exercises","text":"The shape of the file"},{"step":"exercises","text":"What the tests check that you might not"},{"step":"exercises","text":"Then run the demo"},{"step":"exercises","text":"The stretch, if you want it"},{"step":"walkthrough","text":"1 and 2 — distance, twice"},{"step":"walkthrough","text":"3 — the angle, and the two things that go wrong"},{"step":"walkthrough","text":"4 and 5 — projection and rejection"},{"step":"walkthrough","text":"6 — the tolerance"},{"step":"walkthrough","text":"7 — the same search, one thing changed"},{"step":"closeout","text":"You are done when"},{"step":"closeout","text":"Write your notes"},{"step":"resources","text":"Watch"},{"step":"resources","text":"Reference, when you hit it"},{"step":"resources","text":"Later, not now"}]},{"id":"1.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned","written":false},{"id":"1.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned","written":false},{"id":"1.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned","written":false},{"id":"1.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned","written":false},{"id":"1.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned","written":false},{"id":"1.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned","written":false},{"id":"1.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned","written":false},{"id":"1.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned","written":false},{"id":"1.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned","written":false},{"id":"1.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned","written":false},{"id":"1.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned","written":false}]},{"id":"p2","number":2,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"2.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned","written":false},{"id":"2.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned","written":false},{"id":"2.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned","written":false},{"id":"2.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned","written":false},{"id":"2.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned","written":false},{"id":"2.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned","written":false},{"id":"2.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned","written":false},{"id":"2.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned","written":false},{"id":"2.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned","written":false},{"id":"2.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned","written":false},{"id":"2.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned","written":false},{"id":"2.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 1 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned","written":false},{"id":"2.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned","written":false}]},{"id":"p3","number":3,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"3.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned","written":false},{"id":"3.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned","written":false},{"id":"3.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned","written":false},{"id":"3.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned","written":false},{"id":"3.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned","written":false},{"id":"3.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned","written":false},{"id":"3.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned","written":false},{"id":"3.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned","written":false},{"id":"3.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned","written":false},{"id":"3.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned","written":false},{"id":"3.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned","written":false},{"id":"3.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned","written":false},{"id":"3.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned","written":false},{"id":"3.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned","written":false}]},{"id":"p4","number":4,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"4.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned","written":false},{"id":"4.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned","written":false},{"id":"4.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned","written":false},{"id":"4.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned","written":false},{"id":"4.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned","written":false},{"id":"4.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned","written":false},{"id":"4.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned","written":false},{"id":"4.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned","written":false},{"id":"4.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned","written":false},{"id":"4.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 1.1 comes back around.","status":"planned","written":false},{"id":"4.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned","written":false},{"id":"4.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned","written":false}]},{"id":"p5","number":5,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"5.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned","written":false},{"id":"5.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned","written":false},{"id":"5.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned","written":false}]}],"sections":{"1.1":["brief","lesson","exercises","walkthrough","closeout","resources"],"1.2":["brief","lesson","exercises","walkthrough","closeout","resources"]}}
 
 </script>
 
@@ -2037,6 +2037,364 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
   <p><strong>Watching is not learning</strong>, and neither is dragging the arrows above. Both produce a powerful sensation of understanding, because the animation performs the hard cognitive work on your behalf. That sensation is not the same as being able to reproduce the idea, and the gap between them is where most self-taught attempts die — people watch fifty hours of excellent video, feel educated, and cannot write twenty lines of NumPy.</p>
   <p>The test after each video: close the tab and explain the idea out loud without the animation. Budget roughly 20% of your time on video and demos, and 80% on the exercises.</p>
 </div>
+
+</div>
+</template>
+
+<template id="lesson-1.2-brief">
+<div class="facts">
+  <div>
+    <span class="fact-k">Assumes</span>
+    <span class="fact-v">1.1 — dot, magnitude, normalise, cosine</span>
+  </div>
+  <div>
+    <span class="fact-k">Maths introduced</span>
+    <span class="fact-v">Distance, angle, projection, rejection</span>
+  </div>
+  <div>
+    <span class="fact-k">Exercises</span>
+    <span class="fact-v" data-live="tests">7 + 1 stretch</span>
+  </div>
+  <div>
+    <span class="fact-k">You will be able to</span>
+    <span class="fact-v">Choose distance or angle on purpose</span>
+  </div>
+</div>
+
+<!-- Source for the "Outcomes" block in the step 1 side column. Hidden here
+     because the header shows only the facts grid above. -->
+<ol class="brief-outcomes" hidden>
+  <li><strong>Measure distance two ways.</strong> By hand and vectorised, and see that it is the magnitude you already wrote, applied to the gap.</li>
+  <li><strong>Know when distance and angle disagree.</strong> And which one you actually wanted, for text, for coordinates, and for embeddings.</li>
+  <li><strong>Read the identity that connects them.</strong> <code>a·b = |a||b|cos θ</code>, three ways, one of which you already derived without knowing it.</li>
+  <li><strong>Split a vector along a direction.</strong> Projection and rejection — the move underneath least squares, PCA and attention.</li>
+  <li><strong>Stop trusting floating point.</strong> Two silent failures, both of which bite on the easiest possible input.</li>
+</ol>
+</template>
+
+<template id="lesson-1.2-lesson">
+<div class="prose">
+
+<p class="lead">In 1.1 you built a search engine and it worked. Here is what I did not tell you: there is more than one way to measure "closest", and they do not always agree — not in an edge case, but routinely, on ordinary data, in a way that changes which document your system returns.</p>
+
+<h2>Two questions, not one</h2>
+
+<p>Take two vectors. There are two completely different things you might mean by "how close are these?"</p>
+
+<p><strong>How far apart are they?</strong> Stand at one and walk to the other. That is <strong>distance</strong>, and it is Pythagoras again — the same formula as <code>magnitude</code>, applied to the gap between the two points instead of to one point.</p>
+
+<div class="codeblock">
+<pre><code class="language-python">distance(a, b)  =  |a - b|</code></pre>
+</div>
+
+<p>Read it right to left: subtract to get the vector from <code>b</code> to <code>a</code>, then take its length. You already have <code>magnitude</code>. Distance is <code>magnitude</code> of the difference, and that is the whole of exercises 1 and 2.</p>
+
+<p><strong>Do they point the same way?</strong> Ignore how long each one is; ask only about direction. That is the <strong>angle</strong>, and cosine similarity — which you already wrote — is one step away from it.</p>
+
+<p>Two vectors can be far apart and point identically. Two vectors can be close together and point in different directions. Neither measure is wrong. They answer different questions.</p>
+
+<h2>Where they disagree</h2>
+
+<p>Say documents are represented by two numbers: how much they talk about cooking, and how much they talk about baking.</p>
+
+<figure class="diagram" data-solution="7">
+<svg viewBox="0 0 620 300" role="img" aria-label="Four documents plotted on cooking and baking axes. The query at 2,2, a short document at 1,1 and a long document at 10,10 all lie on the same diagonal ray, so all sit at zero degrees to the query. The long document is nonetheless 11.31 away by distance, the worst of the three, while the short document is 1.41 away.">
+  <defs>
+    <marker id="ar12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="56" y1="250" x2="300" y2="250" class="sep"></line>
+  <line x1="56" y1="250" x2="56" y2="40" class="sep"></line>
+  <text x="300" y="268" class="lbl-sm" text-anchor="end">cooking</text>
+  <text x="56" y="32" class="lbl-sm" text-anchor="middle">baking</text>
+
+  <line x1="56" y1="250" x2="270" y2="46" class="conn" stroke-dasharray="4 4"></line>
+
+  <circle cx="76" cy="230" r="5" class="box-hl"></circle>
+  <text x="86" y="234" class="lbl-sm">short doc</text>
+  <circle cx="256" cy="60" r="5" class="box-hl"></circle>
+  <text x="256" y="48" class="lbl-sm" text-anchor="middle">long doc</text>
+  <circle cx="56" cy="190" r="5" class="box"></circle>
+  <text x="66" y="182" class="lbl-sm">off topic</text>
+  <circle cx="96" cy="210" r="6" class="conn-hl" fill="none"></circle>
+  <text x="106" y="206" class="lbl">query</text>
+
+  <line x1="330" y1="52" x2="592" y2="52" class="sep"></line>
+  <text x="342" y="44" class="lbl-sm">item</text>
+  <text x="500" y="44" class="lbl-sm" text-anchor="end">distance</text>
+  <text x="580" y="44" class="lbl-sm" text-anchor="end">angle</text>
+
+  <text x="342" y="82" class="lbl">short doc</text>
+  <text x="500" y="82" class="lbl" text-anchor="end">1.41</text>
+  <text x="580" y="82" class="lbl" text-anchor="end">0&#176;</text>
+
+  <rect x="330" y="98" width="262" height="30" rx="4" class="box-hl"></rect>
+  <text x="342" y="118" class="lbl-hl">long doc</text>
+  <text x="500" y="118" class="lbl-hl" text-anchor="end">11.31</text>
+  <text x="580" y="118" class="lbl-hl" text-anchor="end">0&#176;</text>
+
+  <text x="342" y="150" class="lbl">off topic</text>
+  <text x="500" y="150" class="lbl" text-anchor="end">2.24</text>
+  <text x="580" y="150" class="lbl" text-anchor="end">45&#176;</text>
+
+  <line x1="330" y1="168" x2="592" y2="168" class="sep"></line>
+  <text x="342" y="196" class="lbl-sm">nearest by distance</text>
+  <text x="580" y="196" class="lbl" text-anchor="end">short doc</text>
+  <text x="342" y="222" class="lbl-sm">nearest by angle</text>
+  <text x="580" y="222" class="lbl" text-anchor="end">short, long</text>
+</svg>
+<figcaption>The long document points <em>exactly</em> where the query points and is the furthest away of the three. Distance punished it for being long. This is the same flaw the raw dot product had in 1.1, wearing different clothes — except here it is not a bug, because measuring how far apart two things are is the entire job of a distance.</figcaption>
+</figure>
+
+<h2>Which one do you want?</h2>
+
+<ul>
+  <li><strong>Text, embeddings, recommendations</strong> — anything where "length" means "amount of document" rather than "amount of the thing" — use the <strong>angle</strong>. A long article about cats and a short article about cats are about the same thing.</li>
+  <li><strong>Positions, coordinates, physical measurements</strong> — anything where magnitude is the signal — use <strong>distance</strong>. Readings of 20&#176;C and 200&#176;C are not "the same, just louder".</li>
+</ul>
+
+<p>There is a shortcut worth knowing. <strong>If every vector is normalised to length 1, the two measures rank identically.</strong> They are not equal — still different numbers — but sorting by one gives the same order as sorting by the other. That is why production vector databases store embeddings pre-normalised: you get to use fast distance-search hardware and still get cosine ranking. <code>stretch.py</code> makes you prove it rather than believe it.</p>
+
+<h2>The identity that connects them</h2>
+
+<p>One equation ties the dot product to geometry, and it is worth committing to memory:</p>
+
+<div class="codeblock">
+<pre><code class="language-python">a . b  =  |a| &#215; |b| &#215; cos(theta)</code></pre>
+</div>
+
+<p>In words: the dot product is the product of the two lengths, scaled by how aligned the directions are. Read it three ways, because each one is used somewhere later.</p>
+
+<ol>
+  <li><strong>Solve for cos(theta)</strong> and you get cosine similarity, which is what you wrote in 1.1. You were not inventing a metric. You were rearranging this.</li>
+  <li><strong>Set theta to 90&#176;.</strong> cos(90&#176;) = 0, so the whole right-hand side is 0. "Dot product of zero means unrelated" is not an analogy — it is this equation.</li>
+  <li><strong>Set both lengths to 1.</strong> The right-hand side becomes just cos(theta), so for unit vectors <em>the dot product already is the cosine</em>, with nothing to divide out.</li>
+</ol>
+
+<h2>Two silent failures</h2>
+
+<p>Both of these bite on the easiest possible input, and neither raises anything.</p>
+
+<p><strong>arccos of a number just outside its domain is <code>nan</code>.</strong> <code>arccos</code> is defined on <code>[-1, 1]</code>. Compute the cosine of a vector with <em>itself</em> and floating point hands you 1.0000000000000002, because the division does not land precisely on 1. Two identical vectors — the easiest case imaginable — is where this bites. One call to <code>np.clip</code> fixes it.</p>
+
+<p><strong>And even clipped, a zero angle is not exactly zero.</strong> Ask for the angle between <code>[2,2]</code> and <code>[10,10]</code> and you get <code>1.2e-06</code> degrees. That is <code>arccos</code> being <em>ill-conditioned</em> near 0&#176;: since <code>cos(t) &#8776; 1 - t&#178;/2</code>, the cosine barely moves as the angle moves, so run backwards the angle moves enormously as the cosine moves. A cosine wrong in its last bit comes back as an angle wrong by about <code>1e-6</code> degrees. When you need "do these point the same way?" to full precision, ask it of the <strong>cosine</strong>, which is well-conditioned there, not of the angle.</p>
+
+<p><strong><code>== 0</code> reports False on a textbook right angle.</strong> Two vectors perpendicular in exact arithmetic give you <code>3.06e-17</code>, because 0.1 + 0.2 is not 0.3 and never was. Compare against a tolerance. Build the reflex here, on four lines you can see all of, rather than at 2am inside something you cannot.</p>
+
+<h2>Projection: splitting a vector in two</h2>
+
+<p>This is the idea with the longest reach in the lesson, and it starts with a picture. Shine a light straight down onto the line through <code>b</code>. The shadow <code>a</code> casts on that line is the <strong>projection of a onto b</strong>.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 240" role="img" aria-label="A vector a drawn from the origin up and to the right. Its shadow on the horizontal line through b is the projection. The vertical gap between a and its shadow is the rejection, which meets b at a right angle.">
+  <defs>
+    <marker id="ar12b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="70" y1="190" x2="330" y2="190" class="conn" marker-end="url(#ar12b)"></line>
+  <text x="338" y="194" class="lbl">b</text>
+
+  <line x1="70" y1="190" x2="240" y2="60" class="conn-hl" marker-end="url(#ar12b)"></line>
+  <text x="248" y="56" class="lbl-hl">a</text>
+
+  <line x1="240" y1="60" x2="240" y2="190" class="conn" stroke-dasharray="4 4"></line>
+  <path d="M 228 190 L 228 178 L 240 178" class="conn" fill="none"></path>
+
+  <line x1="70" y1="204" x2="240" y2="204" class="conn-hl"></line>
+  <text x="155" y="222" class="lbl-hl" text-anchor="middle">the projection</text>
+  <text x="254" y="130" class="lbl-sm">what is left over</text>
+  <text x="254" y="148" class="lbl-sm">(the rejection)</text>
+
+  <rect x="380" y="60" width="212" height="106" rx="4" class="box"></rect>
+  <text x="398" y="88" class="head">how far along b?</text>
+  <text x="398" y="114" class="lbl">(a . b) / (b . b)</text>
+  <text x="398" y="140" class="lbl-sm">one plain number, then</text>
+  <text x="398" y="156" class="lbl-sm">travel that far along b</text>
+</svg>
+<figcaption>Two pieces. The part of <code>a</code> that lies <em>along</em> <code>b</code>, and the part that lies <em>across</em> it. Add them back together and you have <code>a</code> again, exactly. The denominator normalises for how long <code>b</code> is, which is why only <code>b</code>'s <em>direction</em> matters — <code>project([3,3],[1,0])</code> and <code>project([3,3],[5,0])</code> give the same answer.</figcaption>
+</figure>
+
+<p>The leftover — <code>a</code> minus its projection — is the <strong>rejection</strong>, and it is always perpendicular to <code>b</code>. That is exercise 5, and it is one line.</p>
+
+<h2>Why projection matters more than it looks</h2>
+
+<p>"Split a vector into the part explained by a direction, and the part that is not" is one of the most reused moves in the field:</p>
+
+<ul>
+  <li><strong>Least squares regression</strong> finds the projection of your data onto the space your model can reach. The rejection is the residual — your error.</li>
+  <li><strong>PCA</strong> (lesson 2.12) finds the directions that leave the smallest rejection. That is all "principal component" means.</li>
+  <li><strong>Attention</strong> in a transformer decides how much of one token's vector to mix into another. The amount is a dot product; the mixing is projection.</li>
+  <li><strong>Gram-Schmidt</strong>, which you meet near QR decomposition, is literally "project, subtract the projection, repeat".</li>
+</ul>
+
+<p>You are writing four lines. They come back for the rest of the curriculum.</p>
+
+</div>
+</template>
+
+<template id="lesson-1.2-exercises">
+<div class="prose">
+
+<div data-exercise-rows></div>
+
+<h2>The shape of the file</h2>
+
+<p>Same structure as 1.1: once by hand, then vectorised, then built up. Exercises 4 and 5 are a pair — do 4 first, and 5 is one line that uses it.</p>
+
+<div class="codeblock">
+<div class="cap">exercises.py &#8212; the only file you edit</div>
+<pre><code class="language-python">def project(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """EXERCISE 4 &#8212; the projection of a onto b.
+
+    The shadow a casts on the line through b. Returns a VECTOR,
+    pointing along b.
+
+        project([3, 3], [1, 0])  ->  array([3., 0.])
+        project([3, 3], [5, 0])  ->  array([3., 0.])
+        project([0, 5], [1, 0])  ->  array([0., 0.])
+
+    Numpy, no loops. Raise ValueError if b has zero magnitude.
+    """
+    raise NotImplementedError("exercise 4")</code></pre>
+</div>
+
+<h2>What the tests check that you might not</h2>
+
+<p>These are not there to be awkward. Each one is a property that must hold, and each one has caught somebody.</p>
+
+<ul>
+  <li><strong>Distance is symmetric.</strong> <code>distance(a, b)</code> must equal <code>distance(b, a)</code>. If you subtract in one order and forget that squaring removes the sign, you will not notice until it matters.</li>
+  <li><strong>Exercise 2 must agree with exercise 1.</strong> Two implementations of the same idea, checked against each other on the same input. If they disagree, one of them is wrong and you get to find out which.</li>
+  <li><strong>Scaling must not change an angle.</strong> <code>angle_between([2,2], [10,10])</code> is zero. If your answer moves when a vector gets longer, you have not divided out the magnitudes.</li>
+  <li><strong>The projection must point along b.</strong> Checked with a cross product, which is zero exactly when two vectors are parallel.</li>
+  <li><strong>project + reject must reconstruct a.</strong> The two pieces are a decomposition, so they must add back to what you started with. This is checked on random vectors in six dimensions, where you cannot eyeball it.</li>
+  <li><strong>The rejection must be perpendicular to b.</strong> Not approximately, by argument &#8212; measured, with a dot product.</li>
+</ul>
+
+<h2>Then run the demo</h2>
+
+<p>Once all seven pass, run the file directly. It builds the disagreement case from the lesson so you can watch it rather than take my word for it.</p>
+
+<div class="codeblock">
+<pre><code class="language-bash">python lessons/01-foundations/02-geometry/exercises.py</code></pre>
+</div>
+
+<h2>The stretch, if you want it</h2>
+
+<p><code>stretch.py</code> is optional and not scored. Two tasks: build the full <em>n</em>&#215;<em>n</em> distance matrix with no loop anywhere, and check the claim that normalised vectors rank the same by distance and by cosine.</p>
+
+<p>The first one is your introduction to <strong>broadcasting</strong>, which is the entire subject of lesson 1.3. The file walks you into it rather than assuming it.</p>
+
+</div>
+</template>
+
+<template id="lesson-1.2-walkthrough">
+<div class="prose">
+
+<p class="lead">The mechanisms, not the implementations. No code here — that is yours to write, and there is nothing on this page you can copy.</p>
+
+<h2>1 and 2 — distance, twice</h2>
+
+<p>Distance is <code>magnitude</code> from 1.1 applied to <code>a - b</code>. That is the whole insight, and it is worth pausing on because it is the first time you reuse a function you built rather than a formula you looked up.</p>
+
+<p>The length check in exercise 1 matters for the same reason it mattered in <code>dot_loop</code>: the operation is <em>undefined</em> for mismatched lengths. There is no sensible answer, so failing loudly beats guessing.</p>
+
+<p>For exercise 2, <code>np.linalg.norm(a - b)</code> does it in one call and is what you would reach for in real code. Write it out with square, sum and sqrt at least once — the point of the pair is to see that the vectorised version is the same three operations, composed.</p>
+
+<h2>3 — the angle, and the two things that go wrong</h2>
+
+<p>Rearranging <code>a·b = |a||b|cos θ</code> for θ gives you <code>arccos</code> of the cosine similarity you already wrote. So the mathematical content of this exercise is one line. Everything else is the numerics, and that is deliberate.</p>
+
+<p>The first failure is <code>nan</code>, and <code>np.clip</code> fixes it. The second is that a zero angle still does not come back as zero, and nothing fixes it — you accommodate it. Read the "two silent failures" section of the lesson again if the reason is not sitting comfortably; <em>why</em> the error is around <code>1e-6</code> rather than <code>1e-16</code> is the part worth being able to explain.</p>
+
+<p>The general shape, which recurs: an operation can be perfectly correct and still lose you precision, if it is <em>ill-conditioned</em> — if its output moves much faster than its input near the value you care about. Conditioning is a property of the problem, not of your code.</p>
+
+<h2>4 and 5 — projection and rejection</h2>
+
+<p>The formula is a ratio of two dot products, and the reason it is a ratio is the useful part. <code>a·b</code> tells you how aligned the two are, but it grows if <code>b</code> gets longer. Dividing by <code>b·b</code> removes exactly that growth, which is why doubling <code>b</code> does not move the answer. Then you travel that far <em>along</em> <code>b</code>, which means multiplying by <code>b</code>.</p>
+
+<p>You could also write it as <code>np.dot(a, unit_b) * unit_b</code> using your <code>normalise</code> from 1.1. That is the same arithmetic with the normalisation done once explicitly rather than folded into the ratio, and it is arguably clearer about what is happening. Either is correct; knowing they are the same thing is the point.</p>
+
+<p>Exercise 5 is one line, and if it is more than one line you have not used exercise 4. The property the test checks — that the two pieces add back to <code>a</code>, and that the leftover is perpendicular to <code>b</code> — is not a coincidence to verify, it is the definition. You are splitting a vector into two components along perpendicular directions.</p>
+
+<h2>6 — the tolerance</h2>
+
+<p>The trap is <code>== 0</code>. The subtler question is what tolerance to pick, and it is worth thinking about for a minute rather than copying <code>1e-9</code> because it was in the signature.</p>
+
+<p>Too tight — say <code>1e-30</code> — and genuinely perpendicular vectors are reported as not perpendicular, because the rounding error is bigger than your threshold. Too loose — say <code>0.1</code> — and vectors that are visibly not perpendicular pass. The default here is a reasonable middle for vectors of modest size. For very large or very small vectors, an absolute tolerance on the dot product is the wrong tool entirely; you would scale it by the magnitudes, or compare the cosine instead. That is what <code>np.isclose</code>'s <code>rtol</code> exists for.</p>
+
+<h2>7 — the same search, one thing changed</h2>
+
+<p>This is exercise 7 of 1.1 with <code>cosine_similarity</code> swapped for <code>distance</code> and <code>max</code> swapped for <code>min</code>. If it took you longer than that, check whether you rewrote something you already had.</p>
+
+<p>The interesting part is not the code, it is the result. Run it beside <code>most_similar</code> from 1.1 on the same library and watch them disagree. The disagreement is the lesson; the function is just how you get to see it.</p>
+
+<p>The empty-library check is worth a thought too. Returning <code>None</code> would push the failure somewhere further away — some caller would do <code>results[None]</code> half a second later and you would debug the wrong function. Raising here puts the error where the mistake is.</p>
+
+</div>
+</template>
+
+<template id="lesson-1.2-closeout">
+<div class="prose">
+
+<p class="lead">Passing tests is the floor, not the finish. This is the part that decides whether any of it stays with you.</p>
+
+<h2>You are done when</h2>
+
+<p>Not when the tests pass — when you can answer these out loud, without looking anything up:</p>
+
+<ol class="checkq">
+  <li>Give me two vectors that are far apart but point in the same direction. What does distance say about them? What does the angle say? Which answer is "right"?</li>
+  <li>Why is distance the magnitude of something? Of what, exactly?</li>
+  <li>What does <code>a·b = |a||b|cos θ</code> become when both vectors have length 1, and why does a vector database care?</li>
+  <li>Describe the projection of <code>a</code> onto <code>b</code> in words, without the formula. Then explain why doubling <code>b</code> does not change it.</li>
+  <li>What is the rejection, and what is guaranteed about it?</li>
+  <li>Why is <code>if dot == 0</code> wrong? What would go wrong with a tolerance of <code>1e-30</code>? Of <code>0.1</code>?</li>
+  <li>You are building search over product descriptions. Distance or angle? Now over sensor readings from a machine. Which one, and why did the answer change?</li>
+</ol>
+
+<p>If one of those makes you hesitate, the fix is not to re-read this page. Go back to the demo, change the numbers until the output does what you expected, and try again.</p>
+
+<h2>Write your notes</h2>
+
+<p><code>notes.md</code> in the lesson folder holds the same questions. Answer them there in your own words — not copied from here. The <em>things I got wrong</em> section at the bottom will be the most valuable thing in your repository six months from now.</p>
+
+<div class="callout">
+  <span class="lbl">What this sets up</span>
+  <p>Projection is the seed of PCA, least squares and attention — you will meet it again in 2.12 and in phase 4. And the stretch file's distance matrix is your first broadcasting problem, which is the entire subject of the next lesson: <strong>1.3, matrices as data</strong>.</p>
+</div>
+
+</div>
+</template>
+
+<template id="lesson-1.2-resources">
+<div class="prose">
+
+<h2>Watch</h2>
+
+<ul>
+  <li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown, Essence of Linear Algebra — ch. 9, "Dot products and duality"</a> (~14 min). The one held back from 1.1. The <strong>first half</strong> is this lesson: why the dot product measures alignment, and where the projection picture comes from. The second half, on duality, is genuinely hard and not needed yet — losing the thread there is expected, and it returns in phase 3.</li>
+  <li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown — ch. 3, "Linear transformations and matrices"</a> (~11 min). Not needed for these exercises. It is the bridge into 1.3 and 1.4, and seeing it twice will not hurt.</li>
+</ul>
+
+<h2>Reference, when you hit it</h2>
+
+<ul>
+  <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.clip.html" target="_blank" rel="noopener">numpy.clip</a> — short. Read it when you reach exercise 3, not before.</li>
+  <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html" target="_blank" rel="noopener">numpy.linalg.norm</a> — what you would reach for in real code instead of writing <code>magnitude</code> yourself. Read the <code>axis</code> parameter now: it is how the stretch file avoids a loop, and it is most of lesson 1.3.</li>
+  <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.isclose.html" target="_blank" rel="noopener">numpy.isclose</a> — the standard answer to "never compare floats with ==". Note it takes both an absolute and a relative tolerance, and why you would want each.</li>
+</ul>
+
+<h2>Later, not now</h2>
+
+<ul>
+  <li><a href="https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html" target="_blank" rel="noopener">What Every Computer Scientist Should Know About Floating-Point Arithmetic</a> — do not read this today. Bookmark it. When floating point eventually costs you a day, the answer is in here.</li>
+  <li>Anything on eigenvalues, SVD or PCA. Projection is the seed of all three and you have just planted it. Phase 2.</li>
+</ul>
 
 </div>
 </template>
