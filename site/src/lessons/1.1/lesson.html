@@ -10,7 +10,7 @@
   <li><strong>A model is a large pile of numbers that you adjust until its outputs stop being wrong.</strong></li>
 </ol>
 
-<p>Phase 0 makes claims 1 and 2 concrete. Today is claim 1, plus the single operation that claim 2 rests on.</p>
+<p>Phase 1 makes claims 1 and 2 concrete. Today is claim 1, plus the single operation that claim 2 rests on.</p>
 
 <p>That operation is the <strong>dot product</strong>. To be precise about how central it is: a neuron in a neural network is a dot product followed by one simple function. Attention — the mechanism behind every modern large language model — is dot products. Semantic search is dot products. When a model has 175 billion parameters and needs a GPU cluster, what that hardware is doing, almost exclusively, is dot products.</p>
 
@@ -63,7 +63,7 @@ mansion  = [8000, 7,  2]</code></pre>
 
 <p>Position 0 is <em>always</em> square footage. Position 1 is <em>always</em> bedrooms. Now these three lists are comparable, and "is this house like that house" has become a maths problem.</p>
 
-<p>That is the entire trick, and every ML system is built on it. Deciding what goes in each position used to be a job title — <em>feature engineering</em>, covered in lesson 1.10. The revolution of deep learning is that networks now <strong>learn</strong> what the positions should mean instead of you specifying them.</p>
+<p>That is the entire trick, and every ML system is built on it. Deciding what goes in each position used to be a job title — <em>feature engineering</em>, covered in lesson 2.10. The revolution of deep learning is that networks now <strong>learn</strong> what the positions should mean instead of you specifying them.</p>
 
 <p><strong>Dimensions</strong> just means "how many numbers are in the list". The house vector is 3-dimensional. Sentence embeddings in a modern LLM are typically 768 to 4096-dimensional. You cannot picture 4096 dimensions and you should stop trying — but every operation you learn in 2D works <em>identically</em> in 4096D, unchanged. That is the gift: intuition is built cheaply in two dimensions and then transfers for free.</p>
 
@@ -109,7 +109,7 @@ mansion  = [8000, 7,  2]</code></pre>
 
 <p>The weights are a vector the network learned. The dot product asks <em>"how much does this input agree with the pattern I have learned to look for?"</em> A high number means "strong match — fire".</p>
 
-<p>That is what a neuron <strong>is</strong>. Everything else in deep learning — layers, depth, attention, transformers — is about arranging billions of these agreement checks so that useful patterns emerge. When you build a network from scratch in Phase 2, you will be stacking today's function.</p>
+<p>That is what a neuron <strong>is</strong>. Everything else in deep learning — layers, depth, attention, transformers — is about arranging billions of these agreement checks so that useful patterns emerge. When you build a network from scratch in Phase 3, you will be stacking today's function.</p>
 
 <h2>The flaw, and the fix</h2>
 

@@ -2,7 +2,7 @@
 """Where am I?
 
     progress            full dashboard across every phase
-    progress 0.1        run one lesson's tests, verbosely
+    progress 1.1        run one lesson's tests, verbosely
     progress --json     machine-readable, for tooling
 
 Installed as the `progress` command by `pip install -e .`. Also runnable as

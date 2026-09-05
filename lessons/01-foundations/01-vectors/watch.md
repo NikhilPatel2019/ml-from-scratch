@@ -1,4 +1,4 @@
-# Watch alongside 0.1 — Vectors and the dot product
+# Watch alongside 1.1 — Vectors and the dot product
 
 Ordered. Do not binge the whole playlist — the point is one idea, then code it.
 
@@ -12,7 +12,7 @@ Ordered. Do not binge the whole playlist — the point is one idea, then code it
 
 - [ ] **3Blue1Brown — Ch 2, "Linear combinations, span, and basis vectors"** (~10 min)
       Sets up why the numbers in a vector are *coordinates* rather than just values.
-      Pays off in 0.4 and again, hugely, in 1.12 (PCA).
+      Pays off in 1.4 and again, hugely, in 2.12 (PCA).
 
 - [ ] **Keith Galli, "Complete Python NumPy Tutorial"** (~1 hr)
       https://www.youtube.com/@KeithGalli  ·  notebook: https://github.com/KeithGalli/NumPy
@@ -26,7 +26,7 @@ Ordered. Do not binge the whole playlist — the point is one idea, then code it
       product measures agreement — exactly what you implemented.
       **The second half ("duality") is genuinely hard and you do not need it yet.**
       If it stops making sense around the halfway mark, that is expected. Note where
-      you lost it, move on, come back in Phase 2.
+      you lost it, move on, come back in Phase 3.
 
 ## Drill it (optional, if repetition helps you)
 
@@ -40,7 +40,7 @@ Ordered. Do not binge the whole playlist — the point is one idea, then code it
 - MIT 18.065, Matrix Methods for ML: https://ocw.mit.edu/courses/18-065-matrix-methods-in-data-analysis-signal-processing-and-machine-learning-spring-2018/
 - *Mathematics for Machine Learning* (free PDF): https://mml-book.github.io
 
-  All excellent, all assume comfort you do not have yet. Revisit after Phase 1.
+  All excellent, all assume comfort you do not have yet. Revisit after Phase 2.
 
 ---
 

@@ -7,11 +7,11 @@ split by concern under site/src/ and this script concatenates it.
 
 Lessons are authored as a directory of sections:
 
-    site/src/lessons/0.1/overview.html
-    site/src/lessons/0.1/lesson.html
-    site/src/lessons/0.1/exercises.html
-    site/src/lessons/0.1/walkthrough.html
-    site/src/lessons/0.1/resources.html
+    site/src/lessons/1.1/overview.html
+    site/src/lessons/1.1/lesson.html
+    site/src/lessons/1.1/exercises.html
+    site/src/lessons/1.1/walkthrough.html
+    site/src/lessons/1.1/resources.html
 
 Each becomes a tab on the lesson page, in the order given by SECTIONS below.
 Only the sections that exist are emitted, so a lesson with no stretch material

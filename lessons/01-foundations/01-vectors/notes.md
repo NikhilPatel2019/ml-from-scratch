@@ -1,4 +1,4 @@
-# 0.1 — Vectors and the dot product
+# 1.1 — Vectors and the dot product
 
 > Fill this in **after** you finish the exercises, in your own words. Not copied
 > from me. If you can't write the answer, you don't have it yet — and that's the

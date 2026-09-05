@@ -1,10 +1,10 @@
 <div class="prose">
 
-<p class="lead">Seven functions in <code>lessons/00-foundations/01-vectors/exercises.py</code>. They come in pairs: each does the same maths twice, once by hand so you own the mechanism, once vectorised so you can actually use it.</p>
+<p class="lead">Seven functions in <code>lessons/01-foundations/01-vectors/exercises.py</code>. They come in pairs: each does the same maths twice, once by hand so you own the mechanism, once vectorised so you can actually use it.</p>
 
 <div class="codeblock">
 <div class="cap">run until all seven pass</div>
-<pre><code>progress 0.1</code></pre>
+<pre><code>progress 1.1</code></pre>
 </div>
 
 <h2>The seven</h2>
@@ -55,7 +55,7 @@
 
 <div class="codeblock">
 <div class="cap">terminal</div>
-<pre><code>python lessons/00-foundations/01-vectors/exercises.py</code></pre>
+<pre><code>python lessons/01-foundations/01-vectors/exercises.py</code></pre>
 </div>
 
 <p>It times your <code>dot_loop</code> against your <code>dot_numpy</code> over two million elements. Expect somewhere around 100–200×. That single number is why machine learning is written in NumPy and not in loops, and a GPU widens it by roughly another 100×.</p>
@@ -66,7 +66,7 @@
 
 <div class="codeblock">
 <div class="cap">terminal</div>
-<pre><code>python lessons/00-foundations/01-vectors/stretch.py</code></pre>
+<pre><code>python lessons/01-foundations/01-vectors/stretch.py</code></pre>
 </div>
 
 <p>It is self-contained and not wired into <code>progress</code>, so it cannot affect your score. It forces you into <code>axis=</code> and <code>keepdims=</code> — where nearly everyone's first silent shape bug lives — and it carries a real design decision in its comments: whether to normalise the library once at write time or divide on every query. That is the trade-off every vector database actually makes.</p>

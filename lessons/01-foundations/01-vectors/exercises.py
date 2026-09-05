@@ -1,9 +1,9 @@
 """
-Lesson 0.1 — Vectors and the dot product
+Lesson 1.1 — Vectors and the dot product
 
 Read README.md first. Then implement every function below and run:
 
-    progress 0.1
+    progress 1.1
 
 Rules the tests enforce:
   - Exercise 1 must use PLAIN PYTHON with no numpy and no sum(). You are
@@ -104,7 +104,7 @@ def most_similar(query: np.ndarray, library: dict[str, np.ndarray]) -> str:
 def benchmark() -> None:
     """Why numpy exists. Run this once all seven tests pass:
 
-        python lessons/00-foundations/01-vectors/exercises.py
+        python lessons/01-foundations/01-vectors/exercises.py
     """
     import time
 

@@ -113,7 +113,7 @@
     /* Two zones. Everything in the first opens real content; the second is a
        phase-level summary with nothing clickable, because there is nothing
        behind it yet. Written-ness comes from build.py reading the disk, so
-       adding site/src/lessons/0.2/ moves 0.2 across on the next build with no
+       adding site/src/lessons/1.2/ moves 1.2 across on the next build with no
        other edit. */
     var written = allLessons.filter(function (l) { return l.written; });
     var planned = allLessons.length - written.length;
@@ -190,7 +190,7 @@
     big.appendChild(document.createTextNode(totalDone() + " "));
     big.appendChild(el("span", null, "/ " + TOTAL + " lessons complete"));
     top.appendChild(big);
-    top.appendChild(el("div", "eyebrow", "phases 0–4, drawn to scale"));
+    top.appendChild(el("div", "eyebrow", "phases 1–5, drawn to scale"));
     card.appendChild(top);
 
     var ruler = el("div", "ruler");
@@ -249,7 +249,7 @@
       ["02", "Write the code in the repo",
         "Every lesson ships function stubs and a test suite. You implement the stubs. Nobody hands you the answer — recognising correct code is a different skill from producing it, and only one of them transfers."],
       ["03", "Run the tests",
-        "progress 0.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
+        "progress 1.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
       ["04", "Tick it off",
         "Progress here is self-reported and stored in this browser. Progress in the repo is measured by passing tests, which is the definition worth trusting."]
     ].forEach(function (row) {
@@ -301,7 +301,7 @@
       "python -m venv .venv\n" +
       "pip install -e \".[dev]\"\n\n" +
       "progress        # the dashboard: where you stand\n" +
-      "progress 0.1    # run one lesson's tests";
+      "progress 1.1    # run one lesson's tests";
     pre.appendChild(code);
     cb.appendChild(pre);
     s3.appendChild(cb);

@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Phase 2 onwards. Installed separately because torch is a large download.
+# Phase 3 onwards. Installed separately because torch is a large download.
 deep = [
     "torch>=2.2",
     "torchvision>=0.17",

@@ -1,6 +1,6 @@
-# 0.1 — Vectors and the dot product
+# 1.1 — Vectors and the dot product
 
-**Phase 0 · Foundations** · no prerequisites · [exercises](exercises.py) · [what to watch](watch.md) · [your notes](notes.md)
+**Phase 1 · Foundations** · no prerequisites · [exercises](exercises.py) · [what to watch](watch.md) · [your notes](notes.md)
 
 ---
 
@@ -12,7 +12,7 @@ Strip away every buzzword and machine learning is three claims:
 2. **Once things are lists of numbers, "similar" and "different" become arithmetic** — and arithmetic is something a computer does a trillion times a second.
 3. **A model is a large pile of numbers that you adjust until its outputs stop being wrong.**
 
-Phase 0 makes claims 1 and 2 concrete. Today is claim 1, plus the single operation that claim 2 rests on.
+Phase 1 makes claims 1 and 2 concrete. Today is claim 1, plus the single operation that claim 2 rests on.
 
 That operation is the **dot product**. To be precise about how central it is: a neuron in a neural network is a dot product followed by one simple function. Attention — the mechanism behind every modern large language model — is dot products. Semantic search is dot products. When a model has 175 billion parameters and needs a GPU cluster, what that hardware is doing, almost exclusively, is dot products.
 
@@ -68,7 +68,7 @@ mansion  = [8000, 7,  2]
 
 Position 0 is *always* square footage. Position 1 is *always* bedrooms. Now these three lists are comparable, and "is this house like that house" has become a maths problem.
 
-That is the entire trick, and every ML system is built on it. Deciding what goes in each position used to be a job title — *feature engineering*, covered in lesson 1.10. The revolution of deep learning is that networks now **learn** what the positions should mean instead of you specifying them.
+That is the entire trick, and every ML system is built on it. Deciding what goes in each position used to be a job title — *feature engineering*, covered in lesson 2.10. The revolution of deep learning is that networks now **learn** what the positions should mean instead of you specifying them.
 
 **Dimensions** just means "how many numbers are in the list". The house vector is 3-dimensional. Sentence embeddings in a modern LLM are typically 768 to 4096-dimensional. You cannot picture 4096 dimensions and you should stop trying — but every operation you learn in 2D works *identically* in 4096D, unchanged. That is the gift: intuition is built cheaply in two dimensions and then transfers for free.
 
@@ -122,7 +122,7 @@ output = activation( inputs · weights + bias )
 
 The weights are a vector the network learned. The dot product asks *"how much does this input agree with the pattern I have learned to look for?"* A high number means "strong match — fire".
 
-That is what a neuron **is**. Everything else in deep learning — layers, depth, attention, transformers — is about arranging billions of these agreement checks so that useful patterns emerge. When you build a network from scratch in Phase 2, you will be stacking today's function.
+That is what a neuron **is**. Everything else in deep learning — layers, depth, attention, transformers — is about arranging billions of these agreement checks so that useful patterns emerge. When you build a network from scratch in Phase 3, you will be stacking today's function.
 
 ---
 
@@ -184,7 +184,7 @@ The mental shift, and it is a real one coming from imperative code: **stop think
 Writing a Python `for` loop over a NumPy array is the most common beginner mistake in this field and costs roughly 200× in speed. The tests in this lesson reject it. Once all seven pass, run the benchmark and see the gap on your own machine:
 
 ```bash
-python lessons/00-foundations/01-vectors/exercises.py
+python lessons/01-foundations/01-vectors/exercises.py
 ```
 
 ---
@@ -192,7 +192,7 @@ python lessons/00-foundations/01-vectors/exercises.py
 ## Your work
 
 1. Implement the seven functions in [exercises.py](exercises.py).
-2. Run `progress 0.1` until all seven pass.
+2. Run `progress 1.1` until all seven pass.
 3. Run the benchmark above.
 4. Watch what is listed in [watch.md](watch.md) — chapter 9 only *after* your code passes.
 5. Answer the seven questions in [notes.md](notes.md) in your own words.
@@ -210,4 +210,4 @@ You have finished this lesson when you can answer these without looking anything
 - Why is a NumPy operation so much faster than the equivalent Python loop? ("NumPy is optimised" is not the answer.)
 - Where does a neuron use the function you wrote today?
 
-**Next:** 0.2 — Vector geometry.
+**Next:** 1.2 — Vector geometry.
