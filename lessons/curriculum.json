@@ -4,89 +4,89 @@
   "version": "0.1.0",
   "phases": [
     {
-      "id": "p0",
-      "number": 0,
-      "dir": "lessons/00-foundations",
+      "id": "p1",
+      "number": 1,
+      "dir": "lessons/01-foundations",
       "title": "Foundations",
       "subtitle": "the maths, built in code",
       "blurb": "All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.",
       "milestone": "Minimise a function you have never seen before, from scratch, and explain every line.",
       "lessons": [
         {
-          "id": "0.1",
-          "dir": "lessons/00-foundations/01-vectors",
+          "id": "1.1",
+          "dir": "lessons/01-foundations/01-vectors",
           "title": "Vectors and the dot product",
           "summary": "Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.",
           "status": "available"
         },
         {
-          "id": "0.2",
+          "id": "1.2",
           "title": "Vector geometry",
           "summary": "Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.",
           "status": "planned"
         },
         {
-          "id": "0.3",
+          "id": "1.3",
           "title": "Matrices as data",
           "summary": "Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.",
           "status": "planned"
         },
         {
-          "id": "0.4",
+          "id": "1.4",
           "title": "Matrices as transformations",
           "summary": "Matrix multiplication as a function that moves space. This is the one that makes neural networks click.",
           "status": "planned"
         },
         {
-          "id": "0.5",
+          "id": "1.5",
           "title": "Systems, inverses, and rank",
           "summary": "Solving Ax = b, the cases where you cannot, and what 'singular' actually means.",
           "status": "planned"
         },
         {
-          "id": "0.6",
+          "id": "1.6",
           "title": "Functions and slopes",
           "summary": "The derivative discovered numerically, in code, before a single symbol of calculus notation.",
           "status": "planned"
         },
         {
-          "id": "0.7",
+          "id": "1.7",
           "title": "Derivative rules",
           "summary": "Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.",
           "status": "planned"
         },
         {
-          "id": "0.8",
+          "id": "1.8",
           "title": "The chain rule",
           "summary": "The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.",
           "status": "planned"
         },
         {
-          "id": "0.9",
+          "id": "1.9",
           "title": "Partial derivatives and the gradient",
           "summary": "Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.",
           "status": "planned"
         },
         {
-          "id": "0.10",
+          "id": "1.10",
           "title": "Gradient descent",
           "summary": "Implement it, watch it converge, then deliberately break it and learn why it diverged.",
           "status": "planned"
         },
         {
-          "id": "0.11",
+          "id": "1.11",
           "title": "Probability I",
           "summary": "Random variables, distributions, expectation and variance — the language uncertainty is written in.",
           "status": "planned"
         },
         {
-          "id": "0.12",
+          "id": "1.12",
           "title": "Probability II",
           "summary": "Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.",
           "status": "planned"
         },
         {
-          "id": "0.13",
+          "id": "1.13",
           "title": "The statistics you need",
           "summary": "The normal distribution, sampling, correlation, and the traps that catch practitioners.",
           "status": "planned"
@@ -94,88 +94,88 @@
       ]
     },
     {
-      "id": "p1",
-      "number": 1,
-      "dir": "lessons/01-classical-ml",
+      "id": "p2",
+      "number": 2,
+      "dir": "lessons/02-classical-ml",
       "title": "Classical Machine Learning",
       "subtitle": "where every core concept is easiest to see",
       "blurb": "Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.",
       "milestone": "Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.",
       "lessons": [
         {
-          "id": "1.1",
+          "id": "2.1",
           "title": "What 'learning' actually is",
           "summary": "The universal recipe underneath every model in this repository: data, model, loss, optimiser.",
           "status": "planned"
         },
         {
-          "id": "1.2",
+          "id": "2.2",
           "title": "Linear regression from scratch",
           "summary": "Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.",
           "status": "planned"
         },
         {
-          "id": "1.3",
+          "id": "2.3",
           "title": "Making training work",
           "summary": "Feature scaling, learning rates, and how to debug a model that will not converge.",
           "status": "planned"
         },
         {
-          "id": "1.4",
+          "id": "2.4",
           "title": "Logistic regression",
           "summary": "The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.",
           "status": "planned"
         },
         {
-          "id": "1.5",
+          "id": "2.5",
           "title": "Overfitting and the bias-variance tradeoff",
           "summary": "Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.",
           "status": "planned"
         },
         {
-          "id": "1.6",
+          "id": "2.6",
           "title": "Regularisation",
           "summary": "L1 and L2, and a real intuition for why penalising large weights makes a model generalise.",
           "status": "planned"
         },
         {
-          "id": "1.7",
+          "id": "2.7",
           "title": "Evaluation",
           "summary": "Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.",
           "status": "planned"
         },
         {
-          "id": "1.8",
+          "id": "2.8",
           "title": "scikit-learn",
           "summary": "Now that you have built it by hand, learn the tool everyone actually uses.",
           "status": "planned"
         },
         {
-          "id": "1.9",
+          "id": "2.9",
           "title": "Trees, forests, and gradient boosting",
           "summary": "Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.",
           "status": "planned"
         },
         {
-          "id": "1.10",
+          "id": "2.10",
           "title": "Feature engineering",
           "summary": "Encoding, missing data, and data leakage — the number one bug in real-world machine learning.",
           "status": "planned"
         },
         {
-          "id": "1.11",
+          "id": "2.11",
           "title": "Clustering",
           "summary": "k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.",
           "status": "planned"
         },
         {
-          "id": "1.12",
+          "id": "2.12",
           "title": "PCA and dimensionality reduction",
-          "summary": "Where the linear algebra from Phase 0 pays off spectacularly, and eigenvectors finally earn their keep.",
+          "summary": "Where the linear algebra from Phase 1 pays off spectacularly, and eigenvectors finally earn their keep.",
           "status": "planned"
         },
         {
-          "id": "1.13",
+          "id": "2.13",
           "title": "Capstone: end to end",
           "summary": "A real, messy dataset from raw file to evaluated model, with every decision written down and justified.",
           "status": "planned"
@@ -183,94 +183,94 @@
       ]
     },
     {
-      "id": "p2",
-      "number": 2,
-      "dir": "lessons/02-deep-learning",
+      "id": "p3",
+      "number": 3,
+      "dir": "lessons/03-deep-learning",
       "title": "Deep Learning",
       "subtitle": "build the engine before you drive it",
       "blurb": "You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.",
       "milestone": "An autograd engine you wrote yourself, training a network you designed yourself.",
       "lessons": [
         {
-          "id": "2.1",
+          "id": "3.1",
           "title": "The perceptron, and why linear models fail",
           "summary": "XOR: the four data points that stalled an entire field for a decade.",
           "status": "planned"
         },
         {
-          "id": "2.2",
+          "id": "3.2",
           "title": "Multi-layer networks",
           "summary": "Activations, hidden layers, and the universal approximation theorem in plain language.",
           "status": "planned"
         },
         {
-          "id": "2.3",
+          "id": "3.3",
           "title": "Backpropagation by hand",
           "summary": "Derive it on a three-neuron network, on paper, until there is no magic left in it.",
           "status": "planned"
         },
         {
-          "id": "2.4",
+          "id": "3.4",
           "title": "Build an autograd engine",
           "summary": "The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.",
           "status": "planned"
         },
         {
-          "id": "2.5",
+          "id": "3.5",
           "title": "Train a network on your own engine",
           "summary": "Your code, your gradients, a real classification problem, and a loss curve that goes down.",
           "status": "planned"
         },
         {
-          "id": "2.6",
+          "id": "3.6",
           "title": "PyTorch",
           "summary": "Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.",
           "status": "planned"
         },
         {
-          "id": "2.7",
+          "id": "3.7",
           "title": "Optimisers",
           "summary": "SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.",
           "status": "planned"
         },
         {
-          "id": "2.8",
+          "id": "3.8",
           "title": "Making deep networks trainable",
           "summary": "Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.",
           "status": "planned"
         },
         {
-          "id": "2.9",
+          "id": "3.9",
           "title": "Regularisation in deep learning",
           "summary": "Dropout, weight decay, early stopping and augmentation — keeping a large model honest.",
           "status": "planned"
         },
         {
-          "id": "2.10",
+          "id": "3.10",
           "title": "Convolutional networks",
           "summary": "Build one from scratch, understand what a filter learns, then classify real images.",
           "status": "planned"
         },
         {
-          "id": "2.11",
+          "id": "3.11",
           "title": "Transfer learning",
           "summary": "Why almost nobody trains from scratch any more, and how to fine-tune responsibly.",
           "status": "planned"
         },
         {
-          "id": "2.12",
+          "id": "3.12",
           "title": "Sequence models",
           "summary": "RNNs and LSTMs, and a precise account of why they break on long sequences.",
           "status": "planned"
         },
         {
-          "id": "2.13",
+          "id": "3.13",
           "title": "Embeddings",
           "summary": "word2vec, and representation learning as the central idea of modern artificial intelligence.",
           "status": "planned"
         },
         {
-          "id": "2.14",
+          "id": "3.14",
           "title": "Training at scale",
           "summary": "GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.",
           "status": "planned"
@@ -278,82 +278,82 @@
       ]
     },
     {
-      "id": "p3",
-      "number": 3,
-      "dir": "lessons/03-transformers",
+      "id": "p4",
+      "number": 4,
+      "dir": "lessons/04-transformers",
       "title": "Transformers and LLMs",
       "subtitle": "from attention to a working GPT",
       "blurb": "Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.",
       "milestone": "A working GPT you wrote yourself, generating text.",
       "lessons": [
         {
-          "id": "3.1",
+          "id": "4.1",
           "title": "Attention from first principles",
           "summary": "Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.",
           "status": "planned"
         },
         {
-          "id": "3.2",
+          "id": "4.2",
           "title": "Self-attention and multi-head attention",
           "summary": "Why several attention heads beat one, and how position gets encoded into an order-blind architecture.",
           "status": "planned"
         },
         {
-          "id": "3.3",
+          "id": "4.3",
           "title": "The transformer block",
           "summary": "Residual connections, normalisation, feed-forward layers, and encoder versus decoder.",
           "status": "planned"
         },
         {
-          "id": "3.4",
+          "id": "4.4",
           "title": "Tokenisation",
           "summary": "Implement byte-pair encoding, then discover why so many odd model behaviours start right here.",
           "status": "planned"
         },
         {
-          "id": "3.5",
+          "id": "4.5",
           "title": "Build GPT from scratch",
           "summary": "The full architecture, written line by line and trained on a small corpus until it generates text.",
           "status": "planned"
         },
         {
-          "id": "3.6",
+          "id": "4.6",
           "title": "Pretraining and scaling laws",
           "summary": "What 'emergence' does and does not mean, and how compute, data and parameters trade off.",
           "status": "planned"
         },
         {
-          "id": "3.7",
+          "id": "4.7",
           "title": "Fine-tuning",
           "summary": "Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.",
           "status": "planned"
         },
         {
-          "id": "3.8",
+          "id": "4.8",
           "title": "Alignment",
           "summary": "RLHF and DPO: how a text predictor becomes something you can hold a conversation with.",
           "status": "planned"
         },
         {
-          "id": "3.9",
+          "id": "4.9",
           "title": "Inference",
           "summary": "Sampling, temperature, top-k and top-p, the KV cache, and quantisation.",
           "status": "planned"
         },
         {
-          "id": "3.10",
+          "id": "4.10",
           "title": "Embeddings, vector search and RAG",
-          "summary": "Retrieval done properly rather than cargo-culted — and this is where lesson 0.1 comes back around.",
+          "summary": "Retrieval done properly rather than cargo-culted — and this is where lesson 1.1 comes back around.",
           "status": "planned"
         },
         {
-          "id": "3.11",
+          "id": "4.11",
           "title": "Evaluations",
           "summary": "The most underrated skill in applied AI, and the one that separates demos from products.",
           "status": "planned"
         },
         {
-          "id": "3.12",
+          "id": "4.12",
           "title": "Agents and tool use",
           "summary": "The current frontier: planning, tool calling, and where it genuinely does not work yet.",
           "status": "planned"
@@ -361,28 +361,28 @@
       ]
     },
     {
-      "id": "p4",
-      "number": 4,
-      "dir": "lessons/04-production",
+      "id": "p5",
+      "number": 5,
+      "dir": "lessons/05-production",
       "title": "Production and Specialisation",
       "subtitle": "models that survive contact with users",
       "blurb": "A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.",
       "milestone": "A model you built, deployed, monitored, and can reason about when it degrades.",
       "lessons": [
         {
-          "id": "4.1",
+          "id": "5.1",
           "title": "Serving and inference in production",
           "summary": "Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.",
           "status": "planned"
         },
         {
-          "id": "4.2",
+          "id": "5.2",
           "title": "Monitoring and drift",
           "summary": "Models decay silently. Detecting it, measuring it, and deciding when to retrain.",
           "status": "planned"
         },
         {
-          "id": "4.3",
+          "id": "5.3",
           "title": "Reproducibility and experiment tracking",
           "summary": "Versioning data, code and weights so that a result from six months ago can be rebuilt.",
           "status": "planned"

@@ -18,3 +18,8 @@ install.cmd
 *.egg-info/
 build/
 dist/
+site.zip
+*.zip
+
+# Local test state, written by: progress --json
+site/progress.json

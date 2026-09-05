@@ -2,7 +2,7 @@
 """Where am I?
 
     progress            full dashboard across every phase
-    progress 0.1        run one lesson's tests, verbosely
+    progress 1.1        run one lesson's tests, verbosely
     progress --json     machine-readable, for tooling
 
 Installed as the `progress` command by `pip install -e .`. Also runnable as
@@ -16,9 +16,10 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
-from .harness import PASS, TODO, bar, enable_utf8, report, run_lesson
+from .harness import FAIL, PASS, TODO, bar, enable_utf8, report, run_lesson
 
 enable_utf8()
 
@@ -126,20 +127,72 @@ def one_lesson(curriculum: dict, lesson_id: str) -> int:
     return 2
 
 
+def site_progress(curriculum: dict) -> dict:
+    """Per-exercise results, in the shape the website reads.
+
+    Everything here comes from actually running the tests. Nothing is inferred
+    and nothing is remembered, so the site cannot show a pass the runner did not
+    produce.
+    """
+    lessons = {}
+    for phase in curriculum["phases"]:
+        for les in phase["lessons"]:
+            if les.get("status") != "available" or "dir" not in les:
+                continue
+            results = run_lesson(ROOT / les["dir"])
+            if not results:
+                continue
+
+            order, grouped = [], {}
+            for r in results:
+                key = r.exercise or r.name
+                if key not in grouped:
+                    order.append(key)
+                    grouped[key] = []
+                grouped[key].append(r)
+
+            exercises = []
+            for key in order:
+                runs = grouped[key]
+                passed = sum(1 for r in runs if r.status == PASS)
+                failed = [r for r in runs if r.status == FAIL]
+                entry = {
+                    "name": key,
+                    "tests_passed": passed,
+                    "tests_total": len(runs),
+                    # A stub that was never written is "not run", not a failure.
+                    "status": "pass" if passed == len(runs) else ("fail" if failed else "not_run"),
+                }
+                if failed:
+                    entry["message"] = failed[0].message
+                exercises.append(entry)
+
+            lessons[les["id"]] = {
+                "tests_passed": sum(e["tests_passed"] for e in exercises),
+                "tests_total": sum(e["tests_total"] for e in exercises),
+                "exercises": exercises,
+            }
+
+    return {
+        "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "lessons": lessons,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     curriculum = load_curriculum()
     args = list(sys.argv[1:] if argv is None else argv)
 
     if args and args[0] == "--json":
-        out = {
-            "title": curriculum["title"],
-            "phases": [
-                {"id": p["id"], "number": p["number"], "title": p["title"],
-                 "lessons": [lesson_state(les) for les in p["lessons"]]}
-                for p in curriculum["phases"]
-            ],
-        }
-        print(json.dumps(out, indent=2))
+        payload = site_progress(curriculum)
+        target = ROOT / "site" / "progress.json"
+        target.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        # JSON on stdout for tooling, the human note on stderr, so a pipe stays clean.
+        print(json.dumps(payload, indent=2))
+        done = sum(v["tests_passed"] for v in payload["lessons"].values())
+        total = sum(v["tests_total"] for v in payload["lessons"].values())
+        print(f"\nwrote {target.relative_to(ROOT)} — {done}/{total} tests passing",
+              file=sys.stderr)
         return 0
 
     if args:

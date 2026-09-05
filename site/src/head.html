@@ -1,3 +1,6 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>ML From Scratch</title>
 <meta name="description" content="A ground-up machine learning curriculum for engineers with no maths background.">
 
@@ -7,3 +10,16 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
+
+<script>
+/* Runs before the body paints: a saved theme applied from app.js at the end of
+   the document would flash the other theme first. No saved value means no
+   attribute, which leaves prefers-color-scheme in charge. */
+(function () {
+  try {
+    var t = localStorage.getItem("mlfs:theme:v1");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+</script>

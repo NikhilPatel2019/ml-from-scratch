@@ -12,15 +12,17 @@ This is a learning repository first and a project second. That shapes what is us
 
 ## Please do not send
 
-- **Solutions to the exercises.** The stubs are stubs deliberately. A PR that fills them in defeats the point of the repository for everyone who clones it after you.
+- **Solutions in the exercise files.** `exercises.py` ships as stubs, deliberately, and stays that way. A PR that fills them in defeats the point of the repository for everyone who clones it after you.
+
+  This is not a contradiction with the site, which *does* carry official solutions — collapsed, one click each, behind a warning that explains why opening one early does not work. The distinction is consent: a reader who expands a `<details>` has chosen to see the answer, whereas a learner who clones a repo with the stubs pre-filled never gets the choice. Keep solutions in `site/src/lessons/<id>/exercises.html` and out of `lessons/`.
 - **Whole new phases** without discussing it in an issue first. The ordering is deliberate — each lesson assumes exactly what came before and nothing more.
-- **Framework rewrites.** "This would be shorter with scikit-learn" is true and beside the point in Phase 0 and 1. We use the library *after* building the thing by hand.
+- **Framework rewrites.** "This would be shorter with scikit-learn" is true and beside the point in Phase 1 and 2. We use the library *after* building the thing by hand.
 
 ## Style
 
 **Prose.** Write for someone who does not yet know the term you are about to use. Introduce notation only once it earns its place. Prefer a concrete example to an abstract definition. Say the useful thing plainly instead of hedging it.
 
-**Code.** Standard library and NumPy in Phase 0. Type hints on function signatures. Docstrings that explain the *idea*, not just the parameters — in exercise files, the docstring is the specification the learner works from.
+**Code.** Standard library and NumPy in Phase 1. Type hints on function signatures. Docstrings that explain the *idea*, not just the parameters — in exercise files, the docstring is the specification the learner works from.
 
 **Tests.** Each test is a module-level `test_*` function whose first docstring line is the label shown in the dashboard. Assertion messages should explain what was expected, not merely that something failed:
 
@@ -29,7 +31,7 @@ assert close(got, 32), "expected 32"                    # good
 assert close(got, 32)                                    # not helpful
 ```
 
-Exercises that must be solved a particular way should enforce it with `inspect.getsource`, as lesson 0.1 does for its no-NumPy and no-loop constraints.
+Exercises that must be solved a particular way should enforce it with `inspect.getsource`, as lesson 1.1 does for its no-NumPy and no-loop constraints.
 
 ## Adding a lesson
 
@@ -49,9 +51,27 @@ site/src/shell.html      topbar and layout skeleton
 site/src/styles.css      design tokens, layout, widget styles
 site/src/app.js          routing, progress, the curriculum rail, the overview
 site/src/widgets.js      interactive lesson demos
-site/src/lessons/*.html  one file per lesson, named for its id
+site/src/lessons/<id>/   one directory per lesson, one file per tab
 site/build.py            assembles all of the above + lessons/curriculum.json
 ```
+
+Each lesson is authored as a directory of sections, and each section becomes a tab:
+
+```
+site/src/lessons/1.1/overview.html      what the lesson is, outcomes, prerequisites
+site/src/lessons/1.1/lesson.html        the theory, with interactive demos
+site/src/lessons/1.1/exercises.html     what each exercise asks, and how to run them
+site/src/lessons/1.1/walkthrough.html   visual explanations, read after attempting
+site/src/lessons/1.1/resources.html     curated videos and reading
+```
+
+All five are optional — a lesson with no stretch material simply has no walkthrough
+tab. The order above is fixed in `SECTIONS` in `build.py`, and any other filename in
+a lesson directory fails the build rather than being silently ignored.
+
+Keep the split honest. `walkthrough.html` exists so that explanations of how the
+exercises work sit behind a tab the reader has to choose, rather than being scrolled
+past before they have attempted anything. Do not move that material into `lesson.html`.
 
 ```bash
 python site/build.py

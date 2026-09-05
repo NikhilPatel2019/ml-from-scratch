@@ -1,0 +1,63 @@
+{
+  "solutions": [
+    {
+      "n": 1,
+      "name": "dot_loop",
+      "headline": "the definition as an algorithm",
+      "mechanism": "Walk both lists together, multiply each pair, accumulate. The length check matters because the operation is undefined for mismatched lengths — there is no sensible answer, so failing loudly beats guessing.",
+      "code": "def dot_loop(a: list[float], b: list[float]) -> float:\n    if len(a) != len(b):\n        raise ValueError(\"The lengths of the two lists must be equal.\")\n\n    total = 0.0\n    for i in range(len(a)):\n        total += a[i] * b[i]\n    return total",
+      "why": "The accumulator starts at 0.0 rather than 0 so the return type is a float even for integer inputs. Indexing with range(len(a)) is the one place in this lesson where an index is genuinely needed — you are walking two lists in step."
+    },
+    {
+      "n": 2,
+      "name": "dot_numpy",
+      "headline": "the same result, loop pushed into C",
+      "mechanism": "np.dot and np.matmul (also spelled @) agree for 1-D inputs and diverge only in higher dimensions: np.dot sums over the last axis of one and the second-to-last of the other, while matmul broadcasts stacks of matrices. For two vectors, either is right.",
+      "code": "def dot_numpy(a: np.ndarray, b: np.ndarray) -> float:\n    return float(np.dot(a, b))",
+      "why": "The float() matters more than it looks: without it you return np.float64, which behaves almost like a Python float right up until it does not — it will not JSON-serialise, and it leaks numpy semantics into code that expected a plain number."
+    },
+    {
+      "n": 3,
+      "name": "magnitude_loop",
+      "headline": "Pythagoras, nothing more",
+      "mechanism": "The length of [3, 4] is the hypotenuse of a right triangle with legs 3 and 4. Squaring removes signs so direction cannot cancel length out; the root brings the answer back to the original units.",
+      "code": "def magnitude_loop(v: list[float]) -> float:\n    squared = [x ** 2 for x in v]\n    return math.sqrt(sum(squared))",
+      "why": "A comprehension plus sum() is idiomatic Python and allowed here — exercise 1 already proved you can accumulate by hand, and the point of this one is Pythagoras. Using a generator, sum(x ** 2 for x in v), is marginally better for very long inputs since it never materialises the intermediate list."
+    },
+    {
+      "n": 4,
+      "name": "magnitude",
+      "headline": "the same sum, vectorised",
+      "mechanism": "square, sum, sqrt — composed into a single expression. Nothing about this changes when the vector has 4096 components instead of two, which is why two-dimensional intuition is worth building.",
+      "code": "def magnitude(v: np.ndarray) -> float:\n    return float(np.sqrt(np.sum(np.square(v))))",
+      "why": "np.linalg.norm(v) does the same job in one call and is what you would reach for in real code. Write it out at least once, though — seeing square, sum and sqrt compose is where the vectorised style starts to feel natural. Neither version survives extreme inputs: both overflow to inf around 1e200, because both square before summing.",
+      "trap": "Both versions overflow to inf around 1e200 — squaring before summing is the reason."
+    },
+    {
+      "n": 5,
+      "name": "normalise",
+      "headline": "keep the direction, throw away the length",
+      "mechanism": "Dividing a vector by its own magnitude leaves it pointing exactly where it was, with length precisely 1. Every such vector lands on the unit circle. The zero vector is the one case with no answer: no direction to preserve, and the division would be by zero.",
+      "code": "def normalise(v: np.ndarray) -> np.ndarray:\n    length = magnitude(v)\n    if length == 0:\n        raise ValueError(\"Cannot normalise a zero vector.\")\n    return v / length",
+      "why": "Calling magnitude(v) rather than rewriting the formula gives you one source of truth. Naming the local `length` and not `magnitude` matters — a local of the same name shadows the function, and the next person to add a second call inside this function gets a confusing TypeError."
+    },
+    {
+      "n": 6,
+      "name": "cosine_similarity",
+      "headline": "why the division works",
+      "mechanism": "One identity sits underneath the whole exercise: a · b = |a| × |b| × cos θ. The dot product was never purely about agreement — it is agreement scaled by both lengths. Divide both sides by |a| × |b| and the lengths cancel, leaving the angle alone. You are not inventing a metric; you are rearranging an identity to isolate what you actually wanted.",
+      "code": "def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:\n    a_magnitude = magnitude(a)\n    b_magnitude = magnitude(b)\n    if a_magnitude == 0 or b_magnitude == 0:\n        raise ValueError(\"Cannot compute cosine similarity with a zero vector.\")\n    return float(np.dot(a, b) / (a_magnitude * b_magnitude))",
+      "why": "np.dot(normalise(a), normalise(b)) is equally correct and returns the identical value bit for bit — shorter, and it inherits the zero-vector check from normalise for free. The version above was chosen only because it mirrors the formula in the docstring. The zero check is not required by the tests, but the cosine of an angle with a directionless vector is genuinely undefined, so raising beats returning a made-up number.",
+      "trap": "Calling normalise where you meant magnitude gives you an array where a scalar belongs — then `if array == 0` raises “the truth value of an array with more than one element is ambiguous”."
+    },
+    {
+      "n": 7,
+      "name": "most_similar",
+      "headline": "search, and the version you have not written yet",
+      "mechanism": "Short, because exercise 6 did the work. Iterating a dict yields its keys, and key= changes what gets compared, not what gets returned — so the comparison runs over scores while the return value is a name.",
+      "code": "def most_similar(query: np.ndarray, library: dict[str, np.ndarray]) -> str:\n    scores = {name: cosine_similarity(query, vector) for name, vector in library.items()}\n    return max(scores, key=scores.get)",
+      "why": "This is the definition, not the implementation. Stacking the library into a matrix and running L @ q scores everything in a single call — identical arithmetic, one operation instead of n. That is what a vector database actually runs over millions of rows, and it is what stretch.py asks for.",
+      "trap": "max(scores.values()) hands you 0.998 with no way back to which item earned it."
+    }
+  ]
+}

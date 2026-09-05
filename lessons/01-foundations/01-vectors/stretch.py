@@ -1,5 +1,5 @@
 """
-Lesson 0.1 — optional stretch exercise
+Lesson 1.1 — optional stretch exercise
 
 Your `most_similar` is correct and it is the right way to write the definition.
 This file asks for the *implementation* a real system would use.
@@ -8,11 +8,11 @@ The difference: your version calls cosine_similarity once per library item. This
 one scores every item in a single operation, with no loop and no comprehension
 anywhere. That is the shape a vector database uses to search millions of rows,
 and it is your first real encounter with thinking in two dimensions rather than
-one — which is what lessons 0.3 and 0.4 are about.
+one — which is what lessons 1.3 and 1.4 are about.
 
 Nothing here affects your 7/7. Run it on its own:
 
-    python lessons/00-foundations/01-vectors/stretch.py
+    python lessons/01-foundations/01-vectors/stretch.py
 """
 
 import numpy as np
@@ -92,7 +92,7 @@ def prepare_library(library_matrix: np.ndarray) -> np.ndarray:
     (n_items, 1) so that each row is divided by its own number.
 
     Look up `keepdims=True`. Work out what it does to the shape, and why that
-    is the fix. This one idea will save you hours across the rest of Phase 0.
+    is the fix. This one idea will save you hours across the rest of Phase 1.
     """
     raise NotImplementedError("stretch")
 

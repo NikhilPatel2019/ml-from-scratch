@@ -1,28 +1,47 @@
 <header class="topbar">
-  <button class="brand" id="brand" type="button" title="Back to the overview">
+  <button class="brand" id="brand" type="button" title="The curriculum">
     <span class="brand-mark">ML From Scratch</span>
-    <span class="brand-sub">foundations &rarr; transformers</span>
   </button>
-  <div class="topstat">
-    <span class="words">lessons complete</span>
-    <b id="stat-count" class="mono">0/55</b>
+
+  <button class="searchbtn" id="searchbtn" type="button" aria-label="Search">
+    <span class="searchbtn-t">Search lessons, exercises, terms</span>
+    <span class="searchbtn-i" aria-hidden="true">&#8981;</span>
+    <kbd>&#8984;K</kbd>
+  </button>
+
+  <div class="topstat" id="topstat" title="Exercises checked off across every written lesson">
+    <span id="stat-count">0 / 0</span>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
   </div>
+
+  <div class="themetoggle" role="group" aria-label="Colour theme">
+    <button type="button" id="theme-light" data-theme-set="light">light</button>
+    <button type="button" id="theme-dark" data-theme-set="dark">dark</button>
+  </div>
+
   <button class="iconbtn railtoggle" id="railtoggle" aria-expanded="false">Curriculum</button>
 </header>
 
 <div class="shell">
   <aside class="rail" id="rail">
-    <button class="rail-home" id="rail-home" type="button">
-      <span class="home-ico" aria-hidden="true"></span>
-      <span>Overview</span>
-    </button>
-    <div class="rail-head">
-      <span class="eyebrow">Curriculum</span>
-      <span class="eyebrow" id="rail-total">55 lessons</span>
+    <nav id="rail-nav" aria-label="Curriculum"></nav>
+    <div class="rail-foot">
+      <button class="nav-btn" id="rail-setup" type="button">Setup &amp; environment</button>
     </div>
-    <nav id="rail-nav"></nav>
   </aside>
 
   <main class="pane" id="pane"></main>
+
+</div>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette-box" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="palette-head">
+      <span class="palette-caret" aria-hidden="true">&rsaquo;</span>
+      <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
+             placeholder="lessons, exercises, terms&hellip;">
+      <span class="palette-esc" aria-hidden="true">esc</span>
+    </div>
+    <div class="palette-results" id="palette-results"></div>
+  </div>
 </div>

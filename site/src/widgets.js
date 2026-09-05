@@ -410,7 +410,7 @@ var Widgets = (function () {
       rw.appendChild(top);
       var input = document.createElement("input");
       input.type = "range";
-      input.min = "0"; input.max = "1"; input.step = "0.01";
+      input.min = "0"; input.max = "1"; input.step = "1.01";
       input.value = String(q[i]);
       input.setAttribute("aria-label", name);
       input.addEventListener("input", function () {
