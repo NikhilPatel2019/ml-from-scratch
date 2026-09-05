@@ -835,71 +835,6 @@ figcaption {
 .crumb-sep { color: var(--rule-firm); }
 .crumb-now { color: var(--ink); }
 
-/* ============================================================
-   one exercise row, shared by Practice and the Implement step
-   ============================================================ */
-.exrows {
-  display: grid; gap: 1px; margin-top: 16px; background: var(--rule);
-  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden;
-}
-.exrow { background: var(--surface); padding: 14px 18px; display: flex; gap: 15px; align-items: flex-start; }
-.exrow.is-fail { background: var(--danger-wash); }
-.exrow.is-optional { opacity: .72; }
-.exmark {
-  width: 17px; height: 17px; border-radius: 5px; display: grid; place-items: center;
-  font-size: 10px; flex: none; margin-top: 2px; color: var(--on-accent);
-  background: var(--paper); border: 1.5px solid var(--rule-firm);
-}
-.exrow.is-optional .exmark { border-style: dashed; }
-.exmark[data-status="pass"] { background: var(--done); border-color: var(--done); }
-.exmark[data-status="fail"] { background: var(--danger); border-color: var(--danger); }
-
-.exbody { flex: 1; min-width: 0; }
-.exhead { display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
-.exname { font-family: var(--f-mono); font-size: 13.5px; color: var(--ink); }
-.exwhere { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); }
-.exopt {
-  font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-3);
-  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px;
-}
-.exsum { display: block; font-size: 13px; line-height: 1.5; color: var(--ink-3); margin-top: 3px; }
-.exmsg {
-  display: block; font-family: var(--f-mono); font-size: 12px; line-height: 1.5;
-  color: var(--danger); margin-top: 5px; word-break: break-word;
-}
-.exstat {
-  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
-  flex: none; text-align: right; width: 104px;
-}
-.exstat.is-pass { color: var(--done); }
-.exstat.is-fail { color: var(--danger); }
-.exbans {
-  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
-  flex: none; width: 78px; text-align: right; line-height: 1.5;
-}
-.exempty {
-  padding: 26px 16px; background: var(--surface); text-align: center;
-  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
-}
-
-/* The design's filter chip, used by Practice and Library. */
-.filters { display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap; align-items: center; }
-.filter {
-  appearance: none; cursor: pointer; font-family: var(--f-mono); font-size: 11px;
-  padding: 7px 12px; border-radius: 7px;
-  background: var(--surface); color: var(--ink-3); border: 1px solid var(--rule);
-  transition: color .15s, border-color .15s, background .15s;
-}
-.filter:hover { color: var(--ink-2); border-color: var(--rule-firm); }
-.filter.on {
-  background: var(--accent-wash); color: var(--accent-ink); font-weight: 600;
-  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.cmdchip.plain {
-  margin-left: auto; font-size: 12px; padding: 8px 12px;
-  border-color: var(--rule-firm);
-}
-.cmdchip.plain .copylabel { font-size: 10px; }
 
 
 /* ============================================================
@@ -918,17 +853,6 @@ figcaption {
 /* A checkbox the runner owns must not look like one you can set. */
 
 
-/* a command you can actually take — used by setup and by each lesson */
-.cmdrow {
-  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
-  border-radius: 8px; background: var(--surface-2); border: 1px solid var(--rule);
-}
-.cmdrow + .cmdrow { margin-top: 8px; }
-.cmdtext {
-  flex: 1; min-width: 0; font-family: var(--f-mono); font-size: 13px;
-  color: var(--ink); overflow-x: auto; white-space: nowrap;
-}
-.cmdtext::selection { background: var(--accent-wash); }
 .copybtn {
   appearance: none; flex: none; cursor: pointer;
   font-family: var(--f-mono); font-size: 11px; letter-spacing: .04em;
@@ -939,11 +863,24 @@ figcaption {
 .copybtn:hover { color: var(--ink); border-color: var(--ink-3); }
 .copybtn.ok { color: var(--done); border-color: var(--done); }
 .copybtn.warn { color: var(--active); border-color: var(--active); }
+
+/* The command and its copy control as one chip, so it reads as a thing you take. */
+.cmdchip {
+  appearance: none; display: flex; align-items: center; gap: 10px; cursor: pointer;
+  font-family: var(--f-mono); font-size: 12.5px; color: var(--accent-ink);
+  background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 8px; padding: 10px 13px; transition: border-color .15s; flex: none;
+}
+.cmdchip:hover { border-color: var(--accent); }
+.cmdchip .copylabel {
+  font-size: 10.5px; color: var(--ink-3);
+  border-left: 1px solid var(--rule); padding-left: 10px;
+}
 .cmdchip .copylabel.ok { color: var(--done); }
 .cmdchip .copylabel.warn { color: var(--active); }
 
 /* ============================================================
-   lesson — ported from the design canvas
+   lesson — three steps: read, implement, compare
    ============================================================ */
 /* Full bleed: the header sits on --paper, the steps on a --surface band,
    and each has its own 1060px column. */
@@ -973,7 +910,7 @@ figcaption {
 .stepper::-webkit-scrollbar { display: none; }
 .step-btn {
   appearance: none; cursor: pointer; text-align: left; font-family: var(--f-body);
-  padding: 11px 16px 13px; border-radius: 10px 10px 0 0; min-width: 148px; flex: none;
+  padding: 11px 18px 13px; border-radius: 10px 10px 0 0; min-width: 160px; flex: none;
   border: 1px solid var(--rule); border-bottom: 0; margin-bottom: -1px;
   background: var(--paper); color: var(--ink-3);
 }
@@ -995,91 +932,221 @@ figcaption {
 .lesson-band { border-top: 1px solid var(--rule); background: var(--surface); min-height: 520px; }
 .lesson-inner { max-width: 1060px; padding: 32px 40px 70px; }
 
-.step-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+/* ---------- step 1: watch first ---------- */
+.watch {
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 12px; overflow: hidden; background: var(--accent-wash);
+}
+.watch-head {
+  padding: 14px 20px 13px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.watch-k {
+  font-family: var(--f-mono); font-size: 10px; font-weight: 600; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--accent-ink);
+}
+.watch-sub { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+.watch-list { display: grid; gap: 1px; background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.watch-row {
+  background: var(--surface); padding: 15px 20px; display: flex; gap: 16px;
+  align-items: flex-start; text-decoration: none; color: var(--ink);
+}
+.watch-row:hover { background: var(--surface-2); }
+.watch-when {
+  font-family: var(--f-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; flex: none; width: 46px; padding-top: 4px;
+  color: var(--accent-ink);
+}
+.watch-body { min-width: 0; flex: 1; }
+.watch-top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.watch-title { font-size: 15.5px; font-weight: 600; line-height: 1.4; color: var(--accent-ink); }
+.watch-len { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); }
+.watch-why { display: block; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); margin-top: 4px; max-width: 64ch; }
+.watch-out { font-family: var(--f-mono); font-size: 13px; color: var(--accent); flex: none; padding-top: 3px; }
+.watch-careful { padding: 13px 20px; display: flex; gap: 11px; align-items: flex-start; }
+.watch-careful-k {
+  font-family: var(--f-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--active); flex: none; padding-top: 3px;
+}
+.watch-careful p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); max-width: 68ch; }
+.watch-careful b { color: var(--ink); font-weight: 600; }
+
+/* ---------- step headers, shared ---------- */
+.step-head { display: flex; gap: 16px; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
 .step-kicker {
   font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--ink-3);
+  text-transform: uppercase; color: var(--accent);
 }
 .step-h2 {
-  font-family: var(--f-display); font-size: 26px; font-weight: 600;
-  letter-spacing: -.018em; margin: 6px 0 0;
+  font-family: var(--f-display); font-size: 27px; font-weight: 600;
+  letter-spacing: -.018em; margin: 9px 0 0;
 }
-.step-lead { font-size: 15.5px; line-height: 1.6; color: var(--ink-2); margin: 12px 0 0; max-width: 70ch; }
+.step-lead { font-size: 16px; line-height: 1.65; color: var(--ink-2); margin: 13px 0 0; max-width: 68ch; }
+.cmdchip.plain { background: var(--paper); border-color: var(--rule-firm); }
+
+/* ---------- step 2: one tick per exercise ---------- */
+.exrows {
+  display: grid; gap: 1px; margin-top: 20px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 11px; overflow: hidden;
+}
+.exrow {
+  background: var(--surface); padding: 14px 18px; display: flex; gap: 13px;
+  align-items: flex-start; width: 100%; border: 0; cursor: pointer;
+  font-family: var(--f-body); text-align: left; transition: background .15s;
+}
+.exrow:hover { background: var(--surface-2); }
+.exrow.is-optional { opacity: .75; }
+.exbox {
+  width: 19px; height: 19px; border-radius: 5px; flex: none; display: grid;
+  place-items: center; font-size: 11px; margin-top: 1px; color: var(--on-accent);
+  background: var(--paper); border: 1.5px solid var(--rule-firm);
+}
+.exrow.is-optional .exbox { border-style: dashed; }
+.exrow.is-on .exbox { background: var(--done); border-color: var(--done); }
+.exrow.is-runner .exbox { box-shadow: 0 0 0 2px color-mix(in srgb, var(--done) 22%, transparent); }
+.exn {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  flex: none; width: 18px; text-align: right; padding-top: 2px;
+}
+.exbody { min-width: 0; flex: 1; text-align: left; }
+.exhead { display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+.exname { font-family: var(--f-mono); font-size: 13.5px; color: var(--ink); }
+.exrow.is-on .exname { color: var(--ink-3); }
+.exopt {
+  font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-3);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px;
+}
+.exsum { display: block; font-size: 13.5px; line-height: 1.5; color: var(--ink-3); margin-top: 3px; }
+.exmsg {
+  display: block; font-family: var(--f-mono); font-size: 12px; line-height: 1.5;
+  color: var(--danger); margin-top: 5px; word-break: break-word;
+}
+.exbans {
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
+  flex: none; width: 84px; text-align: right; padding-top: 3px; line-height: 1.5;
+}
+
+.notebox {
+  margin-top: 18px; padding: 16px 19px; border-radius: 11px;
+  background: var(--paper); border: 1px solid var(--rule);
+}
+.notebox-k {
+  display: block; font-family: var(--f-mono); font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px;
+}
+.notebox p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--ink-2); max-width: 70ch; }
+.notebox code { font-family: var(--f-mono); font-size: .9em; }
+.notebox.is-active {
+  background: var(--active-wash);
+  border-color: color-mix(in srgb, var(--active) 30%, transparent);
+}
+.notebox.is-active .notebox-k { color: var(--active); }
+.notebox.is-active p { color: var(--ink); font-size: 15px; }
 
 /* One strip at the foot of every step, naming the next action. */
 .stepfoot {
-  display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-  margin-top: 32px; padding: 15px 18px; border-radius: 10px;
+  display: flex; gap: 14px; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; margin-top: 26px; padding: 16px 19px; border-radius: 11px;
   background: var(--accent-wash);
   border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
 }
-.stepfoot .body { flex: 1; min-width: 220px; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+.stepfoot .body { font-size: 15px; line-height: 1.5; max-width: 58ch; color: var(--ink-2); }
 .stepfoot .body b { color: var(--ink); font-weight: 600; }
 .stepfoot code { font-family: var(--f-mono); font-size: .9em; }
-
-.exercise-block { margin: 20px 0 0; }
-.exnote { font-size: 13.5px; color: var(--ink-2); margin: 12px 0 0; line-height: 1.55; max-width: 64ch; }
-
-/* The constraints callout, and the walkthrough gate, share one shape. */
-.notebox {
-  margin-top: 22px; padding: 16px 19px; border-radius: 10px;
-  background: var(--active-wash);
-  border: 1px solid color-mix(in srgb, var(--active) 30%, transparent);
+.btn-quiet {
+  appearance: none; border: 1px solid var(--rule-firm); border-radius: 8px;
+  background: var(--surface); color: var(--ink-2); font-family: var(--f-body);
+  font-size: 13.5px; font-weight: 500; padding: 10px 16px; cursor: pointer; flex: none;
 }
-.notebox-k {
-  display: block; font-family: var(--f-mono); font-size: 9.5px; font-weight: 600;
-  letter-spacing: .08em; text-transform: uppercase; color: var(--active);
-}
-.notebox p { margin: 8px 0 0; font-size: 14.5px; line-height: 1.6; color: var(--ink); max-width: 76ch; }
-.notebox code { font-family: var(--f-mono); font-size: .9em; }
+.btn-quiet:hover { color: var(--ink); border-color: var(--ink-3); }
+.exfoot { margin: 14px 0 0; font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); line-height: 1.6; }
+.exfoot b { color: var(--ink-2); font-weight: 400; }
 
-.gate { max-width: 680px; }
-.gate .step-h2 { font-size: 24px; }
-.gate p { margin: 12px 0 0; font-size: 15px; line-height: 1.65; color: var(--ink-2); max-width: 64ch; }
+/* ---------- step 3: the gate, then one solution per exercise ---------- */
+.gate { max-width: 700px; }
+.gate p { margin: 12px 0 0; font-size: 15px; line-height: 1.65; color: var(--ink-2); max-width: 66ch; }
 .gate code { font-family: var(--f-mono); font-size: .9em; }
 .gate-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .gate-foot { margin-top: 16px; font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
 
-/* Closing questions: tick one when you can answer it out loud. */
-.checkq {
-  display: grid; gap: 1px; margin: 18px 0 0; padding: 0; list-style: none;
-  background: var(--rule); border: 1px solid var(--rule); border-radius: 11px; overflow: hidden;
+.solutions { display: flex; flex-direction: column; gap: 12px; margin-top: 26px; }
+.solution-card {
+  border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; background: var(--paper);
 }
-.checkq li { margin: 0; }
-.checkq button {
-  appearance: none; border: 0; cursor: pointer; width: 100%; background: var(--surface);
-  padding: 15px 18px; display: flex; gap: 14px; align-items: flex-start;
-  font-family: var(--f-body); font-size: 15px; line-height: 1.5; text-align: left; color: var(--ink);
+.sol-head { padding: 16px 20px 15px; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.sol-top { display: flex; gap: 11px; align-items: baseline; flex-wrap: wrap; }
+.sol-n {
+  font-family: var(--f-mono); font-size: 10.5px; font-weight: 600; color: var(--accent-ink);
+  background: var(--accent-wash); border-radius: 5px; padding: 3px 7px; flex: none;
 }
-.checkq button:hover { background: var(--surface-2); }
-.checkq li.on button { color: var(--ink-3); }
-.qmark {
-  width: 17px; height: 17px; border-radius: 5px; flex: none; display: grid;
-  place-items: center; font-size: 10px; margin-top: 2px; color: var(--on-accent);
-  background: var(--paper); border: 1.5px solid var(--rule-firm);
+.sol-name { font-family: var(--f-mono); font-size: 14.5px; font-weight: 500; color: var(--ink); }
+.sol-headline { font-size: 14px; color: var(--ink-3); line-height: 1.45; }
+.sol-tick {
+  margin-left: auto; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--done);
+  background: color-mix(in srgb, var(--done) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--done) 32%, transparent);
+  border-radius: 5px; padding: 3px 7px; flex: none;
 }
-.checkq li.on .qmark { background: var(--done); border-color: var(--done); }
-
-.completion {
-  display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-  margin-top: 22px; padding: 15px 18px; border-radius: 10px;
-  background: var(--surface-2); border: 1px solid var(--rule);
+.sol-mech { margin: 11px 0 0; font-size: 15px; line-height: 1.65; color: var(--ink-2); max-width: 66ch; }
+.sol-trap {
+  margin: 10px 0 0; font-size: 14px; line-height: 1.6; color: var(--danger); max-width: 66ch;
+  padding-left: 13px; border-left: 2px solid color-mix(in srgb, var(--danger) 45%, transparent);
 }
-.completion .body { flex: 1; min-width: 220px; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
-.completion .body b { color: var(--ink); font-weight: 600; }
-.btn-mark {
-  appearance: none; border: 1px solid var(--rule-firm); border-radius: 8px;
-  background: var(--paper); color: var(--ink-2); font-family: var(--f-body);
-  font-size: 13px; font-weight: 500; padding: 9px 14px; cursor: pointer; flex: none;
+.sol-toggle {
+  appearance: none; border: 0; width: 100%; text-align: left; cursor: pointer;
+  padding: 11px 20px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .05em;
+  color: var(--accent-ink); background: var(--paper);
 }
-.btn-mark.on { border-color: var(--accent); background: var(--accent-wash); color: var(--accent-ink); }
+.sol-toggle[aria-expanded="true"] { color: var(--ink-2); background: var(--surface-2); }
+.solution-card pre {
+  margin: 0; padding: 17px 20px; font-family: var(--f-mono); font-size: 12.5px;
+  line-height: 1.75; overflow-x: auto; color: var(--ink); border-top: 1px solid var(--rule);
+}
+.sol-why { padding: 14px 20px 16px; border-top: 1px solid var(--rule); background: var(--surface); }
+.sol-why-k {
+  display: block; font-family: var(--f-mono); font-size: 9.5px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px;
+}
+.sol-why p { margin: 0; font-size: 14.5px; line-height: 1.65; color: var(--ink-2); max-width: 68ch; }
 
 .lesson-foot {
+  margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--rule);
   display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-  margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--rule);
-  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  font-family: var(--f-mono); font-size: 12px; color: var(--ink-3);
 }
 .lesson-foot .linkbtn { font-family: inherit; font-size: inherit; }
+.lesson-foot .is-end { color: var(--rule-firm); }
+
+/* The closing questions ride at the end of Compare: the design has no fourth
+   step, and they are the last thing you do before the next lesson. */
+.closeout { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--rule); }
+.checkq { max-width: 64ch; padding-left: 1.3em; }
+.checkq li + li { margin-top: .55em; }
+
+/* ---------- step 1 reads in two columns ---------- */
+.step1 { display: grid; grid-template-columns: minmax(0, 1fr) 196px; gap: 40px; align-items: start; }
+.step1-main { min-width: 0; }
+.step-side-inner { position: sticky; top: 70px; }
+.side-k {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-3);
+  padding-bottom: 9px; border-bottom: 1px solid var(--rule);
+}
+.side-body + .side-k, .side-toc + .side-k, .side-after + .side-k { padding-top: 22px; }
+.side-toc { display: flex; flex-direction: column; gap: 1px; margin-top: 9px; }
+.side-link {
+  appearance: none; border: 0; background: none; cursor: pointer; text-align: left;
+  font-family: var(--f-body); font-size: 12.5px; line-height: 1.4; color: var(--ink-3);
+  padding: 5px 10px; border-left: 2px solid transparent;
+}
+.side-link:hover { color: var(--ink-2); }
+.side-link.on { color: var(--accent-ink); font-weight: 500; border-left-color: var(--accent); }
+.side-body { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); margin: 10px 0 0; }
+.side-after { display: block; margin-top: 10px; text-decoration: none; }
+.side-after-t { display: block; font-size: 12.5px; font-weight: 600; line-height: 1.4; color: var(--accent-ink); }
+.side-after-l { display: block; font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-top: 3px; }
+.side-after-w { display: block; font-size: 11.5px; line-height: 1.5; color: var(--ink-2); margin-top: 5px; }
 
 .resources-foot {
   margin-top: 26px; border: 1px solid var(--rule); border-radius: 11px;
@@ -1099,6 +1166,15 @@ figcaption {
 .resources-foot[open] > summary::before { transform: rotate(45deg); }
 .resources-foot[open] > summary { border-bottom: 1px solid var(--rule); color: var(--ink); }
 .resources-body { padding: 4px 18px 18px; }
+
+@media (max-width: 1080px) {
+  .step1 { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .step-side-inner { position: static; }
+}
+@media (max-width: 720px) {
+  .lesson-head { padding: 22px 20px 0; }
+  .lesson-inner { padding: 26px 20px 60px; }
+}
 
 /* Step 1 reads in two columns: the lesson, and where you are in it. */
 .step1 { display: grid; grid-template-columns: minmax(0, 1fr) 196px; gap: 40px; align-items: start; }

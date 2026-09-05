@@ -1,0 +1,28 @@
+{
+  "before": [
+    {
+      "title": "3Blue1Brown — Essence of Linear Algebra, ch. 1 “Vectors”",
+      "length": "~10 min",
+      "why": "The geometric picture, animated far better than the demo below. Watch for the three views of a vector; you already have the CS one.",
+      "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+    },
+    {
+      "title": "ch. 2 — Linear combinations, span, and basis vectors",
+      "length": "~10 min",
+      "why": "Why the numbers in a vector are coordinates rather than just values. Pays off in 1.4, and hugely in 2.12.",
+      "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+    },
+    {
+      "title": "Keith Galli — Complete Python NumPy Tutorial",
+      "length": "~1 hr",
+      "why": "Purely practical. Type along with the notebook. You can stop after reshaping.",
+      "url": "https://github.com/KeithGalli/NumPy"
+    }
+  ],
+  "after": {
+    "title": "ch. 9 — Dot products and duality",
+    "length": "~14 min",
+    "why": "Only once your code passes. The second half, on duality, is genuinely hard and not needed yet — losing the thread there is expected.",
+    "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+  }
+}

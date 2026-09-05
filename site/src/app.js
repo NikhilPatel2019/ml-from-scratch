@@ -87,6 +87,61 @@
     });
   }
 
+  /* ---------- copy affordances ----------
+     Two shapes for the same job: a bare label beside a block of text, and the
+     chip where the command and the copy control are one control. */
+  function copyFeedback(labelNode, text, selectFrom) {
+    var reset = function () {
+      labelNode.textContent = labelNode.dataset.idle;
+      labelNode.classList.remove("ok", "warn");
+    };
+    var fallback = function () {
+      labelNode.textContent = "Ctrl+C";
+      labelNode.classList.add("warn");
+      try {
+        var range = document.createRange();
+        range.selectNodeContents(selectFrom);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (e) {}
+      setTimeout(reset, 2600);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          labelNode.textContent = "copied";
+          labelNode.classList.add("ok");
+          setTimeout(reset, 1400);
+        }, fallback);
+        return;
+      }
+    } catch (e) {}
+    fallback();
+  }
+
+  function copyButton(text, target, cls) {
+    var b = el("button", cls || "copybtn", "copy");
+    b.type = "button";
+    b.dataset.idle = "copy";
+    b.setAttribute("aria-label", "Copy " + text);
+    b.addEventListener("click", function () { copyFeedback(b, text, target || b); });
+    return b;
+  }
+
+  function commandChip(cmd, cls) {
+    var chip = el("button", cls || "cmdchip");
+    chip.type = "button";
+    chip.setAttribute("aria-label", "Copy " + cmd);
+    var code = el("span", null, cmd);
+    chip.appendChild(code);
+    var label = el("span", "copylabel", "copy");
+    label.dataset.idle = "copy";
+    chip.appendChild(label);
+    chip.addEventListener("click", function () { copyFeedback(label, cmd, code); });
+    return chip;
+  }
+
   /* ---------- real test results ----------
      Written by `progress --json`, which runs the tests. Absent on the published
      site and on a fresh clone, and that is the normal case: everything below
@@ -238,32 +293,6 @@
   function gateWalkthrough(l) {
     if (isComplete(l)) return false;          // done means done: open straight through
     return !unlockedWalkthrough[l.id];
-  }
-
-  function walkthroughGate(l, openAnyway, backToExercises) {
-    var lt = lessonTests(l.id);
-    var red = lt
-      ? lt.exercises.filter(function (e) { return e.status !== "pass"; }).length
-      : null;
-
-    var box = el("div", "gate");
-    box.appendChild(el("div", "eyebrow", "before you read this"));
-    box.appendChild(el("h2", null, red === null
-      ? "You have not run the tests yet."
-      : red + (red === 1 ? " exercise is" : " exercises are") + " still red."));
-    box.appendChild(el("p", "gate-body",
-      "Recognising correct code is a different skill from producing it, and only one of " +
-      "them transfers. Read this now and it will feel like understanding; it will not " +
-      "survive the week."));
-    box.appendChild(el("p", "gate-body",
-      "If you are stuck, the useful moves are re-reading the docstring, printing the " +
-      "intermediate values, or solving a smaller version on paper."));
-
-    var ctrls = el("div", "ctrls");
-    ctrls.appendChild(button("btn", "Back to the exercises", backToExercises));
-    ctrls.appendChild(button("btn ghost", "Open it anyway", openAnyway));
-    box.appendChild(ctrls);
-    return box;
   }
 
   /* ---------- progress export / import (HANDOFF step 8) ----------
@@ -808,23 +837,17 @@
     return wrap;
   }
 
-  /* ---------- lesson — ported from the design canvas ----------
-     Four steps, taken in order. The header sits on paper; the steps are tabs
+  /* ---------- lesson: read, implement, compare ----------
+     Three steps, taken in order. The header sits on paper; the steps are tabs
      joined to a --surface band, so the step you are on reads as the page. */
   var STEPS = [
     { name: "lesson", label: "Read" },
     { name: "exercises", label: "Implement" },
-    { name: "walkthrough", label: "Compare" },
-    { name: "closeout", label: "Close out" }
+    { name: "walkthrough", label: "Compare" }
   ];
   var SEEN_STEPS_KEY = "mlfs:seen-steps:v1";
-  var ANSWERED_KEY = "mlfs:answered:v1";
   var seenSteps = (function () {
     try { return JSON.parse(localStorage.getItem(SEEN_STEPS_KEY) || "{}") || {}; }
-    catch (e) { return {}; }
-  })();
-  var answered = (function () {
-    try { return JSON.parse(localStorage.getItem(ANSWERED_KEY) || "{}") || {}; }
     catch (e) { return {}; }
   })();
 
@@ -838,61 +861,111 @@
     return (seenSteps[lessonId] || []).indexOf(stepName) > -1;
   }
 
-  function testCounts(l) {
-    var lt = lessonTests(l.id);
-    if (lt) return { passed: lt.tests_passed, total: lt.tests_total, run: true };
-    return { passed: 0, total: (l.exercises || []).length, run: false };
+  function lessonCounts(l) {
+    var s = scoredExercises(l), n = 0;
+    s.forEach(function (e) { if (exerciseChecked(l, e)) n++; });
+    return { done: n, total: s.length, fromRunner: !!lessonTests(l.id) };
   }
-  function notPassing(l) {
-    return (l.exercises || []).filter(function (e) {
-      return !e.optional && statusOf(l.id, e.name) !== "pass";
-    });
+  function stillOpen(l) {
+    return scoredExercises(l).filter(function (e) { return !exerciseChecked(l, e); });
   }
 
   /* What the step button says under "Step N". */
   function stepState(l, name) {
-    var c = testCounts(l);
+    var c = lessonCounts(l);
     if (name === "lesson") return hasSeen(l.id, name) ? "read" : "not read";
-    if (name === "exercises") return c.run ? c.passed + " of " + c.total : c.total + " to write";
-    if (name === "walkthrough") return isComplete(l) ? "open" : "spoilers";
-    return isComplete(l) ? "done" : "—";
+    if (name === "exercises") return c.done + " of " + c.total;
+    return isComplete(l) ? "open" : "spoilers";
   }
   function stepDone(l, name) {
-    var c = testCounts(l);
     if (name === "lesson") return hasSeen(l.id, name);
-    if (name === "exercises") return c.run && c.passed === c.total && c.total > 0;
-    if (name === "closeout") return isComplete(l);
+    if (name === "exercises") return isComplete(l);
     return false;
+  }
+
+  /* The design's short constraint vocabulary, over the facts the tests enforce. */
+  function constraintLabel(e) {
+    var f = e.forbids || [];
+    if (e.optional) return "stretch";
+    if (f.indexOf("no numpy") > -1) return "plain python";
+    if (f.indexOf("no loops") > -1) return "no loops";
+    return "";
   }
 
   function factsFor(l) {
     var tpl = document.getElementById("lesson-" + l.id + "-brief");
     if (!tpl) return null;
-    var frag = tpl.content.cloneNode(true);
-    var grid = frag.querySelector(".facts");
+    var grid = tpl.content.cloneNode(true).querySelector(".facts");
     if (!grid) return null;
-    /* One cell is live: the count comes from the runner, never from the file. */
+    /* One cell is live: the count comes from the runner or from your ticks. */
     var live = grid.querySelector("[data-live=\"tests\"]");
     if (live) {
-      var c = testCounts(l);
+      var c = lessonCounts(l);
       live.appendChild(document.createTextNode(
-        c.run ? " · " + c.passed + " of " + c.total + " passing" : " · not run yet"));
+        " · " + c.done + " / " + c.total + (c.fromRunner ? " passing" : " ticked")));
     }
     return grid;
   }
 
+  /* ---------- step 1 ---------- */
+  function watchBlock(l) {
+    var w = l.watch;
+    if (!w || !(w.before || []).length) return null;
+
+    var box = el("div", "watch");
+    var head = el("div", "watch-head");
+    head.appendChild(el("span", "watch-k", "Watch first"));
+    head.appendChild(el("span", "watch-sub",
+      "Ordered. One idea, then code it — do not binge the playlist."));
+    box.appendChild(head);
+
+    var list = el("div", "watch-list");
+    w.before.forEach(function (v, i) {
+      var a = el("a", "watch-row");
+      a.href = v.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.appendChild(el("span", "watch-when", String(i + 1)));
+      var body = el("span", "watch-body");
+      var top = el("span", "watch-top");
+      top.appendChild(el("span", "watch-title", v.title));
+      top.appendChild(el("span", "watch-len", v.length));
+      body.appendChild(top);
+      body.appendChild(el("span", "watch-why", v.why));
+      a.appendChild(body);
+      a.appendChild(el("span", "watch-out", "↗"));
+      list.appendChild(a);
+    });
+    box.appendChild(list);
+
+    var careful = el("div", "watch-careful");
+    careful.appendChild(el("span", "watch-careful-k", "Careful"));
+    var p = el("p");
+    p.appendChild(el("b", null, "Watching is not learning."));
+    p.appendChild(document.createTextNode(
+      " Both video and demos produce a powerful sensation of understanding, because " +
+      "the animation performs the hard cognitive work for you. Close the tab and " +
+      "explain the idea out loud without it — that is the test. Roughly 20% here, " +
+      "80% on the exercises."));
+    careful.appendChild(p);
+    box.appendChild(careful);
+    return box;
+  }
+
   /* The right-hand column of step 1: where you are, what it is for, what to
-     read first. Headings are read from the panel, so it cannot drift. */
+     watch once the code passes. Headings are read from the panel. */
   function stepAside(l, panel) {
     var side = el("aside", "step-side");
     var inner = el("div", "step-side-inner");
 
-    var heads = [].slice.call(panel.querySelectorAll("h2"));
+    /* The watch block is not a heading, but it is the first thing on the step. */
+    var heads = [].slice.call(panel.querySelectorAll(".watch, h2"));
     if (heads.length > 1) {
       inner.appendChild(el("div", "side-k", "On this step"));
       var list = el("div", "side-toc");
       var links = heads.map(function (h) {
-        return button("side-link", h.textContent, function () {
+        var label = h.classList.contains("watch") ? "Watch first" : h.textContent;
+        return button("side-link", label, function () {
           h.scrollIntoView({ block: "start", behavior: "smooth" });
         });
       });
@@ -928,22 +1001,17 @@
       }).join(" · ")));
     }
 
-    var mats = LIBRARY.filter(function (it) {
-      return (it.lessons || []).indexOf(l.id) > -1;
-    }).slice(0, 4);
-    if (mats.length) {
-      inner.appendChild(el("div", "side-k", "Before you start"));
-      var mlist = el("div", "side-mats");
-      mats.forEach(function (m) {
-        var b = el("a", "side-mat");
-        b.href = m.url;
-        b.target = "_blank";
-        b.rel = "noopener";
-        b.appendChild(el("span", "side-mat-k", m.kind));
-        b.appendChild(el("span", "side-mat-t", m.title));
-        mlist.appendChild(b);
-      });
-      inner.appendChild(mlist);
+    var after = l.watch && l.watch.after;
+    if (after) {
+      inner.appendChild(el("div", "side-k", "Watch after"));
+      var a = el("a", "side-after");
+      a.href = after.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.appendChild(el("span", "side-after-t", after.title));
+      a.appendChild(el("span", "side-after-l", after.length));
+      a.appendChild(el("span", "side-after-w", after.why));
+      inner.appendChild(a);
     }
 
     if (!inner.children.length) return null;
@@ -951,68 +1019,111 @@
     return side;
   }
 
-  /* The strip that ends every step by naming the next action. */
-  function stepFooter(l, steps, i, show) {
-    var name = steps[i].name;
-    var foot = el("div", "stepfoot");
-    var body = el("div", "body");
-    var c = testCounts(l);
-    var open = notPassing(l);
-
-    if (name === "lesson") {
-      body.appendChild(el("b", null, "Next: "));
-      body.appendChild(document.createTextNode(
-        "write the " + (c.total || "") + " functions. Reading is 20% of this; the exercises are the other 80%."));
-    } else if (name === "exercises") {
-      if (open.length) {
-        body.appendChild(el("b", null, "Next: "));
-        body.appendChild(document.createTextNode("get "));
-        body.appendChild(el("code", null, open[0].name));
-        body.appendChild(document.createTextNode(" green"));
-        if (open.length > 1) {
-          body.appendChild(document.createTextNode(", then " +
-            open.slice(1).map(function (e) { return e.name; }).join(" and ")));
-        }
-        body.appendChild(document.createTextNode("."));
+  /* ---------- step 2 ---------- */
+  function exerciseRows(l) {
+    var box = el("div", "exrows");
+    (l.exercises || []).forEach(function (e, i) {
+      var runner = exerciseResult(l.id, e.name);
+      var on = exerciseChecked(l, e);
+      var row = el("button", "exrow" +
+        (on ? " is-on" : "") + (e.optional ? " is-optional" : "") +
+        (runner ? " is-runner" : ""));
+      row.type = "button";
+      row.setAttribute("aria-pressed", on ? "true" : "false");
+      if (runner) {
+        row.disabled = true;
+        row.title = "Read from site/progress.json — the runner owns this one";
       } else {
-        body.appendChild(el("b", null, "All " + c.total + " pass. "));
-        body.appendChild(document.createTextNode(
-          "Compare against the walkthrough, then close out."));
+        row.addEventListener("click", function () { toggleChecked(l.id, e.name); });
       }
-    } else if (name === "walkthrough") {
-      body.appendChild(el("b", null, "Next: "));
-      body.appendChild(document.createTextNode("answer the closing questions without looking anything up."));
-    } else {
-      body.appendChild(el("b", null, isComplete(l) ? "Lesson complete. " : "Almost there. "));
-      body.appendChild(document.createTextNode(completionIsDerived(l)
-        ? "Completion here follows the test runner."
-        : "No test results found, so this one is yours to mark."));
-    }
-    foot.appendChild(body);
 
-    if (i + 1 < steps.length) {
-      var next = steps[i + 1];
-      var label = next.name === "walkthrough" ? "I'm stuck — compare →"
-        : next.name === "exercises" ? "Go to the exercises →"
-        : next.label + " →";
-      foot.appendChild(button("btn-primary", label, function () { show(i + 1); }));
-    }
-    return foot;
+      var box2 = el("span", "exbox", on ? "✓" : "");
+      box2.setAttribute("aria-hidden", "true");
+      row.appendChild(box2);
+      row.appendChild(el("span", "exn", String(i + 1)));
+
+      var body = el("span", "exbody");
+      var head = el("span", "exhead");
+      head.appendChild(el("code", "exname", e.name));
+      if (e.optional) head.appendChild(el("span", "exopt", "optional · not scored"));
+      body.appendChild(head);
+      body.appendChild(el("span", "exsum", e.summary));
+      if (runner && runner.message) body.appendChild(el("span", "exmsg", runner.message));
+      row.appendChild(body);
+
+      row.appendChild(el("span", "exbans", constraintLabel(e)));
+      box.appendChild(row);
+    });
+    return box;
+  }
+
+  function noteBox(kicker, build, active) {
+    var box = el("div", "notebox" + (active ? " is-active" : ""));
+    box.appendChild(el("span", "notebox-k", kicker));
+    var p = el("p");
+    build(p);
+    box.appendChild(p);
+    return box;
+  }
+
+  /* ---------- step 3 ---------- */
+  var openSolution = {};
+
+  function solutionCards(l) {
+    var list = el("div", "solutions");
+    (l.solutions || []).forEach(function (s) {
+      var card = el("div", "solution-card");
+
+      var head = el("div", "sol-head");
+      var top = el("div", "sol-top");
+      top.appendChild(el("span", "sol-n", String(s.n)));
+      top.appendChild(el("code", "sol-name", s.name));
+      top.appendChild(el("span", "sol-headline", s.headline));
+      var ex = (l.exercises || []).filter(function (e) { return e.name === s.name; })[0];
+      if (ex && exerciseChecked(l, ex)) {
+        top.appendChild(el("span", "sol-tick",
+          lessonTests(l.id) ? "yours passes" : "ticked"));
+      }
+      head.appendChild(top);
+      head.appendChild(el("p", "sol-mech", s.mechanism));
+      if (s.trap) head.appendChild(el("p", "sol-trap", s.trap));
+      card.appendChild(head);
+
+      var open = !!openSolution[l.id + ":" + s.n];
+      var toggle = el("button", "sol-toggle", open ? "▾  hide the code" : "▸  show the code");
+      toggle.type = "button";
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.addEventListener("click", function () {
+        var key = l.id + ":" + s.n;
+        if (openSolution[key]) delete openSolution[key]; else openSolution[key] = true;
+        render();
+      });
+      card.appendChild(toggle);
+
+      if (open) {
+        var pre = el("pre");
+        var code = el("code", "language-python", s.code);
+        pre.appendChild(code);
+        card.appendChild(pre);
+        var why = el("div", "sol-why");
+        why.appendChild(el("span", "sol-why-k", "Why this way"));
+        why.appendChild(el("p", null, s.why));
+        card.appendChild(why);
+      }
+      list.appendChild(card);
+    });
+    return list;
   }
 
   function walkthroughGate(l, openAnyway, backToExercises) {
-    var open = notPassing(l);
-    var c = testCounts(l);
-
+    var open = stillOpen(l);
     var box = el("div", "gate");
     box.appendChild(el("div", "step-kicker", "Step 3 · compare"));
-    box.appendChild(el("h2", "step-h2", !c.run
-      ? "You have not run the tests yet."
-      : open.length === 1 ? "One exercise is still open."
-      : open.length + " exercises are still open."));
+    box.appendChild(el("h2", "step-h2", open.length === 1
+      ? "One exercise is still unticked."
+      : open.length + " exercises are still unticked."));
 
     var p1 = el("p");
-    p1.appendChild(document.createTextNode("The walkthrough explains how each solution works, with the code. "));
     p1.appendChild(el("b", null,
       "Reading a correct solution produces the feeling of understanding without the substance of it"));
     p1.appendChild(document.createTextNode(
@@ -1029,59 +1140,48 @@
     box.appendChild(p2);
 
     var row = el("div", "gate-row");
-    row.appendChild(button("btn-primary", "Back to the exercises", backToExercises));
-    row.appendChild(button("btn-quiet", "Open it anyway", openAnyway));
+    row.appendChild(button("btn-quiet", "Back to the exercises", backToExercises));
+    row.appendChild(button("btn-primary", "Open the walkthrough anyway", openAnyway));
     box.appendChild(row);
     box.appendChild(el("p", "gate-foot",
-      "This gate disappears once every exercise passes."));
+      "This gate disappears once every exercise is ticked."));
     return box;
   }
 
-  /* Closing questions become tickable. Ticking one is a claim about you, not
-     about the code, so it is stored here and never mixed with test results. */
-  function wireQuestions(l, panel) {
-    var list = panel.querySelector("ol.checkq");
-    if (!list) return;
-    var mine = answered[l.id] || (answered[l.id] = {});
-    [].slice.call(list.children).forEach(function (li, i) {
-      var text = li.textContent;
-      li.textContent = "";
-      var b = button(null, null, function () {
-        mine[i] = !mine[i];
-        try { localStorage.setItem(ANSWERED_KEY, JSON.stringify(answered)); } catch (e) {}
-        li.classList.toggle("on", !!mine[i]);
-        b.setAttribute("aria-pressed", mine[i] ? "true" : "false");
-        mark.textContent = mine[i] ? "✓" : "";
-      });
-      var mark = el("span", "qmark", mine[i] ? "✓" : "");
-      mark.setAttribute("aria-hidden", "true");
-      b.appendChild(mark);
-      b.appendChild(el("span", null, text));
-      b.setAttribute("aria-pressed", mine[i] ? "true" : "false");
-      li.classList.toggle("on", !!mine[i]);
-      li.appendChild(b);
-    });
-  }
-
-  function completionStrip(l) {
-    var strip = el("div", "completion");
-    var c = testCounts(l);
+  /* The strip that ends a step by naming the next action. */
+  function stepFooter(l, steps, i, show) {
+    var name = steps[i].name;
+    var foot = el("div", "stepfoot");
     var body = el("div", "body");
-    if (isComplete(l)) {
-      body.appendChild(el("b", null, "Lesson complete."));
-      body.appendChild(document.createTextNode(completionIsDerived(l)
-        ? " All " + c.total + " tests pass."
-        : " Marked by hand — the tests show " + c.passed + " of " + c.total + "."));
-    } else {
-      body.appendChild(el("b", null, c.run
-        ? c.passed + " of " + c.total + " tests passing."
-        : "The tests have not been run."));
+    var c = lessonCounts(l);
+    var open = stillOpen(l);
+
+    if (name === "lesson") {
+      body.appendChild(el("b", null, "Next: "));
       body.appendChild(document.createTextNode(
-        " Completion follows the tests — it will tick itself when they are green. " +
-        "You can override it, and the override says so."));
+        "write the " + c.total + " functions. Reading is 20% of this; the exercises " +
+        "are the other 80%."));
+      foot.appendChild(body);
+      foot.appendChild(button("btn-primary", "Go to the exercises →",
+        function () { show(i + 1); }));
+    } else if (name === "exercises") {
+      if (open.length) {
+        body.appendChild(el("b", null, "Next: "));
+        body.appendChild(document.createTextNode(open[0].name +
+          (open.length > 1 ? " — " + (open.length - 1) + " more after it." : " — the last one.")));
+      } else {
+        body.appendChild(el("b", null, "All " + c.total + " ticked. "));
+        body.appendChild(document.createTextNode(
+          "The walkthrough is open — compare your versions against it."));
+      }
+      foot.appendChild(body);
+      foot.appendChild(button(open.length ? "btn-quiet" : "btn-primary",
+        open.length ? "I’m stuck — compare →" : "Open the walkthrough →",
+        function () { show(i + 1); }));
+    } else {
+      return null;
     }
-    strip.appendChild(body);
-    return strip;
+    return foot;
   }
 
   function buildLesson(l) {
@@ -1108,7 +1208,7 @@
       root.appendChild(head);
       var band0 = el("div", "lesson-band");
       var inner0 = el("div", "lesson-inner");
-      var ph = el("div", "placeholder");
+      var ph = el("div");
       ph.appendChild(el("div", "step-kicker", "Not written yet"));
       ph.appendChild(el("h2", "step-h2", "This lesson is planned, not published."));
       ph.appendChild(el("p", "step-lead",
@@ -1138,7 +1238,13 @@
       panel.setAttribute("aria-labelledby", "step-" + slug);
       panel.tabIndex = 0;
 
-      if (step.name === "walkthrough" && gateWalkthrough(l)) {
+      if (step.name === "lesson") {
+        var watch = watchBlock(l);
+        if (watch) panel.appendChild(watch);
+        if (tpl) panel.appendChild(tpl.content.cloneNode(true));
+      } else if (step.name === "exercises") {
+        buildImplement(l, panel, tpl);
+      } else if (gateWalkthrough(l)) {
         panel.appendChild(walkthroughGate(l, function () {
           unlockedWalkthrough[l.id] = true;
           render();
@@ -1148,24 +1254,9 @@
           show(at);
         }));
       } else {
-        if (step.name !== "lesson") {
-          var sh = el("div", "step-head");
-          var meta = el("div");
-          meta.appendChild(el("div", "step-kicker",
-            "Step " + (i + 1) + " · " + (step.name === "exercises" ? "in your repo" : step.label.toLowerCase())));
-          meta.appendChild(el("h2", "step-h2", stepHeadline(l, step.name)));
-          sh.appendChild(meta);
-          if (step.name === "exercises") {
-            sh.appendChild(commandChip("progress " + l.id, "cmdchip plain"));
-          }
-          panel.appendChild(sh);
-        }
-        if (tpl) panel.appendChild(tpl.content.cloneNode(true));
-        if (step.name === "closeout") {
-          wireQuestions(l, panel);
-          panel.appendChild(completionStrip(l));
-        }
+        buildCompare(l, panel, tpl);
       }
+
       panel.hidden = i !== activeTab[l.id];
       panels.appendChild(panel);
 
@@ -1222,18 +1313,23 @@
     var inner = el("div", "lesson-inner");
     inner.appendChild(panels);
 
-    /* the generated exercise rows land inside the Implement step */
-    var mount = panels.querySelector("[data-exercise-rows]");
-    if (mount) mount.appendChild(exerciseBlock(l));
-
     highlight(panels);
     if (typeof Widgets !== "undefined") Widgets.mount(panels);
 
     var live = entries[activeTab[l.id]];
-    /* The gate is the whole step. A "next" button under it would be a way
-       around the thing the gate exists to slow down. */
-    var gated = live.step.name === "walkthrough" && gateWalkthrough(l);
-    if (!gated) live.panel.appendChild(stepFooter(l, steps, activeTab[l.id], show));
+    var foot = stepFooter(l, steps, activeTab[l.id], show);
+    if (foot) live.panel.appendChild(foot);
+
+    if (live.step.name === "exercises") {
+      var note = el("p", "exfoot");
+      note.appendChild(document.createTextNode(lessonCounts(l).fromRunner
+        ? "Status is read from " : "Ticks are yours and live in this browser. When "));
+      note.appendChild(el("b", null, "site/progress.json"));
+      note.appendChild(document.createTextNode(lessonCounts(l).fromRunner
+        ? ", written by the test runner. This page never invents a pass."
+        : " exists, real test results replace them."));
+      live.panel.appendChild(note);
+    }
 
     /* Step 1 is two columns: the reading, and where you are in it. */
     if (live.step.name === "lesson") {
@@ -1262,68 +1358,130 @@
       res.addEventListener("toggle", function () { if (res.open) highlight(rbody); });
     }
 
+    inner.appendChild(lessonFoot(l));
+    return root;
+  }
+
+  function buildImplement(l, panel, tpl) {
+    var c = lessonCounts(l);
+    var sh = el("div", "step-head");
+    var meta = el("div");
+    meta.appendChild(el("div", "step-kicker", "Step 2 · in your repo"));
+    meta.appendChild(el("h2", "step-h2",
+      c.total + (c.total === 1 ? " function. " : " functions. ") +
+      (c.done === c.total ? "All " + (c.fromRunner ? "passing." : "ticked.")
+        : c.done + (c.fromRunner ? " passing." : " ticked."))));
+    sh.appendChild(meta);
+    sh.appendChild(commandChip("progress " + l.id, "cmdchip plain"));
+    panel.appendChild(sh);
+
+    panel.appendChild(el("p", "step-lead",
+      c.total + " functions in exercises.py. They come in pairs: each does the same " +
+      "maths twice, once by hand so you own the mechanism, once vectorised so you can " +
+      "actually use it. " + (c.fromRunner
+        ? "The runner owns these rows."
+        : "Tick each one off as its tests pass.")));
+
+    panel.appendChild(exerciseRows(l));
+
+    panel.appendChild(noteBox("The constraints are the lesson", function (p) {
+      p.appendChild(document.createTextNode(
+        "The tests inspect your source, not just your return value. Where a row says "));
+      p.appendChild(el("code", null, "plain python"));
+      p.appendChild(document.createTextNode(
+        ", you are meant to build the mechanism before you are allowed to call it. Where it says "));
+      p.appendChild(el("code", null, "no loops"));
+      p.appendChild(document.createTextNode(
+        ", a Python loop over a NumPy array costs roughly 200× in speed."));
+    }));
+
+    panel.appendChild(noteBox("Then run the benchmark", function (p) {
+      p.appendChild(document.createTextNode("Once every test passes, "));
+      p.appendChild(el("code", null, "python " + (l.dir || "") + "/exercises.py"));
+      p.appendChild(document.createTextNode(
+        " times your loop against your vectorised version over two million elements. " +
+        "Expect 100–200×. That number is why ML is written in NumPy and not in loops — " +
+        "and a GPU widens it by roughly another 100×."));
+    }));
+
+    /* Whatever else the lesson author wrote for this step goes below. */
+    if (tpl) {
+      var extra = tpl.content.cloneNode(true);
+      var mount = extra.querySelector("[data-exercise-rows]");
+      if (mount && mount.parentNode) mount.parentNode.removeChild(mount);
+      panel.appendChild(extra);
+    }
+  }
+
+  function buildCompare(l, panel, tpl) {
+    panel.appendChild(el("div", "step-kicker", "Step 3 · walkthrough"));
+    panel.appendChild(el("h2", "step-h2", "One solution per exercise, and why it is written that way"));
+    panel.appendChild(el("p", "step-lead",
+      "The reasoning is open; the code stays folded until you ask for it. Each note " +
+      "covers the mechanism, the alternative route, and the trap in between."));
+
+    if ((l.solutions || []).length) panel.appendChild(solutionCards(l));
+
+    panel.appendChild(noteBox("The stretch", function (p) {
+      p.appendChild(document.createTextNode(
+        "The last scored exercise is the definition of similarity search — one cosine " +
+        "per item. It is not the implementation a real system uses. "));
+      p.appendChild(el("code", null, "stretch.py"));
+      p.appendChild(document.createTextNode(
+        " asks for that version: stack the whole library into a matrix and score every " +
+        "row in one operation, no loop and no comprehension anywhere. It forces you into "));
+      p.appendChild(el("code", null, "axis="));
+      p.appendChild(document.createTextNode(" and "));
+      p.appendChild(el("code", null, "keepdims="));
+      p.appendChild(document.createTextNode(", where nearly everyone's first silent shape bug lives."));
+    }, true));
+
+    /* The authored walkthrough keeps its diagrams, one click away. */
+    if (tpl) {
+      var more = el("details", "resources-foot");
+      more.appendChild(el("summary", null, "The longer walkthrough, with diagrams"));
+      var body = el("div", "resources-body");
+      body.appendChild(tpl.content.cloneNode(true));
+      more.appendChild(body);
+      panel.appendChild(more);
+      more.addEventListener("toggle", function () {
+        if (!more.open) return;
+        highlight(body);
+        if (typeof Widgets !== "undefined") Widgets.mount(body);
+      });
+    }
+
+    var closeTpl = document.getElementById("lesson-" + l.id + "-closeout");
+    if (closeTpl) {
+      var close = el("div", "closeout");
+      close.appendChild(closeTpl.content.cloneNode(true));
+      panel.appendChild(close);
+    }
+  }
+
+  function lessonFoot(l) {
     var pool = writtenLessons();
     var idx = pool.indexOf(l);
     var foot = el("div", "lesson-foot");
     if (idx > 0) {
       var pv = pool[idx - 1];
-      foot.appendChild(button("linkbtn", "← " + pv.id + " " + pv.title, function () { goLesson(pv.id); }));
+      foot.appendChild(button("linkbtn", "← " + pv.id + " " + pv.title,
+        function () { goLesson(pv.id); }));
     } else {
-      foot.appendChild(el("span", null, "← first lesson"));
+      foot.appendChild(el("span", "is-end", "← first lesson"));
     }
     if (idx > -1 && idx + 1 < pool.length) {
       var nx = pool[idx + 1];
-      foot.appendChild(button("linkbtn", "Next: " + nx.id + " " + nx.title + " →", function () { goLesson(nx.id); }));
+      foot.appendChild(button("linkbtn", "next: " + nx.id + " " + nx.title + " →",
+        function () { goLesson(nx.id); }));
     } else {
-      var after = nextPlanned(l);
+      var at = allLessons.indexOf(l);
+      var after = at > -1 && at + 1 < allLessons.length ? allLessons[at + 1] : null;
       foot.appendChild(el("span", null, after
         ? "next: " + after.id + " " + after.title + " · not written yet →"
-        : "last written lesson →"));
+        : "last lesson →"));
     }
-    inner.appendChild(foot);
-    return root;
-  }
-
-  function stepHeadline(l, name) {
-    var c = testCounts(l);
-    if (name === "exercises") {
-      return c.total + (c.total === 1 ? " function. " : " functions. ") +
-        (!c.run ? "None run yet." : c.passed === c.total ? "All passing." : c.passed + " passing.");
-    }
-    if (name === "walkthrough") return "What each exercise is really asking";
-    return "You are done when you can answer these without looking anything up";
-  }
-
-  function nextPlanned(l) {
-    var at = allLessons.indexOf(l);
-    return at > -1 && at + 1 < allLessons.length ? allLessons[at + 1] : null;
-  }
-
-  function exerciseBlock(l) {
-    var box = el("div", "exercise-block");
-    if (!lessonTests(l.id)) {
-      box.appendChild(el("p", "exnote",
-        "Run the command above to see which of these pass. Until you do, every row " +
-        "reads as todo — this page never invents a result."));
-    }
-    var list = el("div", "exrows");
-    (l.exercises || []).forEach(function (e) { list.appendChild(exerciseRow(l, e, false)); });
-    box.appendChild(list);
-
-    var note = el("div", "notebox");
-    note.appendChild(el("span", "notebox-k", "The constraints are the lesson"));
-    var p = el("p");
-    p.appendChild(document.createTextNode(
-      "The tests inspect your source, not just your return value. Where a row says "));
-    p.appendChild(el("code", null, "no numpy"));
-    p.appendChild(document.createTextNode(
-      ", you are meant to build the mechanism before you are allowed to call it. Where it says "));
-    p.appendChild(el("code", null, "no loops"));
-    p.appendChild(document.createTextNode(
-      ", a Python loop over a NumPy array costs roughly 200× in speed."));
-    note.appendChild(p);
-    box.appendChild(note);
-    return box;
+    return foot;
   }
 
   /* ---------- render ---------- */

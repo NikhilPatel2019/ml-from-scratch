@@ -224,6 +224,13 @@ def main() -> int:
                     les["exercises"] = ex
             if les["id"] in sections:
                 les["dir"] = raw.get("dir", "")
+                # Side data a lesson can carry: the ordered viewing list, and one
+                # worked solution per exercise. Both optional, both read from disk.
+                for key, name in (("watch", "watch.json"), ("solutions", "solutions.json")):
+                    side = SRC / "lessons" / les["id"] / name
+                    if side.exists():
+                        loaded = json.loads(side.read_text(encoding="utf-8"))
+                        les[key] = loaded.get(key, loaded)
                 heads = section_headings(SRC / "lessons" / les["id"], sections[les["id"]])
                 if heads:
                     les["headings"] = heads
