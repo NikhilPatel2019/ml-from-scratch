@@ -1119,6 +1119,12 @@ figcaption {
   margin: 10px 0 0; font-size: 14px; line-height: 1.6; color: var(--danger); max-width: 66ch;
   padding-left: 13px; border-left: 2px solid color-mix(in srgb, var(--danger) 45%, transparent);
 }
+/* The figure sits between the reasoning and the code, because it explains the
+   first and you are meant to have seen it before you ask for the second. */
+.sol-figure { padding: 4px 20px 18px; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.sol-figure figure { margin: 0; }
+.sol-figure figcaption { max-width: 68ch; }
+
 .sol-toggle {
   appearance: none; border: 0; width: 100%; text-align: left; cursor: pointer;
   padding: 11px 20px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .05em;
@@ -1781,7 +1787,7 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
 <p>Nothing new is happening here. The length of <code>[3, 4]</code> is the hypotenuse of a right triangle with legs 3 and 4.</p>
 
-<figure class="diagram">
+<figure class="diagram" data-solution="3">
 <svg viewBox="0 0 620 258" role="img" aria-label="The vector 3,4 drawn as the hypotenuse of a right triangle with legs of length 3 and 4, giving a length of 5 by Pythagoras, and a note that the same formula extends unchanged to any number of dimensions.">
   <defs>
     <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1816,7 +1822,7 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
 <p>Dividing a vector by its own magnitude leaves it pointing exactly where it was, with length precisely 1. Every such vector lands on the unit circle.</p>
 
-<figure class="diagram">
+<figure class="diagram" data-solution="5">
 <svg viewBox="0 0 620 290" role="img" aria-label="The vector 3,4 of length 5 shrunk along the same ray onto the unit circle, becoming 0.6,0.8 with length 1 and the same direction.">
   <defs>
     <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1859,7 +1865,7 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
 <p>The dot product was never purely about agreement — it is agreement <strong>scaled by both lengths</strong>. That is precisely the flaw demonstrated earlier: pressing <span class="mono">× 2</span> doubles the number without turning the arrows at all. Divide both sides by <code>|a| × |b|</code> and the lengths cancel, leaving the angle alone. You are not inventing a metric; you are rearranging an identity to isolate what you actually wanted.</p>
 
-<figure class="diagram">
+<figure class="diagram" data-solution="6">
 <svg viewBox="0 0 620 326" role="img" aria-label="Two routes to the same number: dividing a dot product by both magnitudes, or normalising both vectors first and then taking their dot product.">
   <defs>
     <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1918,7 +1924,7 @@ a.shape      # (3,)  — check this when confused. always.</code></pre>
 
 <p>That solution is the definition. It is not the implementation a real system uses.</p>
 
-<figure class="diagram">
+<figure class="diagram" data-solution="7">
 <svg viewBox="0 0 620 266" role="img" aria-label="Stacking every library vector into a matrix turns a loop of separate dot products into one matrix-vector multiplication that scores every item at once.">
   <defs>
     <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -3593,8 +3599,22 @@ var Widgets = (function () {
   /* ---------- step 3 ---------- */
   var openSolution = {};
 
+  /* Figures live in walkthrough.html, tagged with the exercise they draw.
+     They move into that exercise's card, where the mechanism they explain is. */
+  function solutionFigures(l) {
+    var tpl = document.getElementById("lesson-" + l.id + "-walkthrough");
+    var out = {};
+    if (!tpl) return out;
+    var frag = tpl.content.cloneNode(true);
+    [].slice.call(frag.querySelectorAll("figure[data-solution]")).forEach(function (f) {
+      out[f.getAttribute("data-solution")] = f;
+    });
+    return out;
+  }
+
   function solutionCards(l) {
     var list = el("div", "solutions");
+    var figures = solutionFigures(l);
     (l.solutions || []).forEach(function (s) {
       var card = el("div", "solution-card");
 
@@ -3612,6 +3632,13 @@ var Widgets = (function () {
       head.appendChild(el("p", "sol-mech", s.mechanism));
       if (s.trap) head.appendChild(el("p", "sol-trap", s.trap));
       card.appendChild(head);
+
+      var fig = figures[String(s.n)];
+      if (fig) {
+        var band = el("div", "sol-figure");
+        band.appendChild(fig);
+        card.appendChild(band);
+      }
 
       var open = !!openSolution[l.id + ":" + s.n];
       var toggle = el("button", "sol-toggle", open ? "▾  hide the code" : "▸  show the code");
@@ -3963,9 +3990,14 @@ var Widgets = (function () {
     /* The authored walkthrough keeps its diagrams, one click away. */
     if (tpl) {
       var more = el("details", "resources-foot");
-      more.appendChild(el("summary", null, "The longer walkthrough, with diagrams"));
+      more.appendChild(el("summary", null, "The longer walkthrough"));
       var body = el("div", "resources-body");
-      body.appendChild(tpl.content.cloneNode(true));
+      var prose = tpl.content.cloneNode(true);
+      /* Whatever a card already shows is not repeated down here. */
+      [].slice.call(prose.querySelectorAll("figure[data-solution]")).forEach(function (f) {
+        if (f.parentNode) f.parentNode.removeChild(f);
+      });
+      body.appendChild(prose);
       more.appendChild(body);
       panel.appendChild(more);
       more.addEventListener("toggle", function () {

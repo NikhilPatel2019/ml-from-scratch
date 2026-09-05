@@ -1083,6 +1083,12 @@ figcaption {
   margin: 10px 0 0; font-size: 14px; line-height: 1.6; color: var(--danger); max-width: 66ch;
   padding-left: 13px; border-left: 2px solid color-mix(in srgb, var(--danger) 45%, transparent);
 }
+/* The figure sits between the reasoning and the code, because it explains the
+   first and you are meant to have seen it before you ask for the second. */
+.sol-figure { padding: 4px 20px 18px; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.sol-figure figure { margin: 0; }
+.sol-figure figcaption { max-width: 68ch; }
+
 .sol-toggle {
   appearance: none; border: 0; width: 100%; text-align: left; cursor: pointer;
   padding: 11px 20px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .05em;

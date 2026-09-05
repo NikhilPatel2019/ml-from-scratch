@@ -1049,8 +1049,22 @@
   /* ---------- step 3 ---------- */
   var openSolution = {};
 
+  /* Figures live in walkthrough.html, tagged with the exercise they draw.
+     They move into that exercise's card, where the mechanism they explain is. */
+  function solutionFigures(l) {
+    var tpl = document.getElementById("lesson-" + l.id + "-walkthrough");
+    var out = {};
+    if (!tpl) return out;
+    var frag = tpl.content.cloneNode(true);
+    [].slice.call(frag.querySelectorAll("figure[data-solution]")).forEach(function (f) {
+      out[f.getAttribute("data-solution")] = f;
+    });
+    return out;
+  }
+
   function solutionCards(l) {
     var list = el("div", "solutions");
+    var figures = solutionFigures(l);
     (l.solutions || []).forEach(function (s) {
       var card = el("div", "solution-card");
 
@@ -1068,6 +1082,13 @@
       head.appendChild(el("p", "sol-mech", s.mechanism));
       if (s.trap) head.appendChild(el("p", "sol-trap", s.trap));
       card.appendChild(head);
+
+      var fig = figures[String(s.n)];
+      if (fig) {
+        var band = el("div", "sol-figure");
+        band.appendChild(fig);
+        card.appendChild(band);
+      }
 
       var open = !!openSolution[l.id + ":" + s.n];
       var toggle = el("button", "sol-toggle", open ? "▾  hide the code" : "▸  show the code");
@@ -1419,9 +1440,14 @@
     /* The authored walkthrough keeps its diagrams, one click away. */
     if (tpl) {
       var more = el("details", "resources-foot");
-      more.appendChild(el("summary", null, "The longer walkthrough, with diagrams"));
+      more.appendChild(el("summary", null, "The longer walkthrough"));
       var body = el("div", "resources-body");
-      body.appendChild(tpl.content.cloneNode(true));
+      var prose = tpl.content.cloneNode(true);
+      /* Whatever a card already shows is not repeated down here. */
+      [].slice.call(prose.querySelectorAll("figure[data-solution]")).forEach(function (f) {
+        if (f.parentNode) f.parentNode.removeChild(f);
+      });
+      body.appendChild(prose);
       more.appendChild(body);
       panel.appendChild(more);
       more.addEventListener("toggle", function () {
