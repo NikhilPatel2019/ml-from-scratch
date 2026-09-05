@@ -303,27 +303,80 @@ code, kbd { font-family: var(--f-mono); }
 .hero h1 { font-size: clamp(34px, 5vw, 52px); letter-spacing: -.02em; margin: 10px 0 0; }
 .hero .lede { font-size: 18px; color: var(--ink-2); margin: 14px 0 0; max-width: 60ch; line-height: 1.55; }
 
+/* ============================================================
+   path — ported from the design canvas
+   ============================================================ */
+.hero-lede {
+  font-size: 16.5px; line-height: 1.6; color: var(--ink-2);
+  margin: 12px 0 0; max-width: 68ch;
+}
+
+/* One strip of 55 ticks, in lesson order. Height carries the same
+   three states as colour, so the shape reads before the legend does. */
 .ruler-card {
-  margin: 30px 0 0; padding: 22px 24px 18px;
+  margin-top: 26px; padding: 19px 21px; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 12px;
+}
+.ruler-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; flex-wrap: wrap;
+}
+.ruler-k {
+  font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.ruler-count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+.ruler { display: flex; gap: 2px; margin-top: 13px; align-items: flex-end; height: 34px; }
+.ptick {
+  flex: 1 1 0; min-width: 0; border-radius: 2px;
+  background: var(--rule-firm); height: 42%;
+}
+.ptick[data-state="ready"] { background: var(--accent); height: 72%; }
+.ptick[data-state="done"] { background: var(--done); height: 100%; }
+.legend {
+  display: flex; gap: 18px; margin-top: 12px; flex-wrap: wrap;
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
+}
+.legend span { display: flex; align-items: center; gap: 6px; }
+.legend i { display: block; width: 9px; height: 9px; border-radius: 2px; }
+
+.phase-cards { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
+.pcard {
   background: var(--surface); border: 1px solid var(--rule);
-  border-radius: 12px; box-shadow: var(--shadow);
+  border-radius: 12px; overflow: hidden;
 }
-.ruler-top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.bignum { font-family: var(--f-mono); font-size: 30px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.bignum span { color: var(--ink-3); font-size: 17px; font-weight: 400; }
-.ruler { display: flex; gap: 10px; align-items: flex-end; overflow-x: auto; padding-bottom: 2px; }
-.rgroup { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-.ticks { display: flex; gap: 2px; }
-.tick { height: 30px; width: 4px; border-radius: 1.5px; background: var(--rule); transition: background .25s; }
-.tick[data-state="done"]  { background: var(--done); }
-.tick[data-state="ready"] { background: var(--accent); }
-.rlabel {
-  font-family: var(--f-mono); font-size: 11px; font-weight: 500; color: var(--ink-3);
-  padding-top: 5px; border-top: 1px solid var(--rule-firm);
-  font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden;
+.pcard-btn {
+  appearance: none; border: 0; background: none; cursor: pointer; display: block;
+  width: 100%; text-align: left; padding: 20px 22px 18px;
+  font-family: var(--f-body); color: var(--ink); transition: background .15s;
 }
-.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
-.legend i { display: inline-block; width: 4px; height: 11px; border-radius: 1.5px; margin-right: 6px; vertical-align: -1px; }
+.pcard-btn:hover { background: var(--surface-2); }
+.pcard-top { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+.phase-chip {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 600;
+  color: var(--on-accent); background: var(--accent);
+  border-radius: 6px; padding: 3px 8px;
+}
+.pcard-title {
+  font-family: var(--f-display); font-size: 23px; font-weight: 600; letter-spacing: -.015em;
+}
+.pcard-sub { font-size: 14px; color: var(--ink-3); font-style: italic; }
+.pcard-count {
+  margin-left: auto; font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+}
+.pcard-blurb { margin: 11px 0 0; font-size: 14.5px; line-height: 1.6; color: var(--ink-2); max-width: 76ch; }
+
+.milestone {
+  margin-top: 13px; display: flex; gap: 11px; align-items: baseline;
+  padding: 11px 14px; background: var(--active-wash);
+  border: 1px solid color-mix(in srgb, var(--active) 30%, transparent);
+  border-radius: 9px;
+}
+.milestone-k {
+  font-family: var(--f-mono); font-size: 9.5px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--active); flex: none;
+}
+.milestone-t { font-size: 14px; line-height: 1.5; color: var(--ink); }
 
 .nextup {
   display: flex; gap: 16px; align-items: center; margin-top: 22px; padding: 16px 20px;
@@ -353,18 +406,6 @@ code, kbd { font-family: var(--f-mono); }
 .step h3 { font-family: var(--f-body); font-size: 14.5px; font-weight: 600; }
 .step p { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
 
-.phase-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 14px; margin-top: 22px; }
-.pcard {
-  background: var(--surface); border: 1px solid var(--rule); border-radius: 11px;
-  padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 9px;
-  cursor: pointer; text-align: left; font-family: inherit; color: inherit;
-  transition: border-color .15s, transform .15s;
-}
-.pcard:hover { border-color: var(--rule-firm); transform: translateY(-1px); }
-.pcard-top { display: flex; align-items: center; gap: 9px; }
-.pcard h3 { font-family: var(--f-display); font-size: 17.5px; flex: 1; }
-.pcard p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
-.pcard .meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--rule); margin-top: auto; font-variant-numeric: tabular-nums; }
 
 /* ============================================================
    lesson
@@ -794,8 +835,6 @@ figcaption {
   padding-left: 30px; margin-top: 3px; line-height: 1.4;
 }
 
-.pcard.is-planned { cursor: default; }
-.pcard.is-planned:hover { border-color: var(--rule); transform: none; }
 .crumb-static { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); }
 
 
@@ -3056,55 +3095,6 @@ var Widgets = (function () {
     railNav.appendChild(ahead);
   }
 
-  /* The ruler moved off the landing page: a 55-tick chart of the whole
-     curriculum belongs where the curriculum is the subject. `only` limits it to
-     one phase for a phase page. */
-  function rulerCard(only) {
-    var shown = only ? [only] : phases;
-    /* the ruler */
-    var card = el("div", "ruler-card");
-    var top = el("div", "ruler-top");
-    var big = el("div", "bignum");
-    big.appendChild(document.createTextNode(totalDone() + " "));
-    big.appendChild(el("span", null, "/ " + TOTAL + " lessons complete"));
-    top.appendChild(big);
-    top.appendChild(el("div", "eyebrow", "phases 1–5, drawn to scale"));
-    card.appendChild(top);
-
-    var ruler = el("div", "ruler");
-    shown.forEach(function (p) {
-      var g = el("div", "rgroup");
-      g.style.flex = p.lessons.length + " 1 0";
-      var ticks = el("div", "ticks");
-      p.lessons.forEach(function (l) {
-        var t = el("span", "tick");
-        t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
-        t.title = l.id + " — " + l.title;
-        ticks.appendChild(t);
-      });
-      g.appendChild(ticks);
-      var lab = el("div", "rlabel", String(p.number));
-      lab.title = "Phase " + p.number + " · " + p.title + " (" + p.lessons.length + " lessons)";
-      g.appendChild(lab);
-      ruler.appendChild(g);
-    });
-    card.appendChild(ruler);
-
-    var legend = el("div", "legend");
-    [["complete", "var(--done)"], ["written and ready", "var(--accent)"], ["still to be written", "var(--rule)"]]
-      .forEach(function (row) {
-        var s = el("span");
-        var i = el("i");
-        i.style.background = row[1];
-        s.appendChild(i);
-        s.appendChild(document.createTextNode(row[0]));
-        legend.appendChild(s);
-      });
-    card.appendChild(legend);
-    return card;
-  }
-
-  /* ---------- continue (landing) ---------- */
   /* ---------- continue — ported from the design canvas ---------- */
 
   function copyButton(text, target, cls) {
@@ -3397,32 +3387,78 @@ var Widgets = (function () {
     return wrap;
   }
 
-  /* ---------- path: the shape of the whole thing ---------- */
+  /* ---------- path — ported from the design canvas ---------- */
+
+  /* Every lesson, in order, as one strip. Colour and height carry the
+     same three states, so the shape is readable before the legend is. */
+  function rulerCard() {
+    var card = el("div", "ruler-card");
+
+    var top = el("div", "ruler-top");
+    top.appendChild(el("div", "ruler-k", "All " + TOTAL + " lessons"));
+    var written = writtenLessons();
+    top.appendChild(el("div", "ruler-count",
+      written.length + " written · " + totalDone() + " complete"));
+    card.appendChild(top);
+
+    var ruler = el("div", "ruler");
+    allLessons.forEach(function (l) {
+      var t = el("span", "ptick");
+      t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
+      t.title = l.id + " — " + l.title;
+      ruler.appendChild(t);
+    });
+    card.appendChild(ruler);
+
+    var legend = el("div", "legend");
+    [["written", "var(--accent)"], ["complete", "var(--done)"], ["planned", "var(--rule-firm)"]]
+      .forEach(function (row) {
+        var s = el("span");
+        var i = el("i");
+        i.style.background = row[1];
+        s.appendChild(i);
+        s.appendChild(document.createTextNode(row[0]));
+        legend.appendChild(s);
+      });
+    card.appendChild(legend);
+    return card;
+  }
+
+  function milestoneStrip(text, cls) {
+    var box = el("div", cls || "milestone");
+    box.appendChild(el("span", "milestone-k", "Milestone"));
+    box.appendChild(el("span", "milestone-t", text));
+    return box;
+  }
+
   function buildPath() {
     var wrap = el("div", "wrap is-path");
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow", "the whole curriculum"));
-    hero.appendChild(el("h1", null, "Five phases, " + TOTAL + " lessons"));
-    hero.appendChild(el("p", "lede",
-      "Ordered so that each phase assumes exactly what came before it, and nothing more."));
-    wrap.appendChild(hero);
+    wrap.appendChild(el("div", "hero-eyebrow", "The path"));
+    wrap.appendChild(el("h1", "hero-h1", "Five phases, " + TOTAL + " lessons"));
+    wrap.appendChild(el("p", "hero-lede",
+      "Written in order and meant to be taken in order. " +
+      writtenLessons().length + " of " + TOTAL + " lessons are written; the rest are " +
+      "planned, and their milestones are the part worth reading now."));
     wrap.appendChild(rulerCard());
 
     var cards = el("div", "phase-cards");
-    cards.style.marginTop = "30px";
     phases.forEach(function (ph) {
       var written = ph.lessons.filter(function (l) { return l.written; }).length;
-      var c = button("pcard", null, function () { goPhase(ph.id); });
-      var head = el("div", "pcard-top");
-      head.appendChild(el("span", "phase-num", String(ph.number)));
-      head.appendChild(el("h3", null, ph.title));
-      c.appendChild(head);
-      c.appendChild(el("p", null, ph.blurb));
-      var meta = el("div", "meta");
-      meta.appendChild(el("span", null, ph.lessons.length + " lessons"));
-      if (written) meta.appendChild(el("span", null, written + " written"));
-      c.appendChild(meta);
-      cards.appendChild(c);
+      var card = el("div", "pcard");
+      var b = button("pcard-btn", null, function () { goPhase(ph.id); });
+
+      var top = el("div", "pcard-top");
+      top.appendChild(el("span", "phase-chip", "PHASE " + ph.number));
+      top.appendChild(el("span", "pcard-title", ph.title));
+      top.appendChild(el("span", "pcard-sub", ph.subtitle));
+      top.appendChild(el("span", "pcard-count", ph.lessons.length + " lessons" +
+        (written ? " · " + written + " written" : "")));
+      b.appendChild(top);
+
+      b.appendChild(el("p", "pcard-blurb", ph.blurb));
+      b.appendChild(milestoneStrip(ph.milestone));
+      card.appendChild(b);
+      cards.appendChild(card);
     });
     wrap.appendChild(cards);
     return wrap;
@@ -3458,7 +3494,6 @@ var Widgets = (function () {
       : "Phase " + phases[idx - 1].number + ": " + phases[idx - 1].milestone));
     wrap.appendChild(assumes);
 
-    wrap.appendChild(rulerCard(ph));
 
     var sec = el("div", "section");
     sec.appendChild(el("h2", null, "Lessons"));

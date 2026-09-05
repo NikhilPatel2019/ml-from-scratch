@@ -582,55 +582,6 @@
     railNav.appendChild(ahead);
   }
 
-  /* The ruler moved off the landing page: a 55-tick chart of the whole
-     curriculum belongs where the curriculum is the subject. `only` limits it to
-     one phase for a phase page. */
-  function rulerCard(only) {
-    var shown = only ? [only] : phases;
-    /* the ruler */
-    var card = el("div", "ruler-card");
-    var top = el("div", "ruler-top");
-    var big = el("div", "bignum");
-    big.appendChild(document.createTextNode(totalDone() + " "));
-    big.appendChild(el("span", null, "/ " + TOTAL + " lessons complete"));
-    top.appendChild(big);
-    top.appendChild(el("div", "eyebrow", "phases 1–5, drawn to scale"));
-    card.appendChild(top);
-
-    var ruler = el("div", "ruler");
-    shown.forEach(function (p) {
-      var g = el("div", "rgroup");
-      g.style.flex = p.lessons.length + " 1 0";
-      var ticks = el("div", "ticks");
-      p.lessons.forEach(function (l) {
-        var t = el("span", "tick");
-        t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
-        t.title = l.id + " — " + l.title;
-        ticks.appendChild(t);
-      });
-      g.appendChild(ticks);
-      var lab = el("div", "rlabel", String(p.number));
-      lab.title = "Phase " + p.number + " · " + p.title + " (" + p.lessons.length + " lessons)";
-      g.appendChild(lab);
-      ruler.appendChild(g);
-    });
-    card.appendChild(ruler);
-
-    var legend = el("div", "legend");
-    [["complete", "var(--done)"], ["written and ready", "var(--accent)"], ["still to be written", "var(--rule)"]]
-      .forEach(function (row) {
-        var s = el("span");
-        var i = el("i");
-        i.style.background = row[1];
-        s.appendChild(i);
-        s.appendChild(document.createTextNode(row[0]));
-        legend.appendChild(s);
-      });
-    card.appendChild(legend);
-    return card;
-  }
-
-  /* ---------- continue (landing) ---------- */
   /* ---------- continue — ported from the design canvas ---------- */
 
   function copyButton(text, target, cls) {
@@ -923,32 +874,78 @@
     return wrap;
   }
 
-  /* ---------- path: the shape of the whole thing ---------- */
+  /* ---------- path — ported from the design canvas ---------- */
+
+  /* Every lesson, in order, as one strip. Colour and height carry the
+     same three states, so the shape is readable before the legend is. */
+  function rulerCard() {
+    var card = el("div", "ruler-card");
+
+    var top = el("div", "ruler-top");
+    top.appendChild(el("div", "ruler-k", "All " + TOTAL + " lessons"));
+    var written = writtenLessons();
+    top.appendChild(el("div", "ruler-count",
+      written.length + " written · " + totalDone() + " complete"));
+    card.appendChild(top);
+
+    var ruler = el("div", "ruler");
+    allLessons.forEach(function (l) {
+      var t = el("span", "ptick");
+      t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
+      t.title = l.id + " — " + l.title;
+      ruler.appendChild(t);
+    });
+    card.appendChild(ruler);
+
+    var legend = el("div", "legend");
+    [["written", "var(--accent)"], ["complete", "var(--done)"], ["planned", "var(--rule-firm)"]]
+      .forEach(function (row) {
+        var s = el("span");
+        var i = el("i");
+        i.style.background = row[1];
+        s.appendChild(i);
+        s.appendChild(document.createTextNode(row[0]));
+        legend.appendChild(s);
+      });
+    card.appendChild(legend);
+    return card;
+  }
+
+  function milestoneStrip(text, cls) {
+    var box = el("div", cls || "milestone");
+    box.appendChild(el("span", "milestone-k", "Milestone"));
+    box.appendChild(el("span", "milestone-t", text));
+    return box;
+  }
+
   function buildPath() {
     var wrap = el("div", "wrap is-path");
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow", "the whole curriculum"));
-    hero.appendChild(el("h1", null, "Five phases, " + TOTAL + " lessons"));
-    hero.appendChild(el("p", "lede",
-      "Ordered so that each phase assumes exactly what came before it, and nothing more."));
-    wrap.appendChild(hero);
+    wrap.appendChild(el("div", "hero-eyebrow", "The path"));
+    wrap.appendChild(el("h1", "hero-h1", "Five phases, " + TOTAL + " lessons"));
+    wrap.appendChild(el("p", "hero-lede",
+      "Written in order and meant to be taken in order. " +
+      writtenLessons().length + " of " + TOTAL + " lessons are written; the rest are " +
+      "planned, and their milestones are the part worth reading now."));
     wrap.appendChild(rulerCard());
 
     var cards = el("div", "phase-cards");
-    cards.style.marginTop = "30px";
     phases.forEach(function (ph) {
       var written = ph.lessons.filter(function (l) { return l.written; }).length;
-      var c = button("pcard", null, function () { goPhase(ph.id); });
-      var head = el("div", "pcard-top");
-      head.appendChild(el("span", "phase-num", String(ph.number)));
-      head.appendChild(el("h3", null, ph.title));
-      c.appendChild(head);
-      c.appendChild(el("p", null, ph.blurb));
-      var meta = el("div", "meta");
-      meta.appendChild(el("span", null, ph.lessons.length + " lessons"));
-      if (written) meta.appendChild(el("span", null, written + " written"));
-      c.appendChild(meta);
-      cards.appendChild(c);
+      var card = el("div", "pcard");
+      var b = button("pcard-btn", null, function () { goPhase(ph.id); });
+
+      var top = el("div", "pcard-top");
+      top.appendChild(el("span", "phase-chip", "PHASE " + ph.number));
+      top.appendChild(el("span", "pcard-title", ph.title));
+      top.appendChild(el("span", "pcard-sub", ph.subtitle));
+      top.appendChild(el("span", "pcard-count", ph.lessons.length + " lessons" +
+        (written ? " · " + written + " written" : "")));
+      b.appendChild(top);
+
+      b.appendChild(el("p", "pcard-blurb", ph.blurb));
+      b.appendChild(milestoneStrip(ph.milestone));
+      card.appendChild(b);
+      cards.appendChild(card);
     });
     wrap.appendChild(cards);
     return wrap;
@@ -984,7 +981,6 @@
       : "Phase " + phases[idx - 1].number + ": " + phases[idx - 1].milestone));
     wrap.appendChild(assumes);
 
-    wrap.appendChild(rulerCard(ph));
 
     var sec = el("div", "section");
     sec.appendChild(el("h2", null, "Lessons"));
