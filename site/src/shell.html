@@ -37,9 +37,12 @@
 
 <div class="palette" id="palette" hidden>
   <div class="palette-box" role="dialog" aria-modal="true" aria-label="Search">
-    <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
-           placeholder="Search lessons, notes, terms&hellip;">
+    <div class="palette-head">
+      <span class="palette-caret" aria-hidden="true">&rsaquo;</span>
+      <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
+             placeholder="lessons, exercises, notes, terms&hellip;">
+      <span class="palette-esc" aria-hidden="true">esc</span>
+    </div>
     <div class="palette-results" id="palette-results"></div>
-    <div class="palette-foot">&uarr;&darr; move &middot; &crarr; open &middot; esc close</div>
   </div>
 </div>

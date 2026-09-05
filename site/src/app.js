@@ -337,7 +337,13 @@
     if (paletteIndex >= paletteItems.length) paletteIndex = 0;
     e.list.textContent = "";
     if (!paletteItems.length) {
-      e.list.appendChild(el("div", "palette-empty", "Nothing matches " + (q ? "“" + q + "”" : "")));
+      var empty = el("div", "palette-empty");
+      empty.appendChild(document.createTextNode(
+        q ? "Nothing matches “" + q + "”." : "Nothing to show yet."));
+      empty.appendChild(el("br"));
+      empty.appendChild(document.createTextNode(
+        "Search covers lesson titles, exercise names, section headings and the library."));
+      e.list.appendChild(empty);
       return;
     }
     paletteItems.forEach(function (it, i) {
