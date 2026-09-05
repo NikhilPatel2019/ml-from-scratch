@@ -11,7 +11,6 @@
   var TOTAL = allLessons.length;
 
   var view = { kind: "home", id: null };
-  var LIBRARY = data.library || [];
   var activeTab = {};
 
   var SECTIONS = data.sections || {};

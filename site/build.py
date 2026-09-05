@@ -236,7 +236,6 @@ def main() -> int:
                     les["headings"] = heads
 
     trimmed["sections"] = sections
-    trimmed["library"] = json.loads((SRC / "library.json").read_text(encoding="utf-8"))["items"]
     total = sum(len(p["lessons"]) for p in trimmed["phases"])
     known = {les["id"] for p in trimmed["phases"] for les in p["lessons"]}
 
