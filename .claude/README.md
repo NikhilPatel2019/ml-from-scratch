@@ -25,6 +25,11 @@ If you ever genuinely need an assistant to touch one — say a broken import tha
 has nothing to do with the exercise — override it in your own
 `.claude/settings.local.json`, which is gitignored, and put it back afterwards.
 
+The deny paths use a single leading slash (`Edit(/lessons/**/exercises.py)`),
+which anchors them to the project root. A `./` prefix would anchor to whatever
+directory you happened to start Claude Code in, so the rules would quietly
+protect nothing if you launched from inside `lessons/`.
+
 ## If you use a different assistant
 
 The content that matters is `CLAUDE.md` at the repository root, and it is plain

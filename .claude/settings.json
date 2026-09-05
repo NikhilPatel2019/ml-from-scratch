@@ -12,10 +12,10 @@
       "Bash(git log:*)"
     ],
     "deny": [
-      "Edit(./lessons/**/exercises.py)",
-      "Edit(./lessons/**/stretch.py)",
-      "Edit(./lessons/**/test_exercises.py)",
-      "Edit(./site/index.html)"
+      "Edit(/lessons/**/exercises.py)",
+      "Edit(/lessons/**/stretch.py)",
+      "Edit(/lessons/**/test_exercises.py)",
+      "Edit(/site/index.html)"
     ]
   }
 }
