@@ -83,6 +83,8 @@ def test_5_normalise():
     else:
         raise AssertionError("the zero vector must raise ValueError")
 
+    assert "for " not in inspect.getsource(ex.normalise), "no for loops here"
+
 
 def test_6_cosine_similarity():
     """6  cosine_similarity — direction, with magnitude divided out"""
@@ -93,6 +95,8 @@ def test_6_cosine_similarity():
 
     got = ex.cosine_similarity(np.array([1.0, 1.0]), np.array([1.0, 0.0]))
     assert close(got, 1 / math.sqrt(2)), f"45 degrees -> 0.7071, got {got}"
+
+    assert "for " not in inspect.getsource(ex.cosine_similarity), "no for loops here"
 
 
 def test_7_most_similar():

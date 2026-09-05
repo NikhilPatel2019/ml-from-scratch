@@ -11,8 +11,11 @@ Rules the tests enforce:
   - Exercise 3 must use PLAIN PYTHON with no numpy. sum() is allowed here —
     you already proved you can accumulate by hand in exercise 1, and the point
     of this one is Pythagoras.
-  - Exercises 2 and 4-7 must use NUMPY with NO python `for` loop. If you reach
-    for a loop there, you have missed the point of the lesson.
+  - Exercises 2, 4, 5 and 6 must use NUMPY with NO python `for` loop. If you
+    reach for a loop there, you have missed the point of the lesson.
+  - Exercise 7 is the exception. Walking the library dictionary is the job, and
+    a comprehension is the natural way to do it. What matters there is reusing
+    exercise 6 rather than writing the maths out again.
 """
 
 import numpy as np
