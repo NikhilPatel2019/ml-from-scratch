@@ -366,10 +366,7 @@
     if (!paletteItems.length) {
       var empty = el("div", "palette-empty");
       empty.appendChild(document.createTextNode(
-        q ? "Nothing matches “" + q + "”." : "Nothing to show yet."));
-      empty.appendChild(el("br"));
-      empty.appendChild(document.createTextNode(
-        "Search covers lesson titles, exercise names, section headings and the library."));
+        q ? "Nothing matches “" + q + "”." : "Start typing to search the curriculum."));
       e.list.appendChild(empty);
       return;
     }
@@ -453,22 +450,10 @@
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (evt.metaKey || evt.ctrlKey || evt.altKey) return;
 
-      /* 1-4 jump between the steps of the lesson you are on. */
+      /* 1-3 jump between the steps of the lesson you are on. */
       if (stepJump && /^[1-9]$/.test(evt.key) && stepJump(parseInt(evt.key, 10) - 1)) {
         evt.preventDefault();
-        return;
       }
-      if (evt.key !== "j" && evt.key !== "k") return;
-
-      var links = [].slice.call(document.querySelectorAll("#rail-nav .lesson-link"));
-      if (!links.length) return;
-      evt.preventDefault();
-      var at = links.indexOf(document.activeElement);
-      if (at < 0) at = evt.key === "j" ? -1 : 0;
-      var to = evt.key === "j"
-        ? Math.min(at + 1, links.length - 1)
-        : Math.max(at - 1, 0);
-      links[to].focus();
     });
   }
 
@@ -705,23 +690,19 @@
 
     wrap.appendChild(el("div", "hero-eyebrow", "Setup"));
     wrap.appendChild(el("h1", "hero-h1", "How this works, and where the code lives"));
-    var lede = el("p", "hero-lede");
-    lede.style.maxWidth = "66ch";
-    lede.textContent = "Read once, then get out of your way. This page is linked from " +
-      "the rail and shown automatically on a first visit.";
-    wrap.appendChild(lede);
+    wrap.appendChild(el("p", "hero-lede setup-lede",
+      "Read once, then get out of your way."));
 
     wrap.appendChild(sectionKey("The loop"));
     var steps = el("div", "steps");
     [
-      ["01", ["Read the lesson on this site. Poke at the demos, but budget roughly " +
-              "20% of your time here."]],
-      ["02", ["Write the exercises in your repo. This is the 80%, and the only part " +
-              "that transfers."]],
-      ["03", ["Run ", { code: "progress " + id }, " until every test passes. Compare " +
-              "against the walkthrough only afterwards."]],
-      ["04", ["Answer the closing questions in ", { code: "notes.md" }, ", in your own " +
-              "words. Six months from now this is the most valuable file in the repo."]]
+      ["01", ["Read the lesson. Watch the linked videos first. Budget roughly 20% " +
+              "of your time here."]],
+      ["02", ["Write the exercises in your repo and tick them off as they pass. This " +
+              "is the 80%, and the only part that transfers."]],
+      ["03", ["Compare against the walkthrough — the solution and the reasoning for " +
+              "each exercise, once yours works. Then answer the closing questions in ",
+              { code: "notes.md" }, ", in your own words."]]
     ].forEach(function (row) {
       var st = el("div", "step");
       st.appendChild(el("span", "step-n", row[0]));
@@ -750,21 +731,21 @@
     var card = el("div", "progcard");
     var lead = el("p");
     lead.appendChild(sentence([
-      "Test results come from ",
+      "Ticks are stored in this browser only, so export before you switch machines. " +
+      "When the runner writes ",
       { code: "progress " + id + " --json > site/progress.json" },
-      ". Anything you tick by hand is stored in this browser only — export it before " +
-      "you switch machines."
+      ", real test results will take over from the hand ticks."
     ]));
     card.appendChild(lead);
 
     var row = el("div", "progrow");
     var exp = button("btn-quiet", "Export my progress", function () {
       var blob = JSON.stringify({
-        version: 1,
-        done: Object.keys(done),
+        version: 2,
+        checked: checked,
         seenSteps: seenSteps,
         progress: progressData
-      });
+      }, null, 2);
       var reset = function () { exp.textContent = "Export my progress"; exp.classList.remove("ok"); };
       try {
         navigator.clipboard.writeText(blob).then(function () {
@@ -798,9 +779,9 @@
     if (clearing) {
       var box = el("div", "confirm");
       var p = el("p");
-      p.appendChild(el("b", null, "Clear every hand-ticked lesson and step? "));
+      p.appendChild(el("b", null, "Clear every tick? "));
       p.appendChild(document.createTextNode(
-        "This cannot be undone, and it will not touch your repo or your test results. " +
+        "This cannot be undone, and it will not touch your repo. " +
         "Export first if you have not."));
       box.appendChild(p);
       var crow = el("div", "confirm-row");
@@ -825,8 +806,7 @@
     wrap.appendChild(sectionKey("Keyboard"));
     var keys = el("div", "keys");
     [["⌘K", "search everything"],
-     ["1–4", "jump to a lesson step"],
-     ["j / k", "move down and up the rail"],
+     ["1–3", "jump to a lesson step"],
      ["esc", "close search"]].forEach(function (k) {
       var r = el("div", "keyrow");
       r.appendChild(el("kbd", null, k[0]));
