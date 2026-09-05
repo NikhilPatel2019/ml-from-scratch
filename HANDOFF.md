@@ -1,7 +1,6 @@
 # Restructure brief — ML From Scratch site
 
-> **Status.** Steps 1–6 are done. Remaining: **7** (protect the walkthrough) and
-> **8** (small fixes, of which the dark-mode toggle already landed).
+> **Status.** All eight steps are done.
 >
 > Two deviations from the order as written, both deliberate: step 5 was pulled
 > ahead of 3 and 4 because all three display test state, and building them
@@ -195,7 +194,7 @@ red, and what to type next.
 
 ---
 
-## Step 7 — Protect the walkthrough
+## Step 7 — Protect the walkthrough  ✅ done
 
 The curriculum's stated principle is that nobody hands you the answer. Individual solutions are
 correctly collapsed behind a deliberate click — apply the same friction one level up: entering step 3
@@ -206,7 +205,7 @@ through.
 
 ---
 
-## Step 8 — Small fixes
+## Step 8 — Small fixes  ✅ done
 
 - **⌘K search** over lesson ids, titles, section headings, and library items. Highest value per line
   on this list — six months in, the question is "where did the chain rule bit live?", not "what is
@@ -232,11 +231,11 @@ through.
 
 ## Review checklist
 
-- [ ] Every clickable lesson leads to real content.
-- [ ] Nothing in the UI is time-based.
+- [x] Every clickable lesson leads to real content.
+- [x] Nothing in the UI is time-based.
 - [x] Home page's largest element is the next action.
 - [x] No prose explains the order of steps.
 - [x] Progress shown = tests passed, or explicitly labelled as a manual override.
 - [x] Site works with `progress.json` missing.
-- [ ] Light and dark both switchable and both legible.
-- [ ] Still one self-contained `index.html` from `python build.py`.
+- [x] Light and dark both switchable and both legible.
+- [x] Still one self-contained `index.html` from `python build.py`.

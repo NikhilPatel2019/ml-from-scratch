@@ -1065,6 +1065,101 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 
 .checkq { max-width: 64ch; padding-left: 1.3em; }
 .checkq li { margin-top: .55em; }
+
+/* ============================================================
+   walkthrough gate (HANDOFF step 7)
+   ============================================================ */
+.gate {
+  margin: 1.5em 0; padding: 26px 28px; border-radius: 12px;
+  background: var(--active-wash);
+  border: 1px solid color-mix(in srgb, var(--active) 32%, transparent);
+  max-width: 640px;
+}
+.gate h2 { font-size: 24px; margin-top: 8px; letter-spacing: -.015em; }
+.gate-body { margin: 14px 0 0; font-size: 15px; line-height: 1.65; color: var(--ink-2); max-width: 60ch; }
+.gate .ctrls { margin-top: 20px; }
+
+/* ============================================================
+   search palette (HANDOFF step 8)
+   ============================================================ */
+.searchbtn { gap: 8px; }
+.searchbtn kbd {
+  font-family: var(--f-mono); font-size: 10px; color: var(--ink-3);
+  border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px;
+  background: var(--surface-2);
+}
+.palette {
+  position: absolute; inset: 0; z-index: 60;
+  background: color-mix(in srgb, var(--ink) 34%, transparent);
+  display: flex; justify-content: center; padding: 12vh 20px 20px;
+  min-height: 100vh;
+}
+.palette[hidden] { display: none !important; }
+.palette-box {
+  width: 100%; max-width: 560px; height: max-content;
+  background: var(--surface); border: 1px solid var(--rule-firm);
+  border-radius: 12px; box-shadow: var(--shadow); overflow: hidden;
+}
+.palette-box input {
+  width: 100%; border: 0; border-bottom: 1px solid var(--rule);
+  background: none; color: var(--ink); padding: 15px 18px;
+  font-family: var(--f-body); font-size: 15.5px; outline: none;
+}
+.palette-results { max-height: 46vh; overflow-y: auto; padding: 6px; }
+.palette-row {
+  display: flex; align-items: baseline; gap: 11px; width: 100%;
+  background: none; border: 0; cursor: pointer; text-align: left;
+  padding: 9px 12px; border-radius: 8px; font-family: inherit;
+}
+.palette-row.on { background: var(--accent-wash); }
+.palette-kind {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--ink-3); flex: none;
+  width: 62px; overflow: hidden; text-overflow: ellipsis;
+}
+.palette-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.palette-label { font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.palette-sub { font-size: 12px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.palette-row.on .palette-label { color: var(--accent-ink); }
+.palette-empty { padding: 18px 14px; font-size: 14px; color: var(--ink-3); }
+.palette-foot {
+  padding: 9px 14px; border-top: 1px solid var(--rule); background: var(--surface-2);
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3);
+}
+
+/* ============================================================
+   read-only rail state, and the inline sections control
+   ============================================================ */
+.rowstate {
+  width: 15px; height: 15px; flex: none; margin: 8px 0 0;
+  border-radius: 4px; border: 1.5px solid var(--rule); background: var(--surface-2);
+  position: relative;
+}
+.rowstate[data-done="1"] { background: var(--done); border-color: var(--done); }
+.rowstate[data-done="1"]::after {
+  content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px;
+  border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(42deg);
+}
+/* A tick means achieved, not cancelled. */
+.lesson-row.is-done .ltitle { color: var(--ink-3); text-decoration: none; }
+
+.toc-inline { display: none; margin: 0 0 24px; }
+.toc-inline > summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3);
+  border: 1px solid var(--rule); border-radius: 7px; padding: 6px 11px;
+  background: var(--surface);
+}
+.toc-inline > summary::-webkit-details-marker { display: none; }
+.toc-inline > summary::before {
+  content: ""; width: 7px; height: 7px; flex: none;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(-45deg); transition: transform .18s;
+}
+.toc-inline[open] > summary::before { transform: rotate(45deg); }
+.toc-inline > summary:hover { color: var(--ink); border-color: var(--ink-3); }
+.toc-inline .toc-list { margin-top: 8px; padding-left: 2px; }
+@media (max-width: 1280px) { .toc-inline { display: block; } }
 </style>
 
 <header class="topbar">
@@ -1077,6 +1172,9 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
     <b id="stat-count" class="mono">0/55</b>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
   </div>
+  <button class="iconbtn searchbtn" id="searchbtn" aria-label="Search">
+    <span>Search</span><kbd>&#8984;K</kbd>
+  </button>
   <div class="themetoggle" role="group" aria-label="Colour theme">
     <button type="button" id="theme-light" data-theme-set="light">light</button>
     <button type="button" id="theme-dark" data-theme-set="dark">dark</button>
@@ -1095,9 +1193,18 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
   <aside class="toc" id="toc" aria-label="On this page" hidden></aside>
 </div>
 
+<div class="palette" id="palette" hidden>
+  <div class="palette-box" role="dialog" aria-modal="true" aria-label="Search">
+    <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Search lessons, sections, exercises, library&hellip;">
+    <div class="palette-results" id="palette-results"></div>
+    <div class="palette-foot">&uarr;&darr; move &middot; &crarr; open &middot; esc close</div>
+  </div>
+</div>
+
 <script type="application/json" id="curriculum-data">
 
-{"phases":[{"id":"p1","number":1,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"1.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available","written":true,"exercises":[{"name":"dot_loop","summary":"the dot product, by hand","optional":false},{"name":"dot_numpy","summary":"the same thing, vectorised","optional":false},{"name":"magnitude_loop","summary":"magnitude, by hand","optional":false},{"name":"magnitude","summary":"magnitude, vectorised","optional":false},{"name":"normalise","summary":"normalise","optional":false},{"name":"cosine_similarity","summary":"cosine similarity","optional":false},{"name":"most_similar","summary":"the payoff: a two-line search engine","optional":false}]},{"id":"1.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned","written":false},{"id":"1.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned","written":false},{"id":"1.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned","written":false},{"id":"1.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned","written":false},{"id":"1.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned","written":false},{"id":"1.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned","written":false},{"id":"1.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned","written":false},{"id":"1.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned","written":false},{"id":"1.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned","written":false},{"id":"1.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned","written":false},{"id":"1.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned","written":false},{"id":"1.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned","written":false}]},{"id":"p2","number":2,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"2.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned","written":false},{"id":"2.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned","written":false},{"id":"2.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned","written":false},{"id":"2.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned","written":false},{"id":"2.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned","written":false},{"id":"2.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned","written":false},{"id":"2.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned","written":false},{"id":"2.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned","written":false},{"id":"2.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned","written":false},{"id":"2.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned","written":false},{"id":"2.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned","written":false},{"id":"2.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 1 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned","written":false},{"id":"2.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned","written":false}]},{"id":"p3","number":3,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"3.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned","written":false},{"id":"3.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned","written":false},{"id":"3.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned","written":false},{"id":"3.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned","written":false},{"id":"3.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned","written":false},{"id":"3.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned","written":false},{"id":"3.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned","written":false},{"id":"3.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned","written":false},{"id":"3.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned","written":false},{"id":"3.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned","written":false},{"id":"3.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned","written":false},{"id":"3.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned","written":false},{"id":"3.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned","written":false},{"id":"3.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned","written":false}]},{"id":"p4","number":4,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"4.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned","written":false},{"id":"4.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned","written":false},{"id":"4.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned","written":false},{"id":"4.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned","written":false},{"id":"4.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned","written":false},{"id":"4.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned","written":false},{"id":"4.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned","written":false},{"id":"4.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned","written":false},{"id":"4.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned","written":false},{"id":"4.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 1.1 comes back around.","status":"planned","written":false},{"id":"4.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned","written":false},{"id":"4.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned","written":false}]},{"id":"p5","number":5,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"5.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned","written":false},{"id":"5.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned","written":false},{"id":"5.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned","written":false}]}],"sections":{"1.1":["brief","lesson","exercises","walkthrough","closeout","resources"]},"library":[{"id":"3blue1brown-essence-of-linear-algebra","kind":"video","title":"3Blue1Brown, Essence of Linear Algebra","url":"https://www.3blue1brown.com/topics/linear-algebra","lessons":["1.1","1.2","1.4"],"phases":[1,3]},{"id":"3blue1brown-essence-of-calculus","kind":"video","title":"3Blue1Brown, Essence of Calculus","url":"https://www.3blue1brown.com/topics/calculus","lessons":["1.6","1.7","1.8"],"phases":[1,3]},{"id":"3blue1brown-neural-networks-includes-an-outs","kind":"video","title":"3Blue1Brown, Neural Networks (includes an outstanding attention/transformer series)","url":"https://www.3blue1brown.com/topics/neural-networks","lessons":[],"phases":[1,3]},{"id":"statquest-with-josh-starmer","kind":"video","title":"StatQuest with Josh Starmer","url":"https://www.youtube.com/@statquest","lessons":[],"phases":[2]},{"id":"andrej-karpathy-neural-networks-zero-to-hero","kind":"book","title":"Andrej Karpathy, Neural Networks: Zero to Hero","url":"https://karpathy.ai/zero-to-hero.html","lessons":[],"phases":[3]},{"id":"dive-into-deep-learning","kind":"book","title":"Dive into Deep Learning","url":"https://d2l.ai","lessons":[],"phases":[3]},{"id":"jay-alammar-the-illustrated-transformer","kind":"book","title":"Jay Alammar, The Illustrated Transformer","url":"https://jalammar.github.io/illustrated-transformer/","lessons":[],"phases":[4]},{"id":"the-annotated-transformer-harvard-nlp","kind":"book","title":"The Annotated Transformer, Harvard NLP","url":"http://nlp.seas.harvard.edu/annotated-transformer/","lessons":[],"phases":[4]},{"id":"sebastian-raschka-s-blog","kind":"article","title":"Sebastian Raschka's blog","url":"https://sebastianraschka.com/blog/","lessons":[],"phases":[4]},{"id":"distill-pub","kind":"interactive","title":"Distill.pub","url":"https://distill.pub","lessons":[],"phases":[3,4]},{"id":"chris-olah-s-blog","kind":"article","title":"Chris Olah's blog","url":"https://colah.github.io","lessons":[],"phases":[3,4]},{"id":"deep-learning-goodfellow-bengio-and-courvill","kind":"book","title":"Deep Learning, Goodfellow, Bengio and Courville","url":"https://www.deeplearningbook.org","lessons":[],"phases":[3,4]},{"id":"mlu-explain-amazon-s-machine-learning-univer","kind":"interactive","title":"MLU-Explain, Amazon's Machine Learning University","url":"https://mlu-explain.github.io","lessons":["2.2","2.4","2.5","2.7"],"phases":[2]},{"id":"sebastian-raschka-build-a-large-language-mod","kind":"book","title":"Sebastian Raschka, Build a Large Language Model (From Scratch)","url":"https://sebastianraschka.com/llms-from-scratch/","lessons":[],"phases":[4]},{"id":"vizuara-building-llms-from-scratch","kind":"video","title":"Vizuara, Building LLMs from Scratch","url":"https://www.youtube.com/@vizuara","lessons":[],"phases":[4]},{"id":"chip-huyen-ai-engineering-building-applicati","kind":"repo","title":"Chip Huyen, AI Engineering: Building Applications with Foundation Models (2025)","url":"https://github.com/chiphuyen/aie-book","lessons":[],"phases":[4,5]},{"id":"jamwithai-production-agentic-rag-course","kind":"repo","title":"jamwithai/production-agentic-rag-course","url":"https://github.com/jamwithai/production-agentic-rag-course","lessons":[],"phases":[4,5]},{"id":"fareedkhan-dev-all-agentic-architectures","kind":"repo","title":"FareedKhan-dev/all-agentic-architectures","url":"https://github.com/FareedKhan-dev/all-agentic-architectures","lessons":[],"phases":[4,5]},{"id":"kaggle-learn-and-competitions","kind":"course","title":"Kaggle Learn and competitions","url":"https://www.kaggle.com/learn","lessons":[],"phases":[2]},{"id":"papers-with-code","kind":"article","title":"Papers with Code","url":"https://paperswithcode.com","lessons":[],"phases":[2]},{"id":"andrew-ng-machine-learning-specialization-de","kind":"course","title":"Andrew Ng, Machine Learning Specialization (DeepLearning.AI)","url":"https://www.deeplearning.ai/specializations/machine-learning","lessons":[],"phases":[1,2]},{"id":"nptel-artificial-intelligence-search-methods","kind":"course","title":"NPTEL, Artificial Intelligence: Search Methods for Problem Solving — Prof. Deepak Khemani, IIT Madras","url":"https://onlinecourses.nptel.ac.in/noc26_cs182/","lessons":[],"phases":[]},{"id":"keith-galli-complete-python-numpy-tutorial","kind":"video","title":"Keith Galli, Complete Python NumPy Tutorial","url":"https://github.com/KeithGalli/NumPy","lessons":["1.1"],"phases":[1]}]}
+{"phases":[{"id":"p1","number":1,"title":"Foundations","subtitle":"the maths, built in code","blurb":"All of machine learning stands on four ideas: vectors, matrix multiplication, the derivative, and probability. Learn these properly and the rest of the field is recombination. We learn them by writing them, not by reading proofs.","milestone":"Minimise a function you have never seen before, from scratch, and explain every line.","lessons":[{"id":"1.1","title":"Vectors and the dot product","summary":"Python and NumPy essentials, what a vector really is, and the single operation that everything else is built from.","status":"available","written":true,"exercises":[{"name":"dot_loop","summary":"the dot product, by hand","optional":false},{"name":"dot_numpy","summary":"the same thing, vectorised","optional":false},{"name":"magnitude_loop","summary":"magnitude, by hand","optional":false},{"name":"magnitude","summary":"magnitude, vectorised","optional":false},{"name":"normalise","summary":"normalise","optional":false},{"name":"cosine_similarity","summary":"cosine similarity","optional":false},{"name":"most_similar","summary":"the payoff: a two-line search engine","optional":false}],"headings":[{"step":"lesson","text":"Why we start here"},{"step":"lesson","text":"The Python you need"},{"step":"lesson","text":"A vector is a list of numbers"},{"step":"lesson","text":"The dot product"},{"step":"lesson","text":"The flaw, and the fix"},{"step":"lesson","text":"Why NumPy exists"},{"step":"exercises","text":"What the file looks like"},{"step":"exercises","text":"Then run the benchmark"},{"step":"exercises","text":"Optional: the stretch"},{"step":"exercises","text":"Solutions"},{"step":"walkthrough","text":"Exercise walkthrough"},{"step":"closeout","text":"You are done when"},{"step":"closeout","text":"Write your notes"},{"step":"resources","text":"What to watch"}]},{"id":"1.2","title":"Vector geometry","summary":"Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.","status":"planned","written":false},{"id":"1.3","title":"Matrices as data","summary":"Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.","status":"planned","written":false},{"id":"1.4","title":"Matrices as transformations","summary":"Matrix multiplication as a function that moves space. This is the one that makes neural networks click.","status":"planned","written":false},{"id":"1.5","title":"Systems, inverses, and rank","summary":"Solving Ax = b, the cases where you cannot, and what 'singular' actually means.","status":"planned","written":false},{"id":"1.6","title":"Functions and slopes","summary":"The derivative discovered numerically, in code, before a single symbol of calculus notation.","status":"planned","written":false},{"id":"1.7","title":"Derivative rules","summary":"Power, product and quotient rules — and the handful of derivatives you will actually reuse forever.","status":"planned","written":false},{"id":"1.8","title":"The chain rule","summary":"The most important single fact in deep learning. Backpropagation is the chain rule and nothing more.","status":"planned","written":false},{"id":"1.9","title":"Partial derivatives and the gradient","summary":"Calculus in many dimensions, and what it means to point downhill in 4096-dimensional space.","status":"planned","written":false},{"id":"1.10","title":"Gradient descent","summary":"Implement it, watch it converge, then deliberately break it and learn why it diverged.","status":"planned","written":false},{"id":"1.11","title":"Probability I","summary":"Random variables, distributions, expectation and variance — the language uncertainty is written in.","status":"planned","written":false},{"id":"1.12","title":"Probability II","summary":"Bayes' theorem, likelihood, and the derivation of where loss functions actually come from.","status":"planned","written":false},{"id":"1.13","title":"The statistics you need","summary":"The normal distribution, sampling, correlation, and the traps that catch practitioners.","status":"planned","written":false}]},{"id":"p2","number":2,"title":"Classical Machine Learning","subtitle":"where every core concept is easiest to see","blurb":"Most industry ML is still this. It is also where loss, overfitting, evaluation and regularisation are visible in two dimensions, before deep learning hides them behind a billion parameters.","milestone":"Take a raw, messy CSV to a validated and honestly-evaluated model, and defend every choice you made.","lessons":[{"id":"2.1","title":"What 'learning' actually is","summary":"The universal recipe underneath every model in this repository: data, model, loss, optimiser.","status":"planned","written":false},{"id":"2.2","title":"Linear regression from scratch","summary":"Both routes: the closed-form solution, and gradient descent. Then why anyone bothers with the second.","status":"planned","written":false},{"id":"2.3","title":"Making training work","summary":"Feature scaling, learning rates, and how to debug a model that will not converge.","status":"planned","written":false},{"id":"2.4","title":"Logistic regression","summary":"The sigmoid, decision boundaries, and cross-entropy loss — classification from first principles.","status":"planned","written":false},{"id":"2.5","title":"Overfitting and the bias-variance tradeoff","summary":"Train/validation/test, cross-validation, and why your model looked brilliant right up until it shipped.","status":"planned","written":false},{"id":"2.6","title":"Regularisation","summary":"L1 and L2, and a real intuition for why penalising large weights makes a model generalise.","status":"planned","written":false},{"id":"2.7","title":"Evaluation","summary":"Accuracy is a trap. Precision, recall, F1, ROC-AUC and confusion matrices, and when each one lies.","status":"planned","written":false},{"id":"2.8","title":"scikit-learn","summary":"Now that you have built it by hand, learn the tool everyone actually uses.","status":"planned","written":false},{"id":"2.9","title":"Trees, forests, and gradient boosting","summary":"Decision trees to random forests to XGBoost and LightGBM — still the champions on tabular data.","status":"planned","written":false},{"id":"2.10","title":"Feature engineering","summary":"Encoding, missing data, and data leakage — the number one bug in real-world machine learning.","status":"planned","written":false},{"id":"2.11","title":"Clustering","summary":"k-means, hierarchical clustering and DBSCAN: finding structure with no labels at all.","status":"planned","written":false},{"id":"2.12","title":"PCA and dimensionality reduction","summary":"Where the linear algebra from Phase 1 pays off spectacularly, and eigenvectors finally earn their keep.","status":"planned","written":false},{"id":"2.13","title":"Capstone: end to end","summary":"A real, messy dataset from raw file to evaluated model, with every decision written down and justified.","status":"planned","written":false}]},{"id":"p3","number":3,"title":"Deep Learning","subtitle":"build the engine before you drive it","blurb":"You will write your own automatic differentiation engine — roughly 150 lines that explain the whole of PyTorch — and train a network on it before touching a framework.","milestone":"An autograd engine you wrote yourself, training a network you designed yourself.","lessons":[{"id":"3.1","title":"The perceptron, and why linear models fail","summary":"XOR: the four data points that stalled an entire field for a decade.","status":"planned","written":false},{"id":"3.2","title":"Multi-layer networks","summary":"Activations, hidden layers, and the universal approximation theorem in plain language.","status":"planned","written":false},{"id":"3.3","title":"Backpropagation by hand","summary":"Derive it on a three-neuron network, on paper, until there is no magic left in it.","status":"planned","written":false},{"id":"3.4","title":"Build an autograd engine","summary":"The crown jewel of this phase. A computation graph, a backward pass, and everything PyTorch does, in miniature.","status":"planned","written":false},{"id":"3.5","title":"Train a network on your own engine","summary":"Your code, your gradients, a real classification problem, and a loss curve that goes down.","status":"planned","written":false},{"id":"3.6","title":"PyTorch","summary":"Tensors, autograd, nn.Module and the canonical training loop — now with nothing left to take on faith.","status":"planned","written":false},{"id":"3.7","title":"Optimisers","summary":"SGD, momentum, RMSProp, Adam — and precisely what problem each one was invented to fix.","status":"planned","written":false},{"id":"3.8","title":"Making deep networks trainable","summary":"Initialisation, vanishing and exploding gradients, batch normalisation and layer normalisation.","status":"planned","written":false},{"id":"3.9","title":"Regularisation in deep learning","summary":"Dropout, weight decay, early stopping and augmentation — keeping a large model honest.","status":"planned","written":false},{"id":"3.10","title":"Convolutional networks","summary":"Build one from scratch, understand what a filter learns, then classify real images.","status":"planned","written":false},{"id":"3.11","title":"Transfer learning","summary":"Why almost nobody trains from scratch any more, and how to fine-tune responsibly.","status":"planned","written":false},{"id":"3.12","title":"Sequence models","summary":"RNNs and LSTMs, and a precise account of why they break on long sequences.","status":"planned","written":false},{"id":"3.13","title":"Embeddings","summary":"word2vec, and representation learning as the central idea of modern artificial intelligence.","status":"planned","written":false},{"id":"3.14","title":"Training at scale","summary":"GPUs, batching, mixed precision and checkpointing — the engineering that makes big models possible.","status":"planned","written":false}]},{"id":"p4","number":4,"title":"Transformers and LLMs","subtitle":"from attention to a working GPT","blurb":"Attention derived rather than memorised, a byte-pair tokeniser you implement yourself, and a small GPT written line by line and trained on a corpus you choose.","milestone":"A working GPT you wrote yourself, generating text.","lessons":[{"id":"4.1","title":"Attention from first principles","summary":"Derived, not memorised. Queries, keys and values as a solution to a problem you will feel first.","status":"planned","written":false},{"id":"4.2","title":"Self-attention and multi-head attention","summary":"Why several attention heads beat one, and how position gets encoded into an order-blind architecture.","status":"planned","written":false},{"id":"4.3","title":"The transformer block","summary":"Residual connections, normalisation, feed-forward layers, and encoder versus decoder.","status":"planned","written":false},{"id":"4.4","title":"Tokenisation","summary":"Implement byte-pair encoding, then discover why so many odd model behaviours start right here.","status":"planned","written":false},{"id":"4.5","title":"Build GPT from scratch","summary":"The full architecture, written line by line and trained on a small corpus until it generates text.","status":"planned","written":false},{"id":"4.6","title":"Pretraining and scaling laws","summary":"What 'emergence' does and does not mean, and how compute, data and parameters trade off.","status":"planned","written":false},{"id":"4.7","title":"Fine-tuning","summary":"Full fine-tuning, LoRA and PEFT, and instruction tuning — adapting a model you did not train.","status":"planned","written":false},{"id":"4.8","title":"Alignment","summary":"RLHF and DPO: how a text predictor becomes something you can hold a conversation with.","status":"planned","written":false},{"id":"4.9","title":"Inference","summary":"Sampling, temperature, top-k and top-p, the KV cache, and quantisation.","status":"planned","written":false},{"id":"4.10","title":"Embeddings, vector search and RAG","summary":"Retrieval done properly rather than cargo-culted — and this is where lesson 1.1 comes back around.","status":"planned","written":false},{"id":"4.11","title":"Evaluations","summary":"The most underrated skill in applied AI, and the one that separates demos from products.","status":"planned","written":false},{"id":"4.12","title":"Agents and tool use","summary":"The current frontier: planning, tool calling, and where it genuinely does not work yet.","status":"planned","written":false}]},{"id":"p5","number":5,"title":"Production and Specialisation","subtitle":"models that survive contact with users","blurb":"A trained model is roughly ten percent of a machine learning product. This phase covers the other ninety, then you choose a direction to go deep in.","milestone":"A model you built, deployed, monitored, and can reason about when it degrades.","lessons":[{"id":"5.1","title":"Serving and inference in production","summary":"Latency, throughput, cost, batching and the tradeoffs nobody mentions in tutorials.","status":"planned","written":false},{"id":"5.2","title":"Monitoring and drift","summary":"Models decay silently. Detecting it, measuring it, and deciding when to retrain.","status":"planned","written":false},{"id":"5.3","title":"Reproducibility and experiment tracking","summary":"Versioning data, code and weights so that a result from six months ago can be rebuilt.","status":"planned","written":false}]}],"sections":{"1.1":["brief","lesson","exercises","walkthrough","closeout","resources"]},"library":[{"id":"3blue1brown-essence-of-linear-algebra","kind":"video","title":"3Blue1Brown, Essence of Linear Algebra","url":"https://www.3blue1brown.com/topics/linear-algebra","lessons":["1.1","1.2","1.4"],"phases":[1,3]},{"id":"3blue1brown-essence-of-calculus","kind":"video","title":"3Blue1Brown, Essence of Calculus","url":"https://www.3blue1brown.com/topics/calculus","lessons":["1.6","1.7","1.8"],"phases":[1,3]},{"id":"3blue1brown-neural-networks-includes-an-outs","kind":"video","title":"3Blue1Brown, Neural Networks (includes an outstanding attention/transformer series)","url":"https://www.3blue1brown.com/topics/neural-networks","lessons":[],"phases":[1,3]},{"id":"statquest-with-josh-starmer","kind":"video","title":"StatQuest with Josh Starmer","url":"https://www.youtube.com/@statquest","lessons":[],"phases":[2]},{"id":"andrej-karpathy-neural-networks-zero-to-hero","kind":"book","title":"Andrej Karpathy, Neural Networks: Zero to Hero","url":"https://karpathy.ai/zero-to-hero.html","lessons":[],"phases":[3]},{"id":"dive-into-deep-learning","kind":"book","title":"Dive into Deep Learning","url":"https://d2l.ai","lessons":[],"phases":[3]},{"id":"jay-alammar-the-illustrated-transformer","kind":"book","title":"Jay Alammar, The Illustrated Transformer","url":"https://jalammar.github.io/illustrated-transformer/","lessons":[],"phases":[4]},{"id":"the-annotated-transformer-harvard-nlp","kind":"book","title":"The Annotated Transformer, Harvard NLP","url":"http://nlp.seas.harvard.edu/annotated-transformer/","lessons":[],"phases":[4]},{"id":"sebastian-raschka-s-blog","kind":"article","title":"Sebastian Raschka's blog","url":"https://sebastianraschka.com/blog/","lessons":[],"phases":[4]},{"id":"distill-pub","kind":"interactive","title":"Distill.pub","url":"https://distill.pub","lessons":[],"phases":[3,4]},{"id":"chris-olah-s-blog","kind":"article","title":"Chris Olah's blog","url":"https://colah.github.io","lessons":[],"phases":[3,4]},{"id":"deep-learning-goodfellow-bengio-and-courvill","kind":"book","title":"Deep Learning, Goodfellow, Bengio and Courville","url":"https://www.deeplearningbook.org","lessons":[],"phases":[3,4]},{"id":"mlu-explain-amazon-s-machine-learning-univer","kind":"interactive","title":"MLU-Explain, Amazon's Machine Learning University","url":"https://mlu-explain.github.io","lessons":["2.2","2.4","2.5","2.7"],"phases":[2]},{"id":"sebastian-raschka-build-a-large-language-mod","kind":"book","title":"Sebastian Raschka, Build a Large Language Model (From Scratch)","url":"https://sebastianraschka.com/llms-from-scratch/","lessons":[],"phases":[4]},{"id":"vizuara-building-llms-from-scratch","kind":"video","title":"Vizuara, Building LLMs from Scratch","url":"https://www.youtube.com/@vizuara","lessons":[],"phases":[4]},{"id":"chip-huyen-ai-engineering-building-applicati","kind":"repo","title":"Chip Huyen, AI Engineering: Building Applications with Foundation Models (2025)","url":"https://github.com/chiphuyen/aie-book","lessons":[],"phases":[4,5]},{"id":"jamwithai-production-agentic-rag-course","kind":"repo","title":"jamwithai/production-agentic-rag-course","url":"https://github.com/jamwithai/production-agentic-rag-course","lessons":[],"phases":[4,5]},{"id":"fareedkhan-dev-all-agentic-architectures","kind":"repo","title":"FareedKhan-dev/all-agentic-architectures","url":"https://github.com/FareedKhan-dev/all-agentic-architectures","lessons":[],"phases":[4,5]},{"id":"kaggle-learn-and-competitions","kind":"course","title":"Kaggle Learn and competitions","url":"https://www.kaggle.com/learn","lessons":[],"phases":[2]},{"id":"papers-with-code","kind":"article","title":"Papers with Code","url":"https://paperswithcode.com","lessons":[],"phases":[2]},{"id":"andrew-ng-machine-learning-specialization-de","kind":"course","title":"Andrew Ng, Machine Learning Specialization (DeepLearning.AI)","url":"https://www.deeplearning.ai/specializations/machine-learning","lessons":[],"phases":[1,2]},{"id":"nptel-artificial-intelligence-search-methods","kind":"course","title":"NPTEL, Artificial Intelligence: Search Methods for Problem Solving — Prof. Deepak Khemani, IIT Madras","url":"https://onlinecourses.nptel.ac.in/noc26_cs182/","lessons":[],"phases":[]},{"id":"keith-galli-complete-python-numpy-tutorial","kind":"video","title":"Keith Galli, Complete Python NumPy Tutorial","url":"https://github.com/KeithGalli/NumPy","lessons":["1.1"],"phases":[1]}]}
 
 </script>
 
@@ -2517,6 +2624,272 @@ var Widgets = (function () {
     return wrap;
   }
 
+  /* ---------- protect the walkthrough (HANDOFF step 7) ----------
+     The curriculum's stated principle is that nobody hands you the answer.
+     Individual solutions are already collapsed behind a deliberate click; this
+     applies the same friction one level up. Friction, not a lock — and it is
+     not remembered, so a fresh visit asks again. */
+  var unlockedWalkthrough = {};
+
+  function gateWalkthrough(l) {
+    if (isComplete(l)) return false;          // done means done: open straight through
+    return !unlockedWalkthrough[l.id];
+  }
+
+  function walkthroughGate(l, openAnyway, backToExercises) {
+    var lt = lessonTests(l.id);
+    var red = lt
+      ? lt.exercises.filter(function (e) { return e.status !== "pass"; }).length
+      : null;
+
+    var box = el("div", "gate");
+    box.appendChild(el("div", "eyebrow", "before you read this"));
+    box.appendChild(el("h2", null, red === null
+      ? "You have not run the tests yet."
+      : red + (red === 1 ? " exercise is" : " exercises are") + " still red."));
+    box.appendChild(el("p", "gate-body",
+      "Recognising correct code is a different skill from producing it, and only one of " +
+      "them transfers. Read this now and it will feel like understanding; it will not " +
+      "survive the week."));
+    box.appendChild(el("p", "gate-body",
+      "If you are stuck, the useful moves are re-reading the docstring, printing the " +
+      "intermediate values, or solving a smaller version on paper."));
+
+    var ctrls = el("div", "ctrls");
+    ctrls.appendChild(button("btn", "Back to the exercises", backToExercises));
+    ctrls.appendChild(button("btn ghost", "Open it anyway", openAnyway));
+    box.appendChild(ctrls);
+    return box;
+  }
+
+  /* ---------- progress export / import (HANDOFF step 8) ----------
+     Progress is device-local with no way to carry it to a new laptop, which
+     makes "clear my progress" the only irreversible action in the product. */
+  function transferBox() {
+    var wrap = el("details", "solution");
+    wrap.appendChild(el("summary", null, "Move your progress to another machine"));
+    var body = el("div");
+    body.style.padding = "14px 16px";
+    body.appendChild(el("p", "why",
+      "Everything this site remembers lives in this browser. Copy the block below to " +
+      "carry it elsewhere, or paste one in to restore it."));
+
+    var ta = document.createElement("textarea");
+    ta.rows = 5;
+    ta.className = "pastebox";
+    ta.value = JSON.stringify({
+      version: 1,
+      done: Object.keys(done),
+      seenSteps: seenSteps,
+      progress: progressData
+    });
+    body.appendChild(ta);
+
+    var msg = el("div", "paste-msg");
+    var row = el("div", "ctrls");
+    row.appendChild(button("btn ghost", "Select all", function () {
+      ta.focus();
+      ta.select();
+    }));
+    row.appendChild(button("btn", "Import what is in the box", function () {
+      var parsed;
+      try {
+        parsed = JSON.parse(ta.value);
+      } catch (e) {
+        msg.textContent = "That is not valid JSON.";
+        msg.className = "paste-msg bad";
+        return;
+      }
+      if (!parsed || typeof parsed !== "object") {
+        msg.textContent = "Nothing importable in there.";
+        msg.className = "paste-msg bad";
+        return;
+      }
+      done = {};
+      (parsed.done || []).forEach(function (id) { done[id] = true; });
+      saveDone();
+      if (parsed.seenSteps && typeof parsed.seenSteps === "object") {
+        seenSteps = parsed.seenSteps;
+        try { localStorage.setItem(SEEN_STEPS_KEY, JSON.stringify(seenSteps)); } catch (e) {}
+      }
+      if (parsed.progress && parsed.progress.lessons) {
+        progressData = parsed.progress;
+        try { localStorage.setItem(PROG_KEY, JSON.stringify(parsed.progress)); } catch (e) {}
+      }
+      render();
+    }));
+    body.appendChild(row);
+    body.appendChild(msg);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  /* ---------- search (HANDOFF step 8) ----------
+     Six months in the question is "where did the chain rule bit live", not
+     "what is lesson 2.4". Headings and exercise names come from the build, so
+     the index cannot drift from the content. */
+  var STEP_LABEL = { lesson: "Read", exercises: "Implement", walkthrough: "Compare",
+                     closeout: "Close out", brief: "Brief", resources: "Resources" };
+
+  function openStep(lessonId, stepName) {
+    var present = SECTIONS[lessonId] || [];
+    var steps = STEPS.filter(function (s) { return present.indexOf(s.name) > -1; });
+    var i = 0;
+    steps.forEach(function (s, n) { if (s.name === stepName) i = n; });
+    activeTab[lessonId] = i;
+    goLesson(lessonId);
+  }
+
+  function searchIndex() {
+    var out = [];
+    phases.forEach(function (p) {
+      out.push({ kind: "phase", label: "Phase " + p.number + " · " + p.title,
+                 sub: p.subtitle, act: function () { goPhase(p.id); } });
+    });
+    allLessons.forEach(function (l) {
+      out.push({ kind: l.written ? "lesson" : "planned", label: l.id + " · " + l.title,
+                 sub: l.phase.title,
+                 act: l.written ? function () { goLesson(l.id); } : function () { goPhase(l.phase.id); } });
+      (l.headings || []).forEach(function (h) {
+        out.push({ kind: "section", label: h.text,
+                   sub: l.id + " · " + (STEP_LABEL[h.step] || h.step),
+                   act: function () { openStep(l.id, h.step); } });
+      });
+      (l.exercises || []).forEach(function (e) {
+        out.push({ kind: "exercise", label: e.name, sub: l.id + " · " + e.summary,
+                   act: function () { openStep(l.id, "exercises"); } });
+      });
+    });
+    LIBRARY.forEach(function (it) {
+      out.push({ kind: it.kind, label: it.title, sub: "library", url: it.url,
+                 act: function () { go("library"); } });
+    });
+    return out;
+  }
+
+  var paletteItems = [];
+  var paletteIndex = 0;
+
+  function paletteEls() {
+    return {
+      root: document.getElementById("palette"),
+      input: document.getElementById("palette-input"),
+      list: document.getElementById("palette-results")
+    };
+  }
+
+  function renderPalette(query) {
+    var e = paletteEls();
+    var q = (query || "").trim().toLowerCase();
+    var all = searchIndex();
+    paletteItems = (q
+      ? all.map(function (it) {
+          var hay = (it.label + " " + it.sub).toLowerCase();
+          var at = hay.indexOf(q);
+          return at < 0 ? null : { it: it, at: at };
+        }).filter(Boolean).sort(function (a, b) { return a.at - b.at; }).map(function (x) { return x.it; })
+      : all.filter(function (it) { return it.kind === "lesson" || it.kind === "phase"; })
+    ).slice(0, 30);
+
+    if (paletteIndex >= paletteItems.length) paletteIndex = 0;
+    e.list.textContent = "";
+    if (!paletteItems.length) {
+      e.list.appendChild(el("div", "palette-empty", "Nothing matches " + (q ? "“" + q + "”" : "")));
+      return;
+    }
+    paletteItems.forEach(function (it, i) {
+      var row = button("palette-row" + (i === paletteIndex ? " on" : ""), null, function () {
+        runPalette(it);
+      });
+      row.appendChild(el("span", "palette-kind", it.kind));
+      var body = el("span", "palette-body");
+      body.appendChild(el("span", "palette-label", it.label));
+      body.appendChild(el("span", "palette-sub", it.sub));
+      row.appendChild(body);
+      row.addEventListener("mousemove", function () {
+        if (paletteIndex === i) return;
+        paletteIndex = i;
+        [].forEach.call(e.list.children, function (c, n) { c.classList.toggle("on", n === i); });
+      });
+      e.list.appendChild(row);
+    });
+  }
+
+  function runPalette(it) {
+    closePalette();
+    if (it.url) { window.open(it.url, "_blank", "noopener"); return; }
+    it.act();
+  }
+
+  function openPalette() {
+    var e = paletteEls();
+    e.root.hidden = false;
+    e.input.value = "";
+    paletteIndex = 0;
+    renderPalette("");
+    e.input.focus();
+  }
+  function closePalette() {
+    paletteEls().root.hidden = true;
+  }
+
+  function wirePalette() {
+    var e = paletteEls();
+    if (!e.root) return;
+
+    e.input.addEventListener("input", function () { paletteIndex = 0; renderPalette(e.input.value); });
+    e.input.addEventListener("keydown", function (evt) {
+      if (evt.key === "ArrowDown" || (evt.key === "n" && evt.ctrlKey)) {
+        evt.preventDefault();
+        paletteIndex = Math.min(paletteIndex + 1, paletteItems.length - 1);
+      } else if (evt.key === "ArrowUp" || (evt.key === "p" && evt.ctrlKey)) {
+        evt.preventDefault();
+        paletteIndex = Math.max(paletteIndex - 1, 0);
+      } else if (evt.key === "Enter") {
+        evt.preventDefault();
+        if (paletteItems[paletteIndex]) runPalette(paletteItems[paletteIndex]);
+        return;
+      } else if (evt.key === "Escape") {
+        closePalette();
+        return;
+      } else {
+        return;
+      }
+      [].forEach.call(e.list.children, function (c, n) { c.classList.toggle("on", n === paletteIndex); });
+      var on = e.list.children[paletteIndex];
+      if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest" });
+    });
+    e.root.addEventListener("mousedown", function (evt) {
+      if (evt.target === e.root) closePalette();
+    });
+
+    document.addEventListener("keydown", function (evt) {
+      if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === "k") {
+        evt.preventDefault();
+        if (e.root.hidden) openPalette(); else closePalette();
+        return;
+      }
+      if (evt.key === "Escape" && !e.root.hidden) { closePalette(); return; }
+
+      /* j/k move through the rail, but never while typing. */
+      if (!e.root.hidden) return;
+      var t = evt.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (evt.metaKey || evt.ctrlKey || evt.altKey) return;
+      if (evt.key !== "j" && evt.key !== "k") return;
+
+      var links = [].slice.call(document.querySelectorAll("#rail-nav .lesson-link"));
+      if (!links.length) return;
+      evt.preventDefault();
+      var at = links.indexOf(document.activeElement);
+      if (at < 0) at = evt.key === "j" ? -1 : 0;
+      var to = evt.key === "j"
+        ? Math.min(at + 1, links.length - 1)
+        : Math.max(at - 1, 0);
+      links[to].focus();
+    });
+  }
+
   /* ---------- rail ---------- */
   var railNav = document.getElementById("rail-nav");
   var railAreas = document.getElementById("rail-areas");
@@ -2566,16 +2939,12 @@ var Widgets = (function () {
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (isComplete(l) ? " is-done" : ""));
 
-        var box = el("input", "tickbox");
-        box.type = "checkbox";
-        box.checked = isComplete(l);
-        box.disabled = completionIsDerived(l);
-        box.title = box.disabled
-          ? "Set by the test runner"
-          : "Mark lesson " + l.id + " complete by hand";
-        box.setAttribute("aria-label", box.title);
-        box.addEventListener("change", function () { toggleDone(l.id); });
-        row.appendChild(box);
+        /* Read-only. A 15px checkbox butted against the link caused accidental
+           ticks, and completion is a lesson-page act. */
+        var state = el("span", "rowstate");
+        state.setAttribute("data-done", isComplete(l) ? "1" : "0");
+        state.title = isComplete(l) ? "Complete" : "Not complete";
+        row.appendChild(state);
 
         var link = button("lesson-link", null, function () { goLesson(l.id); });
         link.appendChild(el("span", "lid", l.id));
@@ -2895,6 +3264,8 @@ var Widgets = (function () {
       "progress --json"
     ].forEach(function (c) { sec.appendChild(commandRow(c)); });
     wrap.appendChild(sec);
+
+    wrap.appendChild(transferBox());
 
     var foot = el("div", "foot");
     foot.appendChild(button("linkbtn", "← Back to Continue", function () { go("continue"); }));
@@ -3310,7 +3681,18 @@ var Widgets = (function () {
         panel.setAttribute("role", "tabpanel");
         panel.setAttribute("aria-labelledby", "step-" + slug);
         panel.tabIndex = 0;
-        if (tpl) panel.appendChild(tpl.content.cloneNode(true));
+        if (step.name === "walkthrough" && gateWalkthrough(l)) {
+          panel.appendChild(walkthroughGate(l, function () {
+            unlockedWalkthrough[l.id] = true;
+            render();
+          }, function () {
+            var at = 0;
+            steps.forEach(function (st, n) { if (st.name === "exercises") at = n; });
+            show(at);
+          }));
+        } else if (tpl) {
+          panel.appendChild(tpl.content.cloneNode(true));
+        }
         panel.hidden = i !== activeTab[l.id];
         panels.appendChild(panel);
 
@@ -3432,6 +3814,21 @@ var Widgets = (function () {
     toc.appendChild(list);
     toc.hidden = false;
 
+    /* Below 1280px the aside is hidden — that is most laptops in a window that
+       is not maximised — so the same list appears inline as a control. */
+    var inline = el("details", "toc-inline");
+    inline.appendChild(el("summary", null, "Sections"));
+    var ilist = el("div", "toc-list");
+    heads.forEach(function (h) {
+      ilist.appendChild(button("toc-link", h.textContent, function () {
+        inline.open = false;
+        h.scrollIntoView({ block: "start", behavior: "smooth" });
+      }));
+    });
+    inline.appendChild(ilist);
+    if (scope.firstChild) scope.insertBefore(inline, scope.firstChild);
+    else scope.appendChild(inline);
+
     /* Highlight whichever heading you have most recently scrolled past. */
     var ticking = false;
     function sync() {
@@ -3504,6 +3901,7 @@ var Widgets = (function () {
   var toggle = document.getElementById("railtoggle");
 
   document.getElementById("brand").addEventListener("click", goOverview);
+  document.getElementById("searchbtn").addEventListener("click", openPalette);
   toggle.addEventListener("click", function () {
     rail.hidden = !rail.hidden;
     toggle.setAttribute("aria-expanded", rail.hidden ? "false" : "true");
@@ -3559,6 +3957,7 @@ var Widgets = (function () {
     }
     localStorage.setItem(SEEN_KEY, "1");
   } catch (e) {}
+  wirePalette();
   loadProgress();
   render();
 })();

@@ -27,6 +27,7 @@ what lessons exist.
 from __future__ import annotations
 
 import ast
+import html
 import json
 import re
 import sys
@@ -102,6 +103,26 @@ def lesson_templates() -> tuple[str, dict[str, list[str]]]:
     return "\n\n".join(blocks), sections
 
 
+def section_headings(lesson_dir: Path, sections: list[str]) -> list[dict]:
+    """Every <h2> in a lesson, tagged with the step it lives in.
+
+    Search has to answer "where did the chain rule bit live", which means it
+    needs headings, not just lesson titles. Scraped from the section files at
+    build time so nobody maintains a second list.
+    """
+    out = []
+    for name in sections:
+        path = lesson_dir / f"{name}.html"
+        if not path.exists():
+            continue
+        for text in re.findall(r"<h2[^>]*>(.*?)</h2>", path.read_text(encoding="utf-8"), re.S):
+            clean = re.sub(r"<[^>]+>", "", text)
+            clean = html.unescape(clean).strip()
+            if clean:
+                out.append({"step": name, "text": clean})
+    return out
+
+
 def lesson_exercises(lesson_dir: Path) -> list[dict]:
     """Function name + one-line summary for each exercise, read from the repo.
 
@@ -165,6 +186,10 @@ def main() -> int:
                 ex = lesson_exercises(ROOT / raw["dir"])
                 if ex:
                     les["exercises"] = ex
+            if les["id"] in sections:
+                heads = section_headings(SRC / "lessons" / les["id"], sections[les["id"]])
+                if heads:
+                    les["headings"] = heads
 
     trimmed["sections"] = sections
     trimmed["library"] = json.loads((SRC / "library.json").read_text(encoding="utf-8"))["items"]

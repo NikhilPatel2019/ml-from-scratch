@@ -8,6 +8,9 @@
     <b id="stat-count" class="mono">0/55</b>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
   </div>
+  <button class="iconbtn searchbtn" id="searchbtn" aria-label="Search">
+    <span>Search</span><kbd>&#8984;K</kbd>
+  </button>
   <div class="themetoggle" role="group" aria-label="Colour theme">
     <button type="button" id="theme-light" data-theme-set="light">light</button>
     <button type="button" id="theme-dark" data-theme-set="dark">dark</button>
@@ -24,4 +27,13 @@
   <main class="pane" id="pane"></main>
 
   <aside class="toc" id="toc" aria-label="On this page" hidden></aside>
+</div>
+
+<div class="palette" id="palette" hidden>
+  <div class="palette-box" role="dialog" aria-modal="true" aria-label="Search">
+    <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Search lessons, sections, exercises, library&hellip;">
+    <div class="palette-results" id="palette-results"></div>
+    <div class="palette-foot">&uarr;&darr; move &middot; &crarr; open &middot; esc close</div>
+  </div>
 </div>

@@ -225,6 +225,272 @@
     return wrap;
   }
 
+  /* ---------- protect the walkthrough (HANDOFF step 7) ----------
+     The curriculum's stated principle is that nobody hands you the answer.
+     Individual solutions are already collapsed behind a deliberate click; this
+     applies the same friction one level up. Friction, not a lock — and it is
+     not remembered, so a fresh visit asks again. */
+  var unlockedWalkthrough = {};
+
+  function gateWalkthrough(l) {
+    if (isComplete(l)) return false;          // done means done: open straight through
+    return !unlockedWalkthrough[l.id];
+  }
+
+  function walkthroughGate(l, openAnyway, backToExercises) {
+    var lt = lessonTests(l.id);
+    var red = lt
+      ? lt.exercises.filter(function (e) { return e.status !== "pass"; }).length
+      : null;
+
+    var box = el("div", "gate");
+    box.appendChild(el("div", "eyebrow", "before you read this"));
+    box.appendChild(el("h2", null, red === null
+      ? "You have not run the tests yet."
+      : red + (red === 1 ? " exercise is" : " exercises are") + " still red."));
+    box.appendChild(el("p", "gate-body",
+      "Recognising correct code is a different skill from producing it, and only one of " +
+      "them transfers. Read this now and it will feel like understanding; it will not " +
+      "survive the week."));
+    box.appendChild(el("p", "gate-body",
+      "If you are stuck, the useful moves are re-reading the docstring, printing the " +
+      "intermediate values, or solving a smaller version on paper."));
+
+    var ctrls = el("div", "ctrls");
+    ctrls.appendChild(button("btn", "Back to the exercises", backToExercises));
+    ctrls.appendChild(button("btn ghost", "Open it anyway", openAnyway));
+    box.appendChild(ctrls);
+    return box;
+  }
+
+  /* ---------- progress export / import (HANDOFF step 8) ----------
+     Progress is device-local with no way to carry it to a new laptop, which
+     makes "clear my progress" the only irreversible action in the product. */
+  function transferBox() {
+    var wrap = el("details", "solution");
+    wrap.appendChild(el("summary", null, "Move your progress to another machine"));
+    var body = el("div");
+    body.style.padding = "14px 16px";
+    body.appendChild(el("p", "why",
+      "Everything this site remembers lives in this browser. Copy the block below to " +
+      "carry it elsewhere, or paste one in to restore it."));
+
+    var ta = document.createElement("textarea");
+    ta.rows = 5;
+    ta.className = "pastebox";
+    ta.value = JSON.stringify({
+      version: 1,
+      done: Object.keys(done),
+      seenSteps: seenSteps,
+      progress: progressData
+    });
+    body.appendChild(ta);
+
+    var msg = el("div", "paste-msg");
+    var row = el("div", "ctrls");
+    row.appendChild(button("btn ghost", "Select all", function () {
+      ta.focus();
+      ta.select();
+    }));
+    row.appendChild(button("btn", "Import what is in the box", function () {
+      var parsed;
+      try {
+        parsed = JSON.parse(ta.value);
+      } catch (e) {
+        msg.textContent = "That is not valid JSON.";
+        msg.className = "paste-msg bad";
+        return;
+      }
+      if (!parsed || typeof parsed !== "object") {
+        msg.textContent = "Nothing importable in there.";
+        msg.className = "paste-msg bad";
+        return;
+      }
+      done = {};
+      (parsed.done || []).forEach(function (id) { done[id] = true; });
+      saveDone();
+      if (parsed.seenSteps && typeof parsed.seenSteps === "object") {
+        seenSteps = parsed.seenSteps;
+        try { localStorage.setItem(SEEN_STEPS_KEY, JSON.stringify(seenSteps)); } catch (e) {}
+      }
+      if (parsed.progress && parsed.progress.lessons) {
+        progressData = parsed.progress;
+        try { localStorage.setItem(PROG_KEY, JSON.stringify(parsed.progress)); } catch (e) {}
+      }
+      render();
+    }));
+    body.appendChild(row);
+    body.appendChild(msg);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  /* ---------- search (HANDOFF step 8) ----------
+     Six months in the question is "where did the chain rule bit live", not
+     "what is lesson 2.4". Headings and exercise names come from the build, so
+     the index cannot drift from the content. */
+  var STEP_LABEL = { lesson: "Read", exercises: "Implement", walkthrough: "Compare",
+                     closeout: "Close out", brief: "Brief", resources: "Resources" };
+
+  function openStep(lessonId, stepName) {
+    var present = SECTIONS[lessonId] || [];
+    var steps = STEPS.filter(function (s) { return present.indexOf(s.name) > -1; });
+    var i = 0;
+    steps.forEach(function (s, n) { if (s.name === stepName) i = n; });
+    activeTab[lessonId] = i;
+    goLesson(lessonId);
+  }
+
+  function searchIndex() {
+    var out = [];
+    phases.forEach(function (p) {
+      out.push({ kind: "phase", label: "Phase " + p.number + " · " + p.title,
+                 sub: p.subtitle, act: function () { goPhase(p.id); } });
+    });
+    allLessons.forEach(function (l) {
+      out.push({ kind: l.written ? "lesson" : "planned", label: l.id + " · " + l.title,
+                 sub: l.phase.title,
+                 act: l.written ? function () { goLesson(l.id); } : function () { goPhase(l.phase.id); } });
+      (l.headings || []).forEach(function (h) {
+        out.push({ kind: "section", label: h.text,
+                   sub: l.id + " · " + (STEP_LABEL[h.step] || h.step),
+                   act: function () { openStep(l.id, h.step); } });
+      });
+      (l.exercises || []).forEach(function (e) {
+        out.push({ kind: "exercise", label: e.name, sub: l.id + " · " + e.summary,
+                   act: function () { openStep(l.id, "exercises"); } });
+      });
+    });
+    LIBRARY.forEach(function (it) {
+      out.push({ kind: it.kind, label: it.title, sub: "library", url: it.url,
+                 act: function () { go("library"); } });
+    });
+    return out;
+  }
+
+  var paletteItems = [];
+  var paletteIndex = 0;
+
+  function paletteEls() {
+    return {
+      root: document.getElementById("palette"),
+      input: document.getElementById("palette-input"),
+      list: document.getElementById("palette-results")
+    };
+  }
+
+  function renderPalette(query) {
+    var e = paletteEls();
+    var q = (query || "").trim().toLowerCase();
+    var all = searchIndex();
+    paletteItems = (q
+      ? all.map(function (it) {
+          var hay = (it.label + " " + it.sub).toLowerCase();
+          var at = hay.indexOf(q);
+          return at < 0 ? null : { it: it, at: at };
+        }).filter(Boolean).sort(function (a, b) { return a.at - b.at; }).map(function (x) { return x.it; })
+      : all.filter(function (it) { return it.kind === "lesson" || it.kind === "phase"; })
+    ).slice(0, 30);
+
+    if (paletteIndex >= paletteItems.length) paletteIndex = 0;
+    e.list.textContent = "";
+    if (!paletteItems.length) {
+      e.list.appendChild(el("div", "palette-empty", "Nothing matches " + (q ? "“" + q + "”" : "")));
+      return;
+    }
+    paletteItems.forEach(function (it, i) {
+      var row = button("palette-row" + (i === paletteIndex ? " on" : ""), null, function () {
+        runPalette(it);
+      });
+      row.appendChild(el("span", "palette-kind", it.kind));
+      var body = el("span", "palette-body");
+      body.appendChild(el("span", "palette-label", it.label));
+      body.appendChild(el("span", "palette-sub", it.sub));
+      row.appendChild(body);
+      row.addEventListener("mousemove", function () {
+        if (paletteIndex === i) return;
+        paletteIndex = i;
+        [].forEach.call(e.list.children, function (c, n) { c.classList.toggle("on", n === i); });
+      });
+      e.list.appendChild(row);
+    });
+  }
+
+  function runPalette(it) {
+    closePalette();
+    if (it.url) { window.open(it.url, "_blank", "noopener"); return; }
+    it.act();
+  }
+
+  function openPalette() {
+    var e = paletteEls();
+    e.root.hidden = false;
+    e.input.value = "";
+    paletteIndex = 0;
+    renderPalette("");
+    e.input.focus();
+  }
+  function closePalette() {
+    paletteEls().root.hidden = true;
+  }
+
+  function wirePalette() {
+    var e = paletteEls();
+    if (!e.root) return;
+
+    e.input.addEventListener("input", function () { paletteIndex = 0; renderPalette(e.input.value); });
+    e.input.addEventListener("keydown", function (evt) {
+      if (evt.key === "ArrowDown" || (evt.key === "n" && evt.ctrlKey)) {
+        evt.preventDefault();
+        paletteIndex = Math.min(paletteIndex + 1, paletteItems.length - 1);
+      } else if (evt.key === "ArrowUp" || (evt.key === "p" && evt.ctrlKey)) {
+        evt.preventDefault();
+        paletteIndex = Math.max(paletteIndex - 1, 0);
+      } else if (evt.key === "Enter") {
+        evt.preventDefault();
+        if (paletteItems[paletteIndex]) runPalette(paletteItems[paletteIndex]);
+        return;
+      } else if (evt.key === "Escape") {
+        closePalette();
+        return;
+      } else {
+        return;
+      }
+      [].forEach.call(e.list.children, function (c, n) { c.classList.toggle("on", n === paletteIndex); });
+      var on = e.list.children[paletteIndex];
+      if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest" });
+    });
+    e.root.addEventListener("mousedown", function (evt) {
+      if (evt.target === e.root) closePalette();
+    });
+
+    document.addEventListener("keydown", function (evt) {
+      if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === "k") {
+        evt.preventDefault();
+        if (e.root.hidden) openPalette(); else closePalette();
+        return;
+      }
+      if (evt.key === "Escape" && !e.root.hidden) { closePalette(); return; }
+
+      /* j/k move through the rail, but never while typing. */
+      if (!e.root.hidden) return;
+      var t = evt.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (evt.metaKey || evt.ctrlKey || evt.altKey) return;
+      if (evt.key !== "j" && evt.key !== "k") return;
+
+      var links = [].slice.call(document.querySelectorAll("#rail-nav .lesson-link"));
+      if (!links.length) return;
+      evt.preventDefault();
+      var at = links.indexOf(document.activeElement);
+      if (at < 0) at = evt.key === "j" ? -1 : 0;
+      var to = evt.key === "j"
+        ? Math.min(at + 1, links.length - 1)
+        : Math.max(at - 1, 0);
+      links[to].focus();
+    });
+  }
+
   /* ---------- rail ---------- */
   var railNav = document.getElementById("rail-nav");
   var railAreas = document.getElementById("rail-areas");
@@ -274,16 +540,12 @@
           (view.kind === "lesson" && view.id === l.id ? " current" : "") +
           (isComplete(l) ? " is-done" : ""));
 
-        var box = el("input", "tickbox");
-        box.type = "checkbox";
-        box.checked = isComplete(l);
-        box.disabled = completionIsDerived(l);
-        box.title = box.disabled
-          ? "Set by the test runner"
-          : "Mark lesson " + l.id + " complete by hand";
-        box.setAttribute("aria-label", box.title);
-        box.addEventListener("change", function () { toggleDone(l.id); });
-        row.appendChild(box);
+        /* Read-only. A 15px checkbox butted against the link caused accidental
+           ticks, and completion is a lesson-page act. */
+        var state = el("span", "rowstate");
+        state.setAttribute("data-done", isComplete(l) ? "1" : "0");
+        state.title = isComplete(l) ? "Complete" : "Not complete";
+        row.appendChild(state);
 
         var link = button("lesson-link", null, function () { goLesson(l.id); });
         link.appendChild(el("span", "lid", l.id));
@@ -603,6 +865,8 @@
       "progress --json"
     ].forEach(function (c) { sec.appendChild(commandRow(c)); });
     wrap.appendChild(sec);
+
+    wrap.appendChild(transferBox());
 
     var foot = el("div", "foot");
     foot.appendChild(button("linkbtn", "← Back to Continue", function () { go("continue"); }));
@@ -1018,7 +1282,18 @@
         panel.setAttribute("role", "tabpanel");
         panel.setAttribute("aria-labelledby", "step-" + slug);
         panel.tabIndex = 0;
-        if (tpl) panel.appendChild(tpl.content.cloneNode(true));
+        if (step.name === "walkthrough" && gateWalkthrough(l)) {
+          panel.appendChild(walkthroughGate(l, function () {
+            unlockedWalkthrough[l.id] = true;
+            render();
+          }, function () {
+            var at = 0;
+            steps.forEach(function (st, n) { if (st.name === "exercises") at = n; });
+            show(at);
+          }));
+        } else if (tpl) {
+          panel.appendChild(tpl.content.cloneNode(true));
+        }
         panel.hidden = i !== activeTab[l.id];
         panels.appendChild(panel);
 
@@ -1140,6 +1415,21 @@
     toc.appendChild(list);
     toc.hidden = false;
 
+    /* Below 1280px the aside is hidden — that is most laptops in a window that
+       is not maximised — so the same list appears inline as a control. */
+    var inline = el("details", "toc-inline");
+    inline.appendChild(el("summary", null, "Sections"));
+    var ilist = el("div", "toc-list");
+    heads.forEach(function (h) {
+      ilist.appendChild(button("toc-link", h.textContent, function () {
+        inline.open = false;
+        h.scrollIntoView({ block: "start", behavior: "smooth" });
+      }));
+    });
+    inline.appendChild(ilist);
+    if (scope.firstChild) scope.insertBefore(inline, scope.firstChild);
+    else scope.appendChild(inline);
+
     /* Highlight whichever heading you have most recently scrolled past. */
     var ticking = false;
     function sync() {
@@ -1212,6 +1502,7 @@
   var toggle = document.getElementById("railtoggle");
 
   document.getElementById("brand").addEventListener("click", goOverview);
+  document.getElementById("searchbtn").addEventListener("click", openPalette);
   toggle.addEventListener("click", function () {
     rail.hidden = !rail.hidden;
     toggle.setAttribute("aria-expanded", rail.hidden ? "false" : "true");
@@ -1267,6 +1558,7 @@
     }
     localStorage.setItem(SEEN_KEY, "1");
   } catch (e) {}
+  wirePalette();
   loadProgress();
   render();
 })();
