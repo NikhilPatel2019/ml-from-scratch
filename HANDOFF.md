@@ -1,6 +1,6 @@
 # Restructure brief — ML From Scratch site
 
-> **Status.** Steps 1, 2 and 5 done (5 pulled forward: steps 3, 4 and 6 all display test state, so building them against a placeholder then revisiting all three was the more expensive order). The dark-mode toggle from step 8 landed early. Lesson
+> **Status.** Steps 1, 2, 3 and 5 done (5 pulled forward: steps 3, 4 and 6 all display test state, so building them against a placeholder then revisiting all three was the more expensive order). The dark-mode toggle from step 8 landed early. Lesson
 > ids are 1-based (phases 1–5); this brief has been renumbered to match.
 > Decision on step 5: the published site shows the curriculum, a local run reads
 > `progress.json`.
@@ -75,7 +75,7 @@ lesson cited it. Practice lists exercises from every written lesson in one view.
 
 ---
 
-## Step 3 — Rebuild the landing page around the next action
+## Step 3 — Rebuild the landing page around the next action  ✅ done
 
 **Problem.** The home page is a prospectus: it explains the curriculum three times at three levels of
 zoom. "How this works" and "Where the code lives" are useful exactly once and then sit permanently
@@ -227,7 +227,7 @@ through.
 
 - [ ] Every clickable lesson leads to real content.
 - [ ] Nothing in the UI is time-based.
-- [ ] Home page's largest element is the next action.
+- [x] Home page's largest element is the next action.
 - [ ] No prose explains the order of steps.
 - [x] Progress shown = tests passed, or explicitly labelled as a manual override.
 - [x] Site works with `progress.json` missing.
