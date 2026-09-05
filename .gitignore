@@ -23,3 +23,6 @@ site.zip
 
 # Local test state, written by: progress --json
 site/progress.json
+
+# Per-developer Claude Code overrides; the shared config is .claude/settings.json
+.claude/settings.local.json

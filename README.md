@@ -132,6 +132,16 @@ The failure mode is obvious once named: you ask for help, the model writes the s
 
 So the rule, for you and for whatever model you ask: **it explains, reviews and hints; you write.** Ask for a smaller sub-problem when you are stuck. Ask *why* your working code is bad. Do not ask for the answer. The stubs are stubs on purpose.
 
+That rule is configured, not just requested. [`CLAUDE.md`](CLAUDE.md) states it and is loaded automatically; [`.claude/settings.json`](.claude/settings.json) denies edits to `exercises.py`, `stretch.py` and `test_exercises.py` outright, so an assistant cannot write your answers even if you talk it into wanting to. Three commands come with it:
+
+| | |
+|---|---|
+| `/hint` | the smallest next step on an exercise, never the answer |
+| `/review` | review what you already wrote, without rewriting it |
+| `/why` | explain an idea from first principles, assuming no maths background |
+
+Using something other than Claude Code? Point it at `CLAUDE.md` — it is plain Markdown, and [`.claude/README.md`](.claude/README.md) explains the rest.
+
 ## Contributing
 
 Corrections, clearer explanations and better exercises are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please do not submit solutions to the exercises.

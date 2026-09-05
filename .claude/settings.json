@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(progress:*)",
+      "Bash(pytest:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python site/build.py)",
+      "Bash(ruff check:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "deny": [
+      "Edit(./lessons/**/exercises.py)",
+      "Edit(./lessons/**/stretch.py)",
+      "Edit(./lessons/**/test_exercises.py)",
+      "Edit(./site/index.html)"
+    ]
+  }
+}
