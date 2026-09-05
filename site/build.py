@@ -195,7 +195,9 @@ def main() -> int:
     # exists under site/src/lessons/, not a flag anyone should maintain by hand.
     templates, sections = lesson_templates()
 
-    # The page needs only what it renders; drop repo-only fields such as `dir`.
+    # The page needs only what it renders; repo-only fields are dropped here and
+    # `dir` is added back below, for written lessons only, where Setup names the
+    # file you edit.
     trimmed = {
         "phases": [
             {
@@ -221,6 +223,7 @@ def main() -> int:
                 if ex:
                     les["exercises"] = ex
             if les["id"] in sections:
+                les["dir"] = raw.get("dir", "")
                 heads = section_headings(SRC / "lessons" / les["id"], sections[les["id"]])
                 if heads:
                     les["headings"] = heads

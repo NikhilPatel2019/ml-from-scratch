@@ -88,6 +88,7 @@
   }
 
   function go(kind, id) {
+    clearing = false;          /* an unanswered confirmation does not follow you */
     view = { kind: kind, id: id || null };
     saveView();
     render();
@@ -266,65 +267,6 @@
   /* ---------- progress export / import (HANDOFF step 8) ----------
      Progress is device-local with no way to carry it to a new laptop, which
      makes "clear my progress" the only irreversible action in the product. */
-  function transferBox() {
-    var wrap = el("details", "solution");
-    wrap.appendChild(el("summary", null, "Move your progress to another machine"));
-    var body = el("div");
-    body.style.padding = "14px 16px";
-    body.appendChild(el("p", "why",
-      "Everything this site remembers lives in this browser. Copy the block below to " +
-      "carry it elsewhere, or paste one in to restore it."));
-
-    var ta = document.createElement("textarea");
-    ta.rows = 5;
-    ta.className = "pastebox";
-    ta.value = JSON.stringify({
-      version: 1,
-      done: Object.keys(done),
-      seenSteps: seenSteps,
-      progress: progressData
-    });
-    body.appendChild(ta);
-
-    var msg = el("div", "paste-msg");
-    var row = el("div", "ctrls");
-    row.appendChild(button("btn ghost", "Select all", function () {
-      ta.focus();
-      ta.select();
-    }));
-    row.appendChild(button("btn", "Import what is in the box", function () {
-      var parsed;
-      try {
-        parsed = JSON.parse(ta.value);
-      } catch (e) {
-        msg.textContent = "That is not valid JSON.";
-        msg.className = "paste-msg bad";
-        return;
-      }
-      if (!parsed || typeof parsed !== "object") {
-        msg.textContent = "Nothing importable in there.";
-        msg.className = "paste-msg bad";
-        return;
-      }
-      done = {};
-      (parsed.done || []).forEach(function (id) { done[id] = true; });
-      saveDone();
-      if (parsed.seenSteps && typeof parsed.seenSteps === "object") {
-        seenSteps = parsed.seenSteps;
-        try { localStorage.setItem(SEEN_STEPS_KEY, JSON.stringify(seenSteps)); } catch (e) {}
-      }
-      if (parsed.progress && parsed.progress.lessons) {
-        progressData = parsed.progress;
-        try { localStorage.setItem(PROG_KEY, JSON.stringify(parsed.progress)); } catch (e) {}
-      }
-      render();
-    }));
-    body.appendChild(row);
-    body.appendChild(msg);
-    wrap.appendChild(body);
-    return wrap;
-  }
-
   /* ---------- search (HANDOFF step 8) ----------
      Six months in the question is "where did the chain rule bit live", not
      "what is lesson 2.4". Headings and exercise names come from the build, so
@@ -472,11 +414,17 @@
       }
       if (evt.key === "Escape" && !e.root.hidden) { closePalette(); return; }
 
-      /* j/k move through the rail, but never while typing. */
+      /* The rest are bare keys, and never while typing. */
       if (!e.root.hidden) return;
       var t = evt.target;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (evt.metaKey || evt.ctrlKey || evt.altKey) return;
+
+      /* 1-4 jump between the steps of the lesson you are on. */
+      if (stepJump && /^[1-9]$/.test(evt.key) && stepJump(parseInt(evt.key, 10) - 1)) {
+        evt.preventDefault();
+        return;
+      }
       if (evt.key !== "j" && evt.key !== "k") return;
 
       var links = [].slice.call(document.querySelectorAll("#rail-nav .lesson-link"));
@@ -811,66 +759,167 @@
     return p;
   }
 
-  /* ---------- setup: read once, then out of the way ---------- */
+  /* ---------- setup — ported from the design canvas ---------- */
+  var clearing = false;
+
+  var SETUP_COMMANDS = [
+    "git clone git@github.com:NikhilPatel2019/ml-from-scratch.git",
+    "cd ml-from-scratch",
+    "python -m venv .venv",
+    ".venv\\Scripts\\activate        # Windows",
+    "source .venv/bin/activate      # macOS and Linux",
+    "pip install -e \".[dev]\"",
+    "progress"
+  ].join("\n");
+
+  /* A sentence with `code` spans in it, without innerHTML. */
+  function sentence(parts, cls) {
+    var n = el("span", cls || null);
+    parts.forEach(function (p) {
+      if (typeof p === "string") n.appendChild(document.createTextNode(p));
+      else n.appendChild(el("code", "inline", p.code));
+    });
+    return n;
+  }
+
+  function sectionKey(text) { return el("h2", "sec-k", text); }
+
   function buildSetup() {
     var wrap = el("div", "wrap is-setup");
-    var hero = el("div", "hero");
-    hero.appendChild(el("div", "eyebrow", "read this once"));
-    hero.appendChild(el("h1", null, "How this works, and where the code lives"));
-    hero.appendChild(el("p", "lede",
-      "This page is the curriculum and your progress. The code lives in a repository " +
-      "on your machine, because writing it is the part that actually teaches you."));
-    wrap.appendChild(hero);
+    var next = nextLesson();
+    var id = next ? next.id : "1.1";
 
+    wrap.appendChild(el("div", "hero-eyebrow", "Setup"));
+    wrap.appendChild(el("h1", "hero-h1", "How this works, and where the code lives"));
+    var lede = el("p", "hero-lede");
+    lede.style.maxWidth = "66ch";
+    lede.textContent = "Read once, then get out of your way. This page is linked from " +
+      "the rail and shown automatically on a first visit.";
+    wrap.appendChild(lede);
+
+    wrap.appendChild(sectionKey("The loop"));
     var steps = el("div", "steps");
     [
-      ["01", "Read the lesson here",
-        "Each lesson explains the idea from nothing, with the maths introduced only at the moment it becomes necessary. The diagrams and demos are there to be poked at, not admired."],
-      ["02", "Write the code in the repo",
-        "Every lesson ships function stubs and a test suite. You implement the stubs. Nobody hands you the answer — recognising correct code is a different skill from producing it, and only one of them transfers."],
-      ["03", "Run the tests",
-        "progress 1.1 tells you exactly which exercises pass. Some tests check how you solved it, rejecting NumPy where you should be building the mechanism, and rejecting loops where you should be thinking in arrays."],
-      ["04", "Let the runner report it",
-        "progress --json writes the results next to this page, and the site reads them. Nothing here is self-reported unless the runner has said nothing, and then it says so."]
+      ["01", ["Read the lesson on this site. Poke at the demos, but budget roughly " +
+              "20% of your time here."]],
+      ["02", ["Write the exercises in your repo. This is the 80%, and the only part " +
+              "that transfers."]],
+      ["03", ["Run ", { code: "progress " + id }, " until every test passes. Compare " +
+              "against the walkthrough only afterwards."]],
+      ["04", ["Answer the closing questions in ", { code: "notes.md" }, ", in your own " +
+              "words. Six months from now this is the most valuable file in the repo."]]
     ].forEach(function (row) {
       var st = el("div", "step");
-      st.appendChild(el("div", "step-n", row[0]));
-      var bd = el("div");
-      bd.appendChild(el("h3", null, row[1]));
-      bd.appendChild(el("p", null, row[2]));
-      st.appendChild(bd);
+      st.appendChild(el("span", "step-n", row[0]));
+      st.appendChild(sentence(row[1], "step-t"));
       steps.appendChild(st);
     });
     wrap.appendChild(steps);
 
-    var sec = el("div", "section");
-    sec.appendChild(el("h2", null, "Getting set up"));
-    sec.appendChild(el("p", "sub",
-      "In-browser Python is deliberately not offered. You learn the toolchain by using it — " +
-      "a real virtual environment, a real test runner, a real terminal."));
-    [
-      "git clone git@github.com:NikhilPatel2019/ml-from-scratch.git",
-      "python -m venv .venv",
-      "pip install -e \".[dev]\"",
-      "progress",
-      "progress --json"
-    ].forEach(function (c) { sec.appendChild(commandRow(c)); });
-    wrap.appendChild(sec);
+    wrap.appendChild(sectionKey("Where the code lives"));
+    var term = el("div", "termcard");
+    var pre = el("pre", null, SETUP_COMMANDS);
+    var bar = el("div", "termbar");
+    bar.appendChild(el("span", null, "terminal · once"));
+    bar.appendChild(copyButton(SETUP_COMMANDS, pre, "termcopy"));
+    term.appendChild(bar);
+    term.appendChild(pre);
+    wrap.appendChild(term);
+    wrap.appendChild(sentence([
+      "Exercises live in ",
+      { code: (next ? next.dir : "lessons/01-foundations/01-vectors") + "/exercises.py" },
+      " — the only file you edit. Every function arrives as a stub, and the docstring " +
+      "is the specification."
+    ], "setup-note"));
 
-    wrap.appendChild(transferBox());
+    wrap.appendChild(sectionKey("Your progress"));
+    var card = el("div", "progcard");
+    var lead = el("p");
+    lead.appendChild(sentence([
+      "Test results come from ",
+      { code: "progress " + id + " --json > site/progress.json" },
+      ". Anything you tick by hand is stored in this browser only — export it before " +
+      "you switch machines."
+    ]));
+    card.appendChild(lead);
 
-    var foot = el("div", "foot");
-    foot.appendChild(button("linkbtn", "← Back to Continue", function () { go("continue"); }));
-    foot.appendChild(button("linkbtn", "Clear my progress", function () {
-      if (window.confirm("Clear ticked lessons and any pasted results on this device?")) {
+    var row = el("div", "progrow");
+    var exp = button("btn-quiet", "Export my progress", function () {
+      var blob = JSON.stringify({
+        version: 1,
+        done: Object.keys(done),
+        seenSteps: seenSteps,
+        progress: progressData
+      });
+      var reset = function () { exp.textContent = "Export my progress"; exp.classList.remove("ok"); };
+      try {
+        navigator.clipboard.writeText(blob).then(function () {
+          exp.textContent = "Copied to clipboard";
+          exp.classList.add("ok");
+          setTimeout(reset, 1800);
+        }, function () { showTransfer(blob); });
+      } catch (e) { showTransfer(blob); }
+    });
+    row.appendChild(exp);
+    row.appendChild(button("btn-danger", "Clear my progress…", function () {
+      clearing = true;
+      render();
+    }));
+    card.appendChild(row);
+
+    var spill = el("div");
+    card.appendChild(spill);
+    function showTransfer(blob) {
+      spill.textContent = "";
+      var ta = document.createElement("textarea");
+      ta.rows = 4;
+      ta.className = "pastebox";
+      ta.value = blob;
+      spill.appendChild(ta);
+      spill.appendChild(el("div", "paste-msg", "Clipboard blocked — select this and press Ctrl+C."));
+      ta.focus();
+      ta.select();
+    }
+
+    if (clearing) {
+      var box = el("div", "confirm");
+      var p = el("p");
+      p.appendChild(el("b", null, "Clear every hand-ticked lesson and step? "));
+      p.appendChild(document.createTextNode(
+        "This cannot be undone, and it will not touch your repo or your test results. " +
+        "Export first if you have not."));
+      box.appendChild(p);
+      var crow = el("div", "confirm-row");
+      crow.appendChild(button("btn-yes", "Yes, clear it", function () {
         done = {};
         saveDone();
         try { localStorage.removeItem(PROG_KEY); } catch (e) {}
         progressData = null;
+        clearing = false;
         render();
-      }
-    }));
-    wrap.appendChild(foot);
+      }));
+      crow.appendChild(button("btn-no", "Keep it", function () {
+        clearing = false;
+        render();
+      }));
+      box.appendChild(crow);
+      card.appendChild(box);
+    }
+    card.appendChild(pasteBox());
+    wrap.appendChild(card);
+
+    wrap.appendChild(sectionKey("Keyboard"));
+    var keys = el("div", "keys");
+    [["⌘K", "search everything"],
+     ["1–4", "jump to a lesson step"],
+     ["j / k", "move down and up the rail"],
+     ["esc", "close search"]].forEach(function (k) {
+      var r = el("div", "keyrow");
+      r.appendChild(el("kbd", null, k[0]));
+      r.appendChild(el("span", null, k[1]));
+      keys.appendChild(r);
+    });
+    wrap.appendChild(keys);
     return wrap;
   }
 
@@ -1346,6 +1395,13 @@
         entries.push({ btn: b, panel: panel, step: step });
       });
 
+      stepJump = function (n) {
+        if (n < 0 || n >= entries.length) return false;
+        show(n);
+        entries[n].btn.focus();
+        return true;
+      };
+
       function show(i) {
         activeTab[l.id] = i;
         markSeen(l.id, steps[i].name);
@@ -1421,7 +1477,7 @@
     if (tocCleanup) { tocCleanup(); tocCleanup = null; }
     toc.textContent = "";
 
-    var heads = [].slice.call(scope.querySelectorAll("h2"));
+    var heads = scope ? [].slice.call(scope.querySelectorAll("h2")) : [];
     if (heads.length < 2) { toc.hidden = true; return; }
 
     var head = el("div", "toc-head");
@@ -1475,7 +1531,11 @@
   }
 
   /* ---------- render ---------- */
+  /* Set by buildLesson while a lesson is on screen; nothing else answers 1-4. */
+  var stepJump = null;
+
   function render() {
+    stepJump = null;
     var pane = document.getElementById("pane");
     pane.textContent = "";
 
@@ -1497,8 +1557,10 @@
       pane.appendChild(buildOverview());
     }
 
-    var live = pane.querySelector(".panel:not([hidden])") || pane.querySelector(".wrap");
-    if (live) buildToc(live);
+    /* The contents rail belongs to a lesson panel. The other screens are the
+       length of one screen and navigate themselves. */
+    var live = view.kind === "lesson" ? pane.querySelector(".panel:not([hidden])") : null;
+    buildToc(live);
 
     var totals = testTotals();
     if (totals && totals.total) {
