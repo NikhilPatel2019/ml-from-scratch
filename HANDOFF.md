@@ -1,7 +1,14 @@
 # Restructure brief — ML From Scratch site
 
-> **Status.** Steps 1, 2, 3 and 5 done (5 pulled forward: steps 3, 4 and 6 all display test state, so building them against a placeholder then revisiting all three was the more expensive order). The dark-mode toggle from step 8 landed early. Lesson
-> ids are 1-based (phases 1–5); this brief has been renumbered to match.
+> **Status.** Steps 1–6 are done. Remaining: **7** (protect the walkthrough) and
+> **8** (small fixes, of which the dark-mode toggle already landed).
+>
+> Two deviations from the order as written, both deliberate: step 5 was pulled
+> ahead of 3 and 4 because all three display test state, and building them
+> against placeholders would have meant revisiting all three; step 6 landed
+> inside step 4, because the exercise rows *are* the Implement step.
+>
+> Lesson ids are 1-based (phases 1–5); this brief is renumbered to match.
 > Decision on step 5: the published site shows the curriculum, a local run reads
 > `progress.json`.
 
@@ -21,7 +28,7 @@ spacing. This is a restructure, not a restyle.
 
 ---
 
-## Step 1 — Collapse the unwritten curriculum
+## Step 1 — Collapse the unwritten curriculum  ✅ done
 
 **Problem.** The rail lists all 55 lessons as equal clickable rows with checkboxes. 54 of them
 resolve to the same "not written yet" placeholder, so almost every click is a dead end, and each one
@@ -102,7 +109,7 @@ element on the page. Setup content is one click away and never in the way twice.
 
 ---
 
-## Step 4 — The lesson is a sequence, not five tabs
+## Step 4 — The lesson is a sequence, not five tabs  ✅ done
 
 **Problem.** Overview → Lesson → Exercises → Walkthrough → Resources is an *order* — the lesson copy
 says so twice. Tabs mean "alternatives, any order", hold no state, and tell you nothing about where
@@ -176,7 +183,7 @@ screen comes from the test runner.
 
 ---
 
-## Step 6 — Exercises as rows with status
+## Step 6 — Exercises as rows with status  ✅ done (landed inside step 4)
 
 Inside step 2 of the lesson: one row per exercise — status marker, function name, one-line
 description, tests passed, and for a failure the assertion message on one line. Stretch exercises are
@@ -228,7 +235,7 @@ through.
 - [ ] Every clickable lesson leads to real content.
 - [ ] Nothing in the UI is time-based.
 - [x] Home page's largest element is the next action.
-- [ ] No prose explains the order of steps.
+- [x] No prose explains the order of steps.
 - [x] Progress shown = tests passed, or explicitly labelled as a manual override.
 - [x] Site works with `progress.json` missing.
 - [ ] Light and dark both switchable and both legible.

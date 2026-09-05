@@ -2,32 +2,7 @@
 
 <p class="lead">Seven functions in <code>lessons/01-foundations/01-vectors/exercises.py</code>. They come in pairs: each does the same maths twice, once by hand so you own the mechanism, once vectorised so you can actually use it.</p>
 
-<div class="codeblock">
-<div class="cap">run until all seven pass</div>
-<pre><code>progress 1.1</code></pre>
-</div>
-
-<h2>The seven</h2>
-
-<div class="tablewrap">
-<table>
-  <thead><tr><th>#</th><th>Function</th><th>What it asks</th><th>Constraint</th></tr></thead>
-  <tbody>
-    <tr><td class="num">1</td><td><code>dot_loop</code></td><td>Multiply two lists pairwise and accumulate. Raise <code>ValueError</code> if the lengths differ.</td><td>Plain Python. No NumPy, no <code>sum()</code>.</td></tr>
-    <tr><td class="num">2</td><td><code>dot_numpy</code></td><td>The same result, vectorised.</td><td>NumPy. No <code>for</code> loop.</td></tr>
-    <tr><td class="num">3</td><td><code>magnitude_loop</code></td><td>The length of a vector: square, sum, square-root.</td><td>Plain Python. <code>sum()</code> allowed here.</td></tr>
-    <tr><td class="num">4</td><td><code>magnitude</code></td><td>The same, vectorised.</td><td>NumPy. No <code>for</code> loop.</td></tr>
-    <tr><td class="num">5</td><td><code>normalise</code></td><td>Same direction, length exactly 1. Raise <code>ValueError</code> on the zero vector.</td><td>NumPy. No <code>for</code> loop.</td></tr>
-    <tr><td class="num">6</td><td><code>cosine_similarity</code></td><td>Dot product divided by both magnitudes. Answers "do these point the same way?"</td><td>NumPy. No <code>for</code> loop.</td></tr>
-    <tr><td class="num">7</td><td><code>most_similar</code></td><td>Return the name of the library item closest to a query.</td><td>Reuse exercise 6.</td></tr>
-  </tbody>
-</table>
-</div>
-
-<div class="callout">
-  <span class="lbl">The constraints are the lesson</span>
-  <p>The tests inspect your source, not just your return value. Exercises 1 and 3 reject NumPy because you are meant to build the mechanism before you are allowed to call it. Exercises 2 and 4–7 reject <code>for</code> loops because writing a Python loop over a NumPy array is the most common beginner mistake in this field, and it costs roughly 200× in speed.</p>
-</div>
+<div data-exercise-rows></div>
 
 <h2>What the file looks like</h2>
 
@@ -156,11 +131,7 @@
     return max(scores, key=scores.get)</code></pre>
 </div>
 <p class="why">Iterating a dict yields its keys, and <code>key=</code> changes what gets <em>compared</em>, not what gets <em>returned</em> — so the comparison runs over scores while the return value is a name. <code>max(scores.values())</code> would hand you <code>0.998</code> with no way back to which item earned it.</p>
-<p class="why">This is the definition, not the implementation. See the walkthrough tab, and <code>stretch.py</code>, for the single-matmul version a real system uses.</p>
+<p class="why">This is the definition, not the implementation. See the Compare step, and <code>stretch.py</code>, for the single-matmul version a real system uses.</p>
 </details>
-
-<h2>Finally, write your notes</h2>
-
-<p><code>notes.md</code> in the lesson folder holds seven questions. Answer them in your own words, not copied from anywhere. Rewriting an explanation is the cheapest test of understanding there is, and the "things I got wrong" section at the bottom will be the most valuable thing in your repository six months from now.</p>
 
 </div>

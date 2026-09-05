@@ -943,3 +943,89 @@ button.libtag:hover { color: var(--accent-ink); border-color: var(--accent); }
 .scard-sub { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
 .copybtn.warn { color: var(--active); border-color: var(--active); }
 .cmdtext::selection { background: var(--accent-wash); }
+
+/* ============================================================
+   the lesson as a sequence (HANDOFF step 4)
+   ============================================================ */
+.brief { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.brief-lead { margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); max-width: 66ch; }
+.brief-facts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px 22px; margin-top: 16px;
+}
+.brief-facts > div { display: flex; flex-direction: column; gap: 3px; }
+.brief-facts span:last-child { font-size: 13.5px; color: var(--ink); }
+.brief-more { margin-top: 14px; }
+.brief-more > summary {
+  cursor: pointer; list-style: none; font-family: var(--f-mono); font-size: 11.5px;
+  color: var(--ink-3); display: inline-flex; align-items: center; gap: 8px;
+}
+.brief-more > summary::-webkit-details-marker { display: none; }
+.brief-more > summary::before {
+  content: ""; width: 7px; height: 7px; flex: none;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(-45deg); transition: transform .18s;
+}
+.brief-more[open] > summary::before { transform: rotate(45deg); }
+.brief-more > summary:hover { color: var(--ink); }
+.brief-outcomes { margin: 12px 0 0; padding-left: 1.3em; max-width: 68ch; }
+.brief-outcomes li { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+.brief-outcomes li + li { margin-top: .5em; }
+.brief-outcomes strong { color: var(--ink); font-weight: 600; }
+
+.stepper {
+  display: flex; gap: 2px; margin: 28px 0 30px;
+  border-bottom: 1px solid var(--rule);
+  position: sticky; top: var(--topbar-h); z-index: 20;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px); overflow-x: auto; scrollbar-width: none;
+}
+.stepper::-webkit-scrollbar { display: none; }
+.step-btn {
+  appearance: none; background: none; border: 0; cursor: pointer;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 10px 16px 9px; white-space: nowrap; text-align: left;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  font-family: inherit; transition: color .15s, border-color .15s;
+}
+.step-n { font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.step-label { font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.step-meta { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.step-btn:hover .step-label { color: var(--ink); }
+.step-btn.on { border-bottom-color: var(--accent); }
+.step-btn.on .step-label, .step-btn.on .step-n, .step-btn.on .step-meta { color: var(--accent-ink); }
+
+.stepfoot {
+  display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  margin-top: 44px; padding: 16px 20px; border-radius: 11px;
+  background: var(--accent-wash); border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+}
+.stepfoot .body { flex: 1; min-width: 200px; }
+.stepfoot .t { font-weight: 600; font-size: 15px; }
+.stepfoot .s { font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }
+
+.exercise-block { margin: 1.4em 0 1.8em; }
+.exnote { font-size: 13.5px; color: var(--ink-2); margin: 12px 0 0; line-height: 1.55; max-width: 64ch; }
+.exercise-block .exrows { margin-top: 14px; }
+
+.resources-foot {
+  margin-top: 34px; border: 1px solid var(--rule); border-radius: 11px;
+  background: var(--surface); overflow: hidden;
+}
+.resources-foot > summary {
+  cursor: pointer; list-style: none; padding: 14px 18px;
+  font-size: 14px; font-weight: 600; color: var(--ink-2);
+  display: flex; align-items: center; gap: 10px;
+}
+.resources-foot > summary::-webkit-details-marker { display: none; }
+.resources-foot > summary::before {
+  content: ""; width: 8px; height: 8px; flex: none;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(-45deg); transition: transform .18s;
+}
+.resources-foot[open] > summary::before { transform: rotate(45deg); }
+.resources-foot[open] > summary { border-bottom: 1px solid var(--rule); color: var(--ink); }
+.resources-body { padding: 4px 18px 18px; }
+
+.checkq { max-width: 64ch; padding-left: 1.3em; }
+.checkq li { margin-top: .55em; }

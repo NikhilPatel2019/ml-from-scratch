@@ -30,13 +30,6 @@
   var activeTab = {};
 
   var SECTIONS = data.sections || {};
-  var TAB_LABELS = {
-    overview: "Overview",
-    lesson: "Lesson",
-    exercises: "Exercises",
-    walkthrough: "Walkthrough",
-    resources: "Resources"
-  };
 
   /* ---------- helpers ---------- */
   function el(tag, cls, text) {
@@ -474,8 +467,11 @@
     var card = el("div", "continue-card");
 
     var tabIdx = activeTab[next.id] || 0;
-    var names = SECTIONS[next.id] || [];
-    var where = names.length ? (TAB_LABELS[names[tabIdx]] || names[tabIdx]) : null;
+    var present = SECTIONS[next.id] || [];
+    var lessonSteps = STEPS.filter(function (st) { return present.indexOf(st.name) > -1; });
+    var where = lessonSteps.length
+      ? (lessonSteps[Math.min(tabIdx, lessonSteps.length - 1)] || lessonSteps[0]).label
+      : null;
     var resumed = activeTab[next.id] != null;
 
     var top = el("div", "continue-top");
@@ -868,7 +864,115 @@
     return wrap;
   }
 
-  /* ---------- lesson ---------- */
+  /* ---------- lesson: a sequence, not a set of alternatives ----------
+     Tabs said "alternatives, any order" and held no state, so the prose had to
+     keep explaining an order the interface contradicted. These are steps. */
+  var STEPS = [
+    { name: "lesson", label: "Read" },
+    { name: "exercises", label: "Implement" },
+    { name: "walkthrough", label: "Compare" },
+    { name: "closeout", label: "Close out" }
+  ];
+  var SEEN_STEPS_KEY = "mlfs:seen-steps:v1";
+  var seenSteps = (function () {
+    try { return JSON.parse(localStorage.getItem(SEEN_STEPS_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  })();
+
+  function markSeen(lessonId, stepName) {
+    var list = seenSteps[lessonId] || (seenSteps[lessonId] = []);
+    if (list.indexOf(stepName) > -1) return;
+    list.push(stepName);
+    try { localStorage.setItem(SEEN_STEPS_KEY, JSON.stringify(seenSteps)); } catch (e) {}
+  }
+  function hasSeen(lessonId, stepName) {
+    return (seenSteps[lessonId] || []).indexOf(stepName) > -1;
+  }
+
+  /* Standing is only shown where something real is known. */
+  function stepStanding(l, name) {
+    if (name === "exercises") {
+      var lt = lessonTests(l.id);
+      if (lt) return lt.tests_passed + " of " + lt.tests_total;
+      return (l.exercises || []).length ? String((l.exercises || []).length) : "";
+    }
+    if (name === "closeout") return isComplete(l) ? "done" : "";
+    return hasSeen(l.id, name) ? "seen" : "";
+  }
+
+  /* Step 6: one row per exercise, with whatever the runner actually said. */
+  function exerciseRows(l) {
+    var box = el("div", "exercise-block");
+    box.appendChild(commandRow("progress " + l.id));
+
+    var lt = lessonTests(l.id);
+    if (!lt) {
+      box.appendChild(el("p", "exnote",
+        "Run that to see which of these pass. Until you do, every row reads as not run — " +
+        "this page never invents a result."));
+    }
+
+    var list = el("div", "exrows");
+    (l.exercises || []).forEach(function (e) {
+      var r = exerciseResult(l.id, e.name);
+      var status = r ? r.status : "not_run";
+      var row = el("div", "exrow" + (e.optional ? " is-optional" : ""));
+      var mark = el("span", "exmark");
+      mark.setAttribute("data-status", status);
+      row.appendChild(mark);
+      var body = el("div", "exbody");
+      body.appendChild(el("div", "exname", e.name));
+      body.appendChild(el("div", "exsum", e.summary));
+      if (r && r.message) body.appendChild(el("div", "exmsg", r.message));
+      row.appendChild(body);
+      row.appendChild(el("span", "exstat is-" + status,
+        status === "pass" ? (r.tests_passed + "/" + r.tests_total)
+          : status === "fail" ? "fail" : "not run"));
+      list.appendChild(row);
+    });
+    box.appendChild(list);
+    return box;
+  }
+
+  /* Every step ends by naming the next action. */
+  function stepFooter(l, steps, i, show) {
+    var foot = el("div", "stepfoot");
+    var name = steps[i].name;
+    var lt = lessonTests(l.id);
+    var body = el("div", "body");
+
+    if (name === "lesson") {
+      body.appendChild(el("div", "t", "Ready to write code?"));
+      body.appendChild(el("div", "s", "The reading is scaffolding. The exercises are the lesson."));
+    } else if (name === "exercises") {
+      var left = lt ? lt.tests_total - lt.tests_passed : null;
+      body.appendChild(el("div", "t", left === null
+        ? "Run the tests when you have written something."
+        : left === 0 ? "All " + lt.tests_total + " tests pass."
+          : left + (left === 1 ? " test" : " tests") + " still to pass."));
+      body.appendChild(el("div", "s", left === 0
+        ? "Now compare your answers with the walkthrough."
+        : "Compare only after you have attempted them — that is what the next step is for."));
+    } else if (name === "walkthrough") {
+      body.appendChild(el("div", "t", "Seen how each one works?"));
+      body.appendChild(el("div", "s", "Close out by answering the questions without looking them up."));
+    } else {
+      body.appendChild(el("div", "t", isComplete(l) ? "Lesson complete." : "Almost there."));
+      body.appendChild(el("div", "s", completionIsDerived(l)
+        ? "Completion here comes from the test runner."
+        : "No test results found, so this one is yours to mark."));
+    }
+    foot.appendChild(body);
+
+    if (i + 1 < steps.length) {
+      foot.appendChild(button("btn", steps[i + 1].label + " →", function () { show(i + 1); }));
+    } else if (!completionIsDerived(l)) {
+      foot.appendChild(button("btn", done[l.id] ? "Mark as not done" : "Mark complete",
+        function () { toggleDone(l.id); }));
+    }
+    return foot;
+  }
+
   function buildLesson(l) {
     var wrap = el("div", "wrap");
 
@@ -879,69 +983,73 @@
     crumbs.appendChild(button("crumb", "Phase " + l.phase.number + " · " + l.phase.title,
       function () { goPhase(l.phase.id); }));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    if (done[l.id]) crumbs.appendChild(el("span", "chip done", "Complete"));
-    else if (l.status === "available") crumbs.appendChild(el("span", "chip ready", "Ready"));
+    if (isComplete(l)) crumbs.appendChild(el("span", "chip done", "Complete"));
+    else if (l.written) crumbs.appendChild(el("span", "chip ready", "In progress"));
     else crumbs.appendChild(el("span", "chip plan", "Not written yet"));
     head.appendChild(crumbs);
     head.appendChild(el("h1", null, l.id + " — " + l.title));
     head.appendChild(el("p", "lede", l.summary));
+
+    var briefTpl = document.getElementById("lesson-" + l.id + "-brief");
+    if (briefTpl) {
+      var brief = el("div", "brief");
+      brief.appendChild(briefTpl.content.cloneNode(true));
+      head.appendChild(brief);
+    }
     wrap.appendChild(head);
 
-    var names = SECTIONS[l.id] || [];
-    if (names.length) {
-      if (activeTab[l.id] == null || activeTab[l.id] >= names.length) activeTab[l.id] = 0;
+    var present = SECTIONS[l.id] || [];
+    var steps = STEPS.filter(function (s) { return present.indexOf(s.name) > -1; });
 
-      var tabbar = el("div", "tabs");
-      tabbar.setAttribute("role", "tablist");
+    if (steps.length) {
+      if (activeTab[l.id] == null || activeTab[l.id] >= steps.length) activeTab[l.id] = 0;
+
+      var bar = el("div", "stepper");
+      bar.setAttribute("role", "tablist");
       var panels = el("div", "panels");
       var entries = [];
 
-      var slug = l.id.replace(/\./g, "-");
-
-      names.forEach(function (name, i) {
-        var tpl = document.getElementById("lesson-" + l.id + "-" + name);
-        if (!tpl) return;
-
-        var tabId = "tab-" + slug + "-" + name;
-        var panelId = "panel-" + slug + "-" + name;
+      steps.forEach(function (step, i) {
+        var tpl = document.getElementById("lesson-" + l.id + "-" + step.name);
+        var slug = l.id.replace(/\./g, "-") + "-" + step.name;
 
         var panel = el("section", "panel");
-        panel.id = panelId;
+        panel.id = "panel-" + slug;
         panel.setAttribute("role", "tabpanel");
-        panel.setAttribute("aria-labelledby", tabId);
-        /* A scrollable panel needs to be focusable, or keyboard users can tab
-           to the tablist and then have no way to scroll the content. */
+        panel.setAttribute("aria-labelledby", "step-" + slug);
         panel.tabIndex = 0;
-        panel.appendChild(tpl.content.cloneNode(true));
+        if (tpl) panel.appendChild(tpl.content.cloneNode(true));
         panel.hidden = i !== activeTab[l.id];
         panels.appendChild(panel);
 
-        var tb = button("tab", TAB_LABELS[name] || name, function () { show(i); });
-        tb.id = tabId;
-        tb.setAttribute("role", "tab");
-        tb.setAttribute("aria-controls", panelId);
-        tb.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
-        /* Roving tabindex: one stop for the whole tablist, arrows move within it. */
-        tb.tabIndex = i === activeTab[l.id] ? 0 : -1;
-        tb.addEventListener("keydown", function (evt) {
-          var delta = { ArrowRight: 1, ArrowLeft: -1 }[evt.key];
-          var target = null;
-          if (delta != null) target = (i + delta + entries.length) % entries.length;
-          else if (evt.key === "Home") target = 0;
-          else if (evt.key === "End") target = entries.length - 1;
-          if (target == null) return;
+        var b = button("step-btn", null, function () { show(i); });
+        b.id = "step-" + slug;
+        b.setAttribute("role", "tab");
+        b.setAttribute("aria-controls", "panel-" + slug);
+        b.setAttribute("aria-selected", i === activeTab[l.id] ? "true" : "false");
+        b.tabIndex = i === activeTab[l.id] ? 0 : -1;
+        b.appendChild(el("span", "step-n", "Step " + (i + 1)));
+        b.appendChild(el("span", "step-label", step.label));
+        var meta = stepStanding(l, step.name);
+        if (meta) b.appendChild(el("span", "step-meta", meta));
+        b.addEventListener("keydown", function (evt) {
+          var d = { ArrowRight: 1, ArrowLeft: -1 }[evt.key];
+          var t = null;
+          if (d != null) t = (i + d + entries.length) % entries.length;
+          else if (evt.key === "Home") t = 0;
+          else if (evt.key === "End") t = entries.length - 1;
+          if (t == null) return;
           evt.preventDefault();
-          show(target);
-          entries[target].btn.focus();
+          show(t);
+          entries[t].btn.focus();
         });
-        tabbar.appendChild(tb);
-        entries.push({ btn: tb, panel: panel });
+        bar.appendChild(b);
+        entries.push({ btn: b, panel: panel, step: step });
       });
 
-      /* Switching tabs only toggles visibility — no re-render, so the vector lab
-         keeps whatever position you dragged it to. */
       function show(i) {
         activeTab[l.id] = i;
+        markSeen(l.id, steps[i].name);
         entries.forEach(function (e, j) {
           e.panel.hidden = j !== i;
           e.btn.classList.toggle("on", j === i);
@@ -949,50 +1057,48 @@
           e.btn.tabIndex = j === i ? 0 : -1;
         });
         saveView();
-        wrap.scrollIntoView({ block: "start" });
-        buildToc(entries[i].panel);
+        render();
       }
       entries.forEach(function (e, j) { e.btn.classList.toggle("on", j === activeTab[l.id]); });
+      markSeen(l.id, steps[activeTab[l.id]].name);
 
-      wrap.appendChild(tabbar);
+      wrap.appendChild(bar);
       wrap.appendChild(panels);
+
+      /* the generated exercise rows land inside the Implement step */
+      var mount = panels.querySelector("[data-exercise-rows]");
+      if (mount) mount.appendChild(exerciseRows(l));
+
       highlight(panels);
       if (typeof Widgets !== "undefined") Widgets.mount(panels);
-
-      var mark = el("div", "nextup");
-      mark.style.marginTop = "44px";
-      var mb = el("div", "body");
-      mb.appendChild(el("div", "t", done[l.id] ? "Marked complete" : "Finished this lesson?"));
-      mb.appendChild(el("div", "s", done[l.id]
-        ? "You can untick it in the curriculum rail if you want another pass."
-        : "Tick it off once the tests pass and you can answer the questions above without looking them up."));
-      mark.appendChild(mb);
-      mark.appendChild(button("btn", done[l.id] ? "Mark as not done" : "Mark complete",
-        function () { toggleDone(l.id); }));
-      wrap.appendChild(mark);
+      wrap.appendChild(stepFooter(l, steps, activeTab[l.id], show));
     } else {
       var ph = el("div", "placeholder");
       ph.appendChild(el("div", "eyebrow", "Not written yet"));
       ph.appendChild(el("h3", null, "This lesson is planned, not published."));
       ph.appendChild(el("p", null,
-        "Lessons are written one at a time, in order, so that each one can assume exactly what came " +
-        "before it. Writing all fifty-five up front would produce a worse curriculum than writing each " +
-        "in response to how the previous one actually went."));
+        "Lessons are written one at a time, in order, so that each one can assume exactly " +
+        "what came before it."));
       ph.appendChild(el("p", null,
         "When it exists, it will cover: " + l.summary.charAt(0).toLowerCase() + l.summary.slice(1)));
       wrap.appendChild(ph);
+    }
 
-      var mile = el("div", "callout");
-      mile.style.marginTop = "24px";
-      mile.appendChild(el("span", "lbl", "Phase " + l.phase.number + " milestone"));
-      mile.appendChild(el("p", null, l.phase.milestone));
-      wrap.appendChild(mile);
+    /* Resources are reference, not a step. */
+    var resTpl = document.getElementById("lesson-" + l.id + "-resources");
+    if (resTpl) {
+      var res = el("details", "resources-foot");
+      res.appendChild(el("summary", null, "Resources for this lesson"));
+      var rbody = el("div", "resources-body");
+      rbody.appendChild(resTpl.content.cloneNode(true));
+      res.appendChild(rbody);
+      wrap.appendChild(res);
+      res.addEventListener("toggle", function () { if (res.open) highlight(rbody); });
     }
 
     var pool = writtenLessons();
     var idx = pool.indexOf(l);
     var foot = el("div", "foot");
-    foot.appendChild(button("linkbtn", "← Overview", goOverview));
     if (idx > 0) {
       var pv = pool[idx - 1];
       foot.appendChild(button("linkbtn", "← " + pv.id + " " + pv.title, function () { goLesson(pv.id); }));
@@ -1001,7 +1107,7 @@
       var nx = pool[idx + 1];
       foot.appendChild(button("linkbtn", "Next: " + nx.id + " " + nx.title + " →", function () { goLesson(nx.id); }));
     }
-    wrap.appendChild(foot);
+    if (foot.children.length) wrap.appendChild(foot);
 
     return wrap;
   }

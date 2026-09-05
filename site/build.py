@@ -7,15 +7,15 @@ split by concern under site/src/ and this script concatenates it.
 
 Lessons are authored as a directory of sections:
 
-    site/src/lessons/1.1/overview.html
-    site/src/lessons/1.1/lesson.html
-    site/src/lessons/1.1/exercises.html
-    site/src/lessons/1.1/walkthrough.html
-    site/src/lessons/1.1/resources.html
+    site/src/lessons/1.1/brief.html        header, shown on every step
+    site/src/lessons/1.1/lesson.html       step 1, Read
+    site/src/lessons/1.1/exercises.html    step 2, Implement
+    site/src/lessons/1.1/walkthrough.html  step 3, Compare
+    site/src/lessons/1.1/closeout.html     step 4, Close out
+    site/src/lessons/1.1/resources.html    footer
 
-Each becomes a tab on the lesson page, in the order given by SECTIONS below.
 Only the sections that exist are emitted, so a lesson with no stretch material
-simply has no walkthrough tab.
+simply has no Compare step.
 
 Curriculum data is read from lessons/curriculum.json — the same file the
 progress command uses — so the site and the dashboard can never disagree about
@@ -37,8 +37,10 @@ ROOT = SITE.parent
 SRC = SITE / "src"
 OUT = SITE / "index.html"
 
-# Canonical tab order. A lesson may omit any of these.
-SECTIONS = ["overview", "lesson", "exercises", "walkthrough", "resources"]
+# Canonical order. "lesson", "exercises", "walkthrough" and "closeout" are the
+# four steps of the stepper, in that order; "brief" is the lesson header and
+# "resources" the footer. A lesson may omit any of them.
+SECTIONS = ["brief", "lesson", "exercises", "walkthrough", "closeout", "resources"]
 
 # Deliberately ASCII-only: this comment precedes the <meta charset> in the
 # output, and non-ASCII bytes ahead of the encoding declaration are exactly the
