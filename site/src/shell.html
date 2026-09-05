@@ -1,16 +1,16 @@
 <header class="topbar">
-  <button class="brand" id="brand" type="button" title="Continue">
+  <button class="brand" id="brand" type="button" title="The curriculum">
     <span class="brand-mark">ML From Scratch</span>
   </button>
 
   <button class="searchbtn" id="searchbtn" type="button" aria-label="Search">
-    <span class="searchbtn-t">Search lessons, notes, terms</span>
+    <span class="searchbtn-t">Search lessons, exercises, terms</span>
     <span class="searchbtn-i" aria-hidden="true">&#8981;</span>
     <kbd>&#8984;K</kbd>
   </button>
 
-  <div class="topstat" id="topstat" title="Read from site/progress.json — written by the test runner">
-    <span id="stat-count">0 / 55 lessons</span>
+  <div class="topstat" id="topstat" title="Exercises checked off across every written lesson">
+    <span id="stat-count">0 / 0</span>
     <span class="minibar"><i id="stat-bar" style="width:0%"></i></span>
   </div>
 
@@ -24,10 +24,9 @@
 
 <div class="shell">
   <aside class="rail" id="rail">
-    <nav class="areas" id="rail-areas" aria-label="Areas"></nav>
-    <nav id="rail-nav" aria-label="Lessons"></nav>
+    <nav id="rail-nav" aria-label="Curriculum"></nav>
     <div class="rail-foot">
-      <button class="rail-setup" id="rail-setup" type="button">Setup &amp; environment</button>
+      <button class="nav-btn" id="rail-setup" type="button">Setup &amp; environment</button>
     </div>
   </aside>
 
@@ -40,7 +39,7 @@
     <div class="palette-head">
       <span class="palette-caret" aria-hidden="true">&rsaquo;</span>
       <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
-             placeholder="lessons, exercises, notes, terms&hellip;">
+             placeholder="lessons, exercises, terms&hellip;">
       <span class="palette-esc" aria-hidden="true">esc</span>
     </div>
     <div class="palette-results" id="palette-results"></div>

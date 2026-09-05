@@ -1,8 +1,7 @@
-/* Shell: routing, progress, the curriculum rail, and the overview. */
+/* Shell: routing, the curriculum rail, and the three screens. */
 (function () {
   "use strict";
 
-  var STORE_KEY = "mlfs:progress:v1";
   var data = JSON.parse(document.getElementById("curriculum-data").textContent);
   var phases = data.phases;
   var allLessons = [];
@@ -11,21 +10,7 @@
   });
   var TOTAL = allLessons.length;
 
-  /* ---------- progress: per viewer, per device ---------- */
-  function loadDone() {
-    try {
-      var raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return {};
-      var arr = JSON.parse(raw), out = {};
-      if (Array.isArray(arr)) arr.forEach(function (id) { out[id] = true; });
-      return out;
-    } catch (e) { return {}; }
-  }
-  function saveDone() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(Object.keys(done))); } catch (e) {}
-  }
-  var done = loadDone();
-  var view = { kind: "continue", id: null };
+  var view = { kind: "home", id: null };
   var LIBRARY = data.library || [];
   var activeTab = {};
 
@@ -48,8 +33,6 @@
     for (var i = 0; i < allLessons.length; i++) if (allLessons[i].id === id) return allLessons[i];
     return null;
   }
-  function phaseDone(p) { return p.lessons.filter(isComplete).length; }
-  function totalDone() { return writtenLessons().filter(isComplete).length; }
   function writtenLessons() { return allLessons.filter(function (l) { return l.written; }); }
   function nextLesson() {
     var pool = writtenLessons();
@@ -80,7 +63,7 @@
         var lesson = lessonById(saved.id);
         if (!lesson || !lesson.written) return;   // stale id, or no longer written
         activeTab[saved.id] = typeof saved.tab === "number" ? saved.tab : 0;
-      } else if (saved.kind === "phase" && !phaseById(saved.id)) {
+      } else if (saved.kind !== "home" && saved.kind !== "setup") {
         return;
       }
       view = { kind: saved.kind, id: saved.id || null };
@@ -94,26 +77,9 @@
     render();
     window.scrollTo(0, 0);
   }
-  function goOverview() { go("continue"); }
+  function goHome() { go("home"); }
   function goLesson(id) { go("lesson", id); }
-  function goPhase(id) { go("phase", id); }
 
-  function phaseById(id) {
-    for (var i = 0; i < phases.length; i++) if (phases[i].id === id) return phases[i];
-    return null;
-  }
-  function allExercises() {
-    var out = [];
-    writtenLessons().forEach(function (l) {
-      (l.exercises || []).forEach(function (e) { out.push({ lesson: l, ex: e }); });
-    });
-    return out;
-  }
-  function toggleDone(id) {
-    if (done[id]) { delete done[id]; } else { done[id] = true; }
-    saveDone();
-    render();
-  }
   function highlight(scope) {
     if (typeof hljs === "undefined") return;
     scope.querySelectorAll("pre code").forEach(function (node) {
@@ -167,16 +133,52 @@
     });
     return { passed: passed, total: total };
   }
-  /* Completion is derived from the runner where the runner has spoken; the hand
-     tick is only a fallback, and the UI says so wherever it is the source. */
+  /* ---------- what counts as done ----------
+     One tick per exercise, not per lesson. The runner wins wherever it has
+     spoken; a hand tick is what you have while progress.json is absent, and
+     every place that shows a total says which of the two it is reading. */
+  var CHECKED_KEY = "mlfs:checked:v1";
+  var checked = (function () {
+    try { return JSON.parse(localStorage.getItem(CHECKED_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  })();
+
+  function saveChecked() {
+    try { localStorage.setItem(CHECKED_KEY, JSON.stringify(checked)); } catch (e) {}
+  }
+  function toggleChecked(lessonId, name) {
+    var mine = checked[lessonId] || (checked[lessonId] = {});
+    if (mine[name]) delete mine[name]; else mine[name] = true;
+    saveChecked();
+    render();
+  }
+  function exerciseChecked(l, e) {
+    var r = exerciseResult(l.id, e.name);
+    if (r) return r.status === "pass";
+    return !!(checked[l.id] && checked[l.id][e.name]);
+  }
+  function scoredExercises(l) {
+    return (l.exercises || []).filter(function (e) { return !e.optional; });
+  }
   function isComplete(l) {
-    var lt = lessonTests(l.id);
-    if (lt && lt.tests_total) return lt.tests_passed === lt.tests_total;
-    return !!done[l.id];
+    var s = scoredExercises(l);
+    if (!l.written || !s.length) return false;
+    for (var i = 0; i < s.length; i++) if (!exerciseChecked(l, s[i])) return false;
+    return true;
   }
   function completionIsDerived(l) {
-    var lt = lessonTests(l.id);
-    return !!(lt && lt.tests_total);
+    return !!lessonTests(l.id);
+  }
+  function checkedTotals() {
+    var out = { done: 0, total: 0, fromRunner: false };
+    writtenLessons().forEach(function (l) {
+      if (lessonTests(l.id)) out.fromRunner = true;
+      scoredExercises(l).forEach(function (e) {
+        out.total++;
+        if (exerciseChecked(l, e)) out.done++;
+      });
+    });
+    return out;
   }
 
   function pasteBox() {
@@ -287,12 +289,12 @@
     var out = [];
     phases.forEach(function (p) {
       out.push({ kind: "phase", label: "Phase " + p.number + " · " + p.title,
-                 sub: p.subtitle, act: function () { goPhase(p.id); } });
+                 sub: p.subtitle, act: goHome });
     });
     allLessons.forEach(function (l) {
       out.push({ kind: l.written ? "lesson" : "planned", label: l.id + " · " + l.title,
                  sub: l.phase.title,
-                 act: l.written ? function () { goLesson(l.id); } : function () { goPhase(l.phase.id); } });
+                 act: l.written ? function () { goLesson(l.id); } : goHome });
       (l.headings || []).forEach(function (h) {
         out.push({ kind: "section", label: h.text,
                    sub: l.id + " · " + (STEP_LABEL[h.step] || h.step),
@@ -302,10 +304,6 @@
         out.push({ kind: "exercise", label: e.name, sub: l.id + " · " + e.summary,
                    act: function () { openStep(l.id, "exercises"); } });
       });
-    });
-    LIBRARY.forEach(function (it) {
-      out.push({ kind: it.kind, label: it.title, sub: "library", url: it.url,
-                 act: function () { go("library"); } });
     });
     return out;
   }
@@ -447,322 +445,203 @@
 
   /* ---------- rail ---------- */
   var railNav = document.getElementById("rail-nav");
-  var railAreas = document.getElementById("rail-areas");
-
-  /* Four doors instead of one. Everything used to hang off whichever lesson you
-     happened to be in, so a resource spanning four lessons had nowhere to live. */
-  var AREAS = [
-    { kind: "continue", label: "Continue", meta: function () { return ""; } },
-    { kind: "path", label: "Path", meta: function () { return String(TOTAL); } },
-    { kind: "practice", label: "Practice", meta: function () {
-        return progressData ? String(redCount()) : String(allExercises().length);
-      } },
-    { kind: "library", label: "Library", meta: function () { return String(LIBRARY.length); } }
-  ];
-
-  function buildAreas() {
-    railAreas.textContent = "";
-    AREAS.forEach(function (a) {
-      var active = view.kind === a.kind ||
-                   (a.kind === "path" && (view.kind === "phase" || view.kind === "lesson"));
-      var b = button("area" + (active ? " current" : ""), null, function () { go(a.kind); });
-      b.setAttribute("aria-current", active ? "page" : "false");
-      b.appendChild(el("span", "area-label", a.label));
-      var m = a.meta();
-      if (m) {
-        var meta = el("span", "area-meta" + (a.kind === "practice" && redCount() ? " is-red" : ""), m);
-        b.appendChild(meta);
-      }
-      railAreas.appendChild(b);
+  /* ---------- rail: the whole curriculum, one phase at a time ---------- */
+  var RAIL_OPEN_KEY = "mlfs:rail-open:v1";
+  var railOpen = (function () {
+    try {
+      var saved = JSON.parse(localStorage.getItem(RAIL_OPEN_KEY) || "null");
+      if (saved) return saved;
+    } catch (e) {}
+    /* First visit: open the phase that has something written in it. */
+    var out = {};
+    phases.forEach(function (p) {
+      if (p.lessons.some(function (l) { return l.written; })) out[p.number] = true;
     });
-    document.getElementById("rail-setup").classList.toggle("current", view.kind === "setup");
+    return out;
+  })();
+
+  function saveRailOpen() {
+    try { localStorage.setItem(RAIL_OPEN_KEY, JSON.stringify(railOpen)); } catch (e) {}
   }
 
-  /* Exercises the runner has marked failing, across every written lesson. */
-  function redCount() {
-    if (!progressData) return 0;
-    var n = 0;
-    writtenLessons().forEach(function (l) {
-      var lt = lessonTests(l.id);
-      if (!lt) return;
-      lt.exercises.forEach(function (e) { if (e.status === "fail") n++; });
-    });
-    return n;
+  function railLessonRow(l) {
+    var here = view.kind === "lesson" && view.id === l.id;
+    var row = el("button", "rail-lesson" +
+      (l.written ? "" : " is-planned") + (here ? " current" : ""));
+    row.type = "button";
+    row.title = l.summary;
+    if (l.written) {
+      row.addEventListener("click", function () { goLesson(l.id); });
+      if (here) row.setAttribute("aria-current", "page");
+    } else {
+      row.disabled = true;
+    }
+    row.appendChild(el("span", "lid", l.id));
+    row.appendChild(el("span", "ltitle", l.title));
+    return row;
   }
 
   function buildRail() {
-    buildAreas();
     railNav.textContent = "";
 
-    var written = writtenLessons();
-    var planned = allLessons.length - written.length;
+    var home = el("button", "nav-btn" + (view.kind === "home" ? " current" : ""));
+    home.type = "button";
+    home.appendChild(el("span", null, "The curriculum"));
+    home.appendChild(el("span", "nav-count", String(TOTAL)));
+    home.addEventListener("click", function () { go("home"); });
+    railNav.appendChild(home);
 
-    railNav.appendChild(el("div", "rail-zone", "Available now"));
-    if (written.length) {
-      var list = el("ul", "lesson-list");
-      written.forEach(function (l) {
-        var row = el("li", "lesson-row" +
-          (view.kind === "lesson" && view.id === l.id ? " current" : "") +
-          (isComplete(l) ? " is-done" : ""));
-        var link = button("lesson-link", null, function () { goLesson(l.id); });
-        link.appendChild(el("span", "lid", l.id));
-        link.appendChild(el("span", "ltitle", l.title));
-        if (isComplete(l)) link.appendChild(el("span", "dot-ready"));
-        row.appendChild(link);
-        list.appendChild(row);
-      });
-      railNav.appendChild(list);
-    } else {
-      railNav.appendChild(el("div", "rail-empty", "Nothing written yet."));
-    }
-
-    if (!planned) return;
-
-    railNav.appendChild(el("div", "rail-zone", "Ahead"));
-    var ahead = el("div", "ahead-list");
+    var list = el("div", "rail-phases");
     phases.forEach(function (p) {
-      var count = p.lessons.filter(function (l) { return !l.written; }).length;
-      if (!count) return;
-      /* Clickable, because a phase page is real content — unlike the
-         placeholder these rows used to lead to. */
-      var row = button("ahead-row", null, function () { goPhase(p.id); });
-      row.title = p.milestone;
-      row.appendChild(el("span", "ahead-num", String(p.number)));
-      var title = el("span", "ahead-title", p.title);
-      title.appendChild(el("span", "ahead-count", " \u00b7 " + count + " planned"));
-      row.appendChild(title);
-      ahead.appendChild(row);
+      var open = !!railOpen[p.number];
+      var group = el("div");
+
+      var head = el("button", "ph-head");
+      head.type = "button";
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+      head.appendChild(el("span", "ph-caret", open ? "–" : "+"));
+      head.appendChild(el("span", "ph-num", String(p.number)));
+      head.appendChild(el("span", "ph-title", p.title));
+      head.appendChild(el("span", "ph-count", String(p.lessons.length)));
+      head.addEventListener("click", function () {
+        railOpen[p.number] = !railOpen[p.number];
+        saveRailOpen();
+        buildRail();
+      });
+      group.appendChild(head);
+
+      if (open) {
+        var lessons = el("div", "ph-lessons");
+        p.lessons.forEach(function (l) { lessons.appendChild(railLessonRow(l)); });
+        group.appendChild(lessons);
+      }
+      list.appendChild(group);
     });
-    railNav.appendChild(ahead);
+    railNav.appendChild(list);
+
+    document.getElementById("rail-setup")
+      .classList.toggle("current", view.kind === "setup");
   }
 
-  /* ---------- continue — ported from the design canvas ---------- */
-
-  function copyButton(text, target, cls) {
-    var b = button(cls || "copybtn", "copy", function () {
-      var reset = function () { b.textContent = "copy"; b.classList.remove("ok", "warn"); };
-      var fallback = function () {
-        b.textContent = "Ctrl+C";
-        b.classList.add("warn");
-        try {
-          var range = document.createRange();
-          range.selectNodeContents(target);
-          var sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(range);
-        } catch (e) {}
-        setTimeout(reset, 2600);
-      };
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () {
-            b.textContent = "copied";
-            b.classList.add("ok");
-            setTimeout(reset, 1400);
-          }, fallback);
-          return;
-        }
-      } catch (e) {}
-      fallback();
-    });
-    b.setAttribute("aria-label", "Copy " + text);
-    return b;
-  }
-
-  function commandRow(cmd) {
-    var row = el("div", "cmdrow");
-    var code = el("code", "cmdtext", cmd);
-    row.appendChild(code);
-    row.appendChild(copyButton(cmd, code));
-    return row;
-  }
-
-  /* The design's command control: the text and the copy affordance are one
-     chip, so the whole thing reads as a thing you take. */
-  function commandChip(cmd, cls) {
-    var chip = el("button", cls || "cmdchip");
-    chip.type = "button";
-    var code = el("span", null, cmd);
-    chip.appendChild(code);
-    var label = el("span", "copylabel", "copy");
-    chip.appendChild(label);
-    chip.addEventListener("click", function () {
-      var reset = function () { label.textContent = "copy"; label.classList.remove("ok", "warn"); };
-      var fallback = function () {
-        label.textContent = "Ctrl+C";
-        label.classList.add("warn");
-        try {
-          var range = document.createRange();
-          range.selectNodeContents(code);
-          var sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(range);
-        } catch (e) {}
-        setTimeout(reset, 2600);
-      };
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(cmd).then(function () {
-            label.textContent = "copied";
-            label.classList.add("ok");
-            setTimeout(reset, 1400);
-          }, fallback);
-          return;
-        }
-      } catch (e) {}
-      fallback();
-    });
-    return chip;
-  }
-
-  function buildOverview() {
+  /* ---------- home: every phase, every lesson, visible ---------- */
+  function buildHome() {
     var wrap = el("div", "wrap");
-    var next = nextLesson();
+    var written = writtenLessons();
 
-    if (!next) {
-      wrap.appendChild(el("div", "hero-eyebrow", "nothing outstanding"));
-      wrap.appendChild(el("h1", "hero-h1", "You are up to date."));
-      wrap.appendChild(smallCards(null));
-      wrap.appendChild(paneNote(null));
-      return wrap;
-    }
+    wrap.appendChild(el("div", "hero-eyebrow", "The curriculum"));
+    wrap.appendChild(el("h1", "hero-h1", "Machine learning, built from scratch"));
+    wrap.appendChild(el("p", "hero-lede",
+      "Five phases, " + TOTAL + " lessons, written to be taken in order. Every lesson " +
+      "is read, then written in code, then compared against a walkthrough. " +
+      "Self-paced — nothing here expires."));
 
-    var lt = lessonTests(next.id);
-    var open = [];
-    if (lt) {
-      lt.exercises.forEach(function (e) { if (e.status !== "pass") open.push(e.name); });
-    }
+    var stats = el("div", "home-stats");
 
-    var present = SECTIONS[next.id] || [];
-    var steps = STEPS.filter(function (s) { return present.indexOf(s.name) > -1; });
-    var at = Math.min(activeTab[next.id] || 0, Math.max(steps.length - 1, 0));
-    var stepName = steps.length ? steps[at].label : null;
-    var resumed = activeTab[next.id] != null;
-
-    wrap.appendChild(el("div", "hero-eyebrow",
-      "Phase " + next.phase.number + " · " + next.phase.title));
-    wrap.appendChild(el("h1", "hero-h1",
-      lt && open.length
-        ? open.length + (open.length === 1 ? " exercise left in " : " exercises left in ") + next.id + "."
-        : lt ? next.id + " is passing. Close it out."
-        : next.title + "."));
-
-    var card = el("div", "continue-card");
-    var head = el("div", "continue-head");
-
-    var meta = el("div", "continue-meta");
-    meta.appendChild(el("div", "continue-kicker", "Continue · lesson " + next.id));
-    if (stepName) {
-      meta.appendChild(el("div", "continue-step",
-        "step " + (at + 1) + " of " + steps.length + " — " + stepName.toLowerCase()));
-    }
-    head.appendChild(meta);
-    head.appendChild(el("div", "continue-title", next.title));
-    head.appendChild(el("p", "continue-nudge", lt
-      ? (open.length
-          ? "Pick up where the tests stop. Nothing here is guessed — the numbers come from the runner."
-          : "Everything passes. Answer the closing questions and mark it done.")
-      : next.summary));
-
-    var actions = el("div", "continue-actions");
-    var cta = el("button", "btn-primary");
-    cta.type = "button";
-    cta.textContent = stepName
-      ? (resumed ? "Resume " + stepName.toLowerCase() : "Start " + stepName.toLowerCase())
-      : "Open lesson";
-    cta.addEventListener("click", function () { goLesson(next.id); });
-    actions.appendChild(cta);
-    actions.appendChild(commandChip("progress " + next.id));
-    head.appendChild(actions);
-    card.appendChild(head);
-
-    var stats = el("div", "continue-stats");
-
-    var s1 = el("div", "cstat");
-    s1.appendChild(el("div", "cstat-k", "Tests passing"));
-    s1.appendChild(el("div", "cstat-big", lt ? lt.tests_passed + " / " + lt.tests_total : "—"));
+    var s1 = el("div", "hstat");
+    s1.appendChild(el("div", "hstat-k", "Available now"));
+    var v1 = el("div", "hstat-v", String(written.length));
+    v1.appendChild(el("span", null, " of " + TOTAL + " written"));
+    s1.appendChild(v1);
     stats.appendChild(s1);
 
-    var s2 = el("div", "cstat");
-    s2.appendChild(el("div", "cstat-k", "Still open"));
-    s2.appendChild(el("div", "cstat-red", lt
-      ? (open.length ? open.join(", ") : "nothing")
-      : "not run yet"));
+    var c = checkedTotals();
+    var s2 = el("div", "hstat");
+    s2.appendChild(el("div", "hstat-k",
+      c.fromRunner ? "Exercises passing" : "Exercises checked"));
+    s2.appendChild(el("div", "hstat-v" + (c.total && c.done === c.total ? " is-done" : ""),
+      c.done + " / " + c.total));
     stats.appendChild(s2);
 
-    var s3 = el("div", "cstat");
-    s3.appendChild(el("div", "cstat-k", "Optional stretch"));
-    s3.appendChild(el("div", "cstat-sub", "stretch.py · not scored"));
-    stats.appendChild(s3);
+    var next = nextLesson() || written[0];
+    if (next) {
+      var start = el("div", "hstart");
+      start.appendChild(el("div", "hstat-k", "Start here"));
+      var t = el("button", "hstart-title", next.id + " — " + next.title);
+      t.type = "button";
+      t.addEventListener("click", function () { goLesson(next.id); });
+      start.appendChild(t);
+      start.appendChild(button("btn-primary",
+        activeTab[next.id] != null ? "Resume the lesson" : "Start the lesson",
+        function () { goLesson(next.id); }));
+      stats.appendChild(start);
+    }
+    wrap.appendChild(stats);
 
-    card.appendChild(stats);
-    wrap.appendChild(card);
+    wrap.appendChild(rulerCard());
 
-    wrap.appendChild(smallCards(next));
-    wrap.appendChild(paneNote(next));
+    var sections = el("div", "phase-sections");
+    phases.forEach(function (p) {
+      var w = p.lessons.filter(function (l) { return l.written; }).length;
+      var sec = el("section");
+
+      var head = el("div", "pshead");
+      head.appendChild(el("span", "phase-chip", "PHASE " + p.number));
+      head.appendChild(el("h2", null, p.title));
+      head.appendChild(el("span", "pshead-sub", p.subtitle));
+      head.appendChild(el("span", "pshead-count", w
+        ? w + " written · " + (p.lessons.length - w) + " planned"
+        : p.lessons.length + " planned"));
+      sec.appendChild(head);
+
+      sec.appendChild(el("p", "ps-blurb", p.blurb));
+
+      var mile = el("div", "milestone");
+      mile.appendChild(el("span", "milestone-k", "Milestone"));
+      mile.appendChild(el("span", "milestone-t", p.milestone));
+      sec.appendChild(mile);
+
+      var rows = el("div", "phase-lessons");
+      p.lessons.forEach(function (l) {
+        var done = isComplete(l);
+        var row = el("button", "plesson" + (l.written ? "" : " is-planned"));
+        row.type = "button";
+        if (l.written) row.addEventListener("click", function () { goLesson(l.id); });
+        else row.disabled = true;
+        row.appendChild(el("span", "plesson-id", l.id));
+        var body = el("span", "plesson-body");
+        body.appendChild(el("span", "plesson-title", l.title));
+        body.appendChild(el("span", "plesson-sum", l.summary));
+        row.appendChild(body);
+        row.appendChild(el("span",
+          "plesson-tag " + (done ? "done" : l.written ? "ready" : "plan"),
+          done ? "complete" : l.written ? "available" : "planned"));
+        rows.appendChild(row);
+      });
+      sec.appendChild(rows);
+      sections.appendChild(sec);
+    });
+    wrap.appendChild(sections);
     return wrap;
   }
 
-  function smallCards(next) {
-    var row = el("div", "smallcards");
-    var written = writtenLessons();
-    var doneCount = written.filter(isComplete).length;
+  /* Every lesson, in order, as one strip. */
+  function rulerCard() {
+    var card = el("div", "ruler-card");
 
-    var a = el("div", "scard");
-    var ah = el("div", "scard-head");
-    ah.appendChild(el("div", "scard-k", "Where you are"));
-    ah.appendChild(button("scard-go", "Path →", function () { go("path"); }));
-    a.appendChild(ah);
-    var count = el("div", "scard-count");
-    count.appendChild(el("span", "scard-num", String(doneCount)));
-    count.appendChild(el("span", "scard-of",
-      "of " + TOTAL + " lessons · " + written.length + " written so far"));
-    a.appendChild(count);
-    var bar = el("div", "scard-bar");
-    var fill = el("i");
-    fill.style.width = (TOTAL ? doneCount / TOTAL * 100 : 0) + "%";
-    bar.appendChild(fill);
-    a.appendChild(bar);
-    var ph = next ? next.phase : phases[0];
-    var mile = el("p", "scard-mile");
-    mile.appendChild(el("b", null, "Phase " + ph.number + " milestone. "));
-    mile.appendChild(document.createTextNode(ph.milestone));
-    a.appendChild(mile);
-    row.appendChild(a);
+    var top = el("div", "ruler-top");
+    top.appendChild(el("div", "ruler-k", "All " + TOTAL + " lessons"));
+    var legend = el("div", "legend");
+    [["written", "var(--accent)"], ["complete", "var(--done)"], ["planned", "var(--rule-firm)"]]
+      .forEach(function (row) {
+        var s = el("span");
+        var i = el("i");
+        i.style.background = row[1];
+        s.appendChild(i);
+        s.appendChild(document.createTextNode(row[0]));
+        legend.appendChild(s);
+      });
+    top.appendChild(legend);
+    card.appendChild(top);
 
-    var b = el("div", "scard");
-    var bh = el("div", "scard-head");
-    bh.appendChild(el("div", "scard-k", "In your library"));
-    bh.appendChild(button("scard-go", "Library →", function () { go("library"); }));
-    b.appendChild(bh);
-    var picked = LIBRARY.filter(function (it) {
-      return next && (it.lessons || []).indexOf(next.id) > -1;
+    var ruler = el("div", "ruler");
+    allLessons.forEach(function (l) {
+      var t = el("span", "ptick");
+      t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
+      t.title = l.id + " " + l.title + (l.written ? "" : " — planned");
+      ruler.appendChild(t);
     });
-    LIBRARY.forEach(function (it) {
-      if (picked.length < 3 && picked.indexOf(it) < 0) picked.push(it);
-    });
-    var list = el("div", "scard-list");
-    picked.slice(0, 3).forEach(function (it) {
-      var item = el("div", "scard-item");
-      item.appendChild(el("span", "scard-kind", it.kind));
-      item.appendChild(el("span", "scard-title", it.title));
-      list.appendChild(item);
-    });
-    b.appendChild(list);
-    row.appendChild(b);
-
-    return row;
-  }
-
-  function paneNote(next) {
-    var p = el("p", "pane-note");
-    p.appendChild(document.createTextNode("Progress is read from "));
-    p.appendChild(el("b", null, "site/progress.json"));
-    p.appendChild(document.createTextNode(", written by "));
-    p.appendChild(el("b", null, "progress --json"));
-    p.appendChild(document.createTextNode(
-      ". This page never invents a pass. Self-paced — no streaks, no deadlines."));
-    return p;
+    card.appendChild(ruler);
+    return card;
   }
 
   /* ---------- setup — ported from the design canvas ---------- */
@@ -897,8 +776,8 @@
       box.appendChild(p);
       var crow = el("div", "confirm-row");
       crow.appendChild(button("btn-yes", "Yes, clear it", function () {
-        done = {};
-        saveDone();
+        checked = {};
+        saveChecked();
         try { localStorage.removeItem(PROG_KEY); } catch (e) {}
         progressData = null;
         clearing = false;
@@ -926,291 +805,6 @@
       keys.appendChild(r);
     });
     wrap.appendChild(keys);
-    return wrap;
-  }
-
-  /* ---------- path — ported from the design canvas ---------- */
-
-  /* Every lesson, in order, as one strip. Colour and height carry the
-     same three states, so the shape is readable before the legend is. */
-  function rulerCard() {
-    var card = el("div", "ruler-card");
-
-    var top = el("div", "ruler-top");
-    top.appendChild(el("div", "ruler-k", "All " + TOTAL + " lessons"));
-    var written = writtenLessons();
-    top.appendChild(el("div", "ruler-count",
-      written.length + " written · " + totalDone() + " complete"));
-    card.appendChild(top);
-
-    var ruler = el("div", "ruler");
-    allLessons.forEach(function (l) {
-      var t = el("span", "ptick");
-      t.setAttribute("data-state", isComplete(l) ? "done" : (l.written ? "ready" : "planned"));
-      t.title = l.id + " — " + l.title;
-      ruler.appendChild(t);
-    });
-    card.appendChild(ruler);
-
-    var legend = el("div", "legend");
-    [["written", "var(--accent)"], ["complete", "var(--done)"], ["planned", "var(--rule-firm)"]]
-      .forEach(function (row) {
-        var s = el("span");
-        var i = el("i");
-        i.style.background = row[1];
-        s.appendChild(i);
-        s.appendChild(document.createTextNode(row[0]));
-        legend.appendChild(s);
-      });
-    card.appendChild(legend);
-    return card;
-  }
-
-  function milestoneStrip(text, cls) {
-    var box = el("div", cls || "milestone");
-    box.appendChild(el("span", "milestone-k", "Milestone"));
-    box.appendChild(el("span", "milestone-t", text));
-    return box;
-  }
-
-  function buildPath() {
-    var wrap = el("div", "wrap is-path");
-    wrap.appendChild(el("div", "hero-eyebrow", "The path"));
-    wrap.appendChild(el("h1", "hero-h1", "Five phases, " + TOTAL + " lessons"));
-    wrap.appendChild(el("p", "hero-lede",
-      "Written in order and meant to be taken in order. " +
-      writtenLessons().length + " of " + TOTAL + " lessons are written; the rest are " +
-      "planned, and their milestones are the part worth reading now."));
-    wrap.appendChild(rulerCard());
-
-    var cards = el("div", "phase-cards");
-    phases.forEach(function (ph) {
-      var written = ph.lessons.filter(function (l) { return l.written; }).length;
-      var card = el("div", "pcard");
-      var b = button("pcard-btn", null, function () { goPhase(ph.id); });
-
-      var top = el("div", "pcard-top");
-      top.appendChild(el("span", "phase-chip", "PHASE " + ph.number));
-      top.appendChild(el("span", "pcard-title", ph.title));
-      top.appendChild(el("span", "pcard-sub", ph.subtitle));
-      top.appendChild(el("span", "pcard-count", ph.lessons.length + " lessons" +
-        (written ? " · " + written + " written" : "")));
-      b.appendChild(top);
-
-      b.appendChild(el("p", "pcard-blurb", ph.blurb));
-      b.appendChild(milestoneStrip(ph.milestone));
-      card.appendChild(b);
-      cards.appendChild(card);
-    });
-    wrap.appendChild(cards);
-    return wrap;
-  }
-
-  /* ---------- one phase — ported from the design canvas ---------- */
-  function buildPhase(ph) {
-    var wrap = el("div", "wrap");
-
-    var crumbs = el("div", "crumbs spaced");
-    crumbs.appendChild(button("crumb", "Path", function () { go("path"); }));
-    crumbs.appendChild(el("span", "crumb-sep", "/"));
-    crumbs.appendChild(el("span", "crumb-now", "Phase " + ph.number));
-    wrap.appendChild(crumbs);
-
-    wrap.appendChild(el("div", "hero-eyebrow", "Phase " + ph.number + " · " + ph.subtitle));
-    wrap.appendChild(el("h1", "hero-h1", ph.title));
-    wrap.appendChild(el("p", "hero-lede phase-lede", ph.blurb));
-    wrap.appendChild(milestoneStrip(ph.milestone, "phase-mile"));
-
-    var written = ph.lessons.filter(function (l) { return l.written; }).length;
-    var head = el("div", "list-head");
-    head.appendChild(el("h2", null, "Lessons"));
-    head.appendChild(el("span", "list-count", ph.lessons.length + " lessons · " +
-      (written ? written + " written" : "none written yet")));
-    wrap.appendChild(head);
-
-    var list = el("div", "phase-lessons");
-    ph.lessons.forEach(function (l) {
-      var done = isComplete(l);
-      var row = l.written
-        ? button("plesson", null, function () { goLesson(l.id); })
-        : el("div", "plesson is-planned");
-      row.appendChild(el("span", "plesson-id", l.id));
-      var body = el("span", "plesson-body");
-      body.appendChild(el("span", "plesson-title", l.title));
-      body.appendChild(el("span", "plesson-sum", l.summary));
-      row.appendChild(body);
-      row.appendChild(el("span",
-        "plesson-tag " + (done ? "done" : l.written ? "ready" : "plan"),
-        done ? "complete" : l.written ? "written" : "planned"));
-      list.appendChild(row);
-    });
-    wrap.appendChild(list);
-    return wrap;
-  }
-
-  /* ---------- practice — ported from the design canvas ---------- */
-  var practiceFilter = "all";
-
-  function buildPractice() {
-    var wrap = el("div", "wrap");
-    var rows = allExercises();
-    var open = rows.filter(function (r) {
-      return statusOf(r.lesson.id, r.ex.name) !== "pass";
-    });
-
-    wrap.appendChild(el("div", "hero-eyebrow", "Practice"));
-    wrap.appendChild(el("h1", "hero-h1", "Every exercise, and what the tests say"));
-    wrap.appendChild(el("p", "hero-lede",
-      "Across every written lesson. Status comes from the runner, so this and " +
-      "your repo cannot disagree."));
-
-    var filters = el("div", "filters");
-    [["all", "All", rows.length], ["open", "Not passing", open.length]]
-      .forEach(function (f) {
-        var b = button("filter" + (practiceFilter === f[0] ? " on" : ""), null,
-          function () { practiceFilter = f[0]; render(); });
-        b.appendChild(document.createTextNode(f[1] + " "));
-        b.appendChild(el("b", null, String(f[2])));
-        b.setAttribute("aria-pressed", practiceFilter === f[0] ? "true" : "false");
-        filters.appendChild(b);
-      });
-    var next = nextLesson();
-    filters.appendChild(commandChip("progress " + (next ? next.id : "--json"), "cmdchip plain"));
-    wrap.appendChild(filters);
-
-    var shown = practiceFilter === "open" ? open : rows;
-    var list = el("div", "exrows");
-    if (!shown.length) {
-      list.appendChild(el("div", "exempty", rows.length
-        ? "Every exercise is passing."
-        : "No exercises yet — no lesson has been written."));
-    }
-    shown.forEach(function (r) {
-      list.appendChild(exerciseRow(r.lesson, r.ex, true));
-    });
-    wrap.appendChild(list);
-
-    var note = el("p", "pane-note");
-    note.appendChild(document.createTextNode(
-      "The tests inspect your source, not just your return value. The last column " +
-      "is what each one actually forbids, read from the assertion that enforces it."));
-    if (!progressData) {
-      note.appendChild(el("br"));
-      note.appendChild(document.createTextNode("No results loaded yet — "));
-      note.appendChild(button("linkbtn", "Setup & environment", function () { go("setup"); }));
-      note.appendChild(document.createTextNode(" says how to run them."));
-    }
-    wrap.appendChild(note);
-    return wrap;
-  }
-
-  /* One exercise row, drawn the same way on Practice and inside a lesson.
-     Everything it says about status comes from the runner. */
-  function statusOf(lessonId, name) {
-    var r = exerciseResult(lessonId, name);
-    return r ? r.status : "not_run";
-  }
-
-  function exerciseRow(l, e, showLesson) {
-    var res = exerciseResult(l.id, e.name);
-    var status = res ? res.status : "not_run";
-    var row = el("div", "exrow is-" + status + (e.optional ? " is-optional" : ""));
-
-    var mark = el("span", "exmark", status === "pass" ? "✓" : status === "fail" ? "!" : "");
-    mark.setAttribute("data-status", status);
-    mark.setAttribute("aria-hidden", "true");
-    row.appendChild(mark);
-
-    var body = el("div", "exbody");
-    var head = el("div", "exhead");
-    head.appendChild(el("code", "exname", e.name));
-    if (showLesson) {
-      head.appendChild(el("span", "exwhere",
-        "lesson " + l.id + " · #" + ((l.exercises || []).indexOf(e) + 1)));
-    }
-    if (e.optional) head.appendChild(el("span", "exopt", "optional"));
-    body.appendChild(head);
-    body.appendChild(el("span", "exsum", e.summary));
-    if (res && res.message) body.appendChild(el("span", "exmsg", res.message));
-    row.appendChild(body);
-
-    row.appendChild(el("span", "exstat is-" + status,
-      status === "pass" ? res.tests_total + (res.tests_total === 1 ? " test passes" : " tests pass")
-        : status === "fail" ? (res.tests_total - res.tests_passed) + " of " + res.tests_total + " failing"
-        : e.optional ? "not scored" : "todo"));
-
-    var bans = el("span", "exbans");
-    (e.forbids || []).forEach(function (b, i) {
-      if (i) bans.appendChild(el("br"));
-      bans.appendChild(document.createTextNode(b));
-    });
-    row.appendChild(bans);
-    return row;
-  }
-
-  /* ---------- library — ported from the design canvas ---------- */
-  var libKind = "all";
-
-  function buildLibrary() {
-    var wrap = el("div", "wrap");
-    wrap.appendChild(el("div", "hero-eyebrow", "Library"));
-    wrap.appendChild(el("h1", "hero-h1", "Everything you have collected"));
-    wrap.appendChild(el("p", "hero-lede",
-      "Papers, videos, courses and repositories. Tagged by lesson, but findable " +
-      "when you have forgotten which lesson it was."));
-
-    var kinds = ["all"];
-    LIBRARY.forEach(function (it) { if (kinds.indexOf(it.kind) < 0) kinds.push(it.kind); });
-    var filters = el("div", "libfilters");
-    kinds.forEach(function (k) {
-      var n = k === "all" ? LIBRARY.length
-        : LIBRARY.filter(function (it) { return it.kind === k; }).length;
-      var b = button("filter" + (libKind === k ? " on" : ""), null,
-        function () { libKind = k; render(); });
-      b.appendChild(document.createTextNode(k + " "));
-      b.appendChild(el("b", null, String(n)));
-      b.setAttribute("aria-pressed", libKind === k ? "true" : "false");
-      filters.appendChild(b);
-    });
-    wrap.appendChild(filters);
-
-    var list = el("div", "libitems");
-    LIBRARY.filter(function (it) { return libKind === "all" || it.kind === libKind; })
-      .forEach(function (it) {
-        var row = el("div", "libitem");
-        row.appendChild(el("span", "libkind", it.kind));
-
-        var body = el("div", "libbody");
-        var top = el("div", "libtop");
-        /* The design draws the title as plain text; it stays a link, because a
-           library you cannot open is a list. At rest the two look the same. */
-        var a = el("a", "libtitle", it.title);
-        a.href = it.url;
-        a.target = "_blank";
-        a.rel = "noopener";
-        top.appendChild(a);
-        if (it.by) top.appendChild(el("span", "libby", it.by));
-        body.appendChild(top);
-        if (it.note) body.appendChild(el("p", "libnote", it.note));
-
-        var tags = el("div", "libtags");
-        (it.lessons || []).forEach(function (lid) {
-          var l = lessonById(lid);
-          if (!l) return;
-          tags.appendChild(l.written
-            ? button("libtag", lid + " " + l.title, function () { goLesson(lid); })
-            : el("span", "libtag", lid + " " + l.title));
-        });
-        (it.phases || []).forEach(function (n) {
-          var ph = phases.filter(function (x) { return x.number === n; })[0];
-          if (ph) tags.appendChild(button("libtag", "Phase " + n, function () { goPhase(ph.id); }));
-        });
-        if (tags.children.length) body.appendChild(tags);
-
-        row.appendChild(body);
-        list.appendChild(row);
-      });
-    wrap.appendChild(list);
     return wrap;
   }
 
@@ -1341,7 +935,10 @@
       inner.appendChild(el("div", "side-k", "Before you start"));
       var mlist = el("div", "side-mats");
       mats.forEach(function (m) {
-        var b = button("side-mat", null, function () { go("library"); });
+        var b = el("a", "side-mat");
+        b.href = m.url;
+        b.target = "_blank";
+        b.rel = "noopener";
         b.appendChild(el("span", "side-mat-k", m.kind));
         b.appendChild(el("span", "side-mat-t", m.title));
         mlist.appendChild(b);
@@ -1484,10 +1081,6 @@
         "You can override it, and the override says so."));
     }
     strip.appendChild(body);
-    var b = button("btn-mark" + (done[l.id] ? " on" : ""),
-      done[l.id] ? "Remove hand tick" : "Mark complete by hand",
-      function () { toggleDone(l.id); });
-    strip.appendChild(b);
     return strip;
   }
 
@@ -1496,10 +1089,9 @@
 
     var head = el("div", "lesson-head");
     var crumbs = el("div", "crumbs");
-    crumbs.appendChild(button("crumb", "Path", function () { go("path"); }));
+    crumbs.appendChild(button("crumb", "Curriculum", goHome));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
-    crumbs.appendChild(button("crumb", "Phase " + l.phase.number + " · " + l.phase.title,
-      function () { goPhase(l.phase.id); }));
+    crumbs.appendChild(el("span", null, "Phase " + l.phase.number + " · " + l.phase.title));
     crumbs.appendChild(el("span", "crumb-sep", "/"));
     crumbs.appendChild(el("span", "crumb-now", l.id));
     head.appendChild(crumbs);
@@ -1745,32 +1337,20 @@
 
     if (view.kind === "lesson") {
       var l = lessonById(view.id);
-      pane.appendChild(l ? buildLesson(l) : buildOverview());
-    } else if (view.kind === "path") {
-      pane.appendChild(buildPath());
-    } else if (view.kind === "phase") {
-      var ph = phaseById(view.id);
-      pane.appendChild(ph ? buildPhase(ph) : buildPath());
-    } else if (view.kind === "practice") {
-      pane.appendChild(buildPractice());
-    } else if (view.kind === "library") {
-      pane.appendChild(buildLibrary());
+      pane.appendChild(l ? buildLesson(l) : buildHome());
     } else if (view.kind === "setup") {
       pane.appendChild(buildSetup());
     } else {
-      pane.appendChild(buildOverview());
+      pane.appendChild(buildHome());
     }
 
-    var totals = testTotals();
-    if (totals && totals.total) {
-      document.getElementById("stat-count").textContent =
-        totals.passed + " / " + totals.total + " tests";
-      document.getElementById("stat-bar").style.width = (totals.passed / totals.total * 100) + "%";
-    } else {
-      var n = writtenLessons().filter(isComplete).length;
-      document.getElementById("stat-count").textContent = n + " / " + TOTAL + " lessons";
-      document.getElementById("stat-bar").style.width = (n / TOTAL * 100) + "%";
-    }
+    var c = checkedTotals();
+    document.getElementById("stat-count").textContent = c.done + " / " + c.total;
+    document.getElementById("stat-bar").style.width =
+      (c.total ? c.done / c.total * 100 : 0) + "%";
+    document.getElementById("topstat").title = c.fromRunner
+      ? "Exercises passing, read from site/progress.json"
+      : "Exercises you have ticked off, stored in this browser";
     buildRail();
 
     if (window.matchMedia("(max-width: 940px)").matches) {
@@ -1783,7 +1363,7 @@
   var rail = document.getElementById("rail");
   var toggle = document.getElementById("railtoggle");
 
-  document.getElementById("brand").addEventListener("click", goOverview);
+  document.getElementById("brand").addEventListener("click", goHome);
   document.getElementById("searchbtn").addEventListener("click", openPalette);
   document.getElementById("rail-setup").addEventListener("click", function () { go("setup"); });
   toggle.addEventListener("click", function () {
