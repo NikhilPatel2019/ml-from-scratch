@@ -4,8 +4,10 @@ Run with:   progress 1.2
 Or:         pytest lessons/01-foundations/02-geometry
 """
 
+import ast
 import inspect
 import sys
+import textwrap
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +19,25 @@ import exercises as ex  # noqa: E402
 
 def close(a, b, tol=1e-9):
     return abs(float(a) - float(b)) < tol
+
+
+def body(fn):
+    """A function's source with its docstring removed.
+
+    The source checks below look for banned names like "numpy" and "for ".
+    A docstring that states the rule -- "Plain Python only, no numpy" --
+    contains the very word being banned, so checking the raw source would make
+    the exercise unpassable no matter what you wrote. Comments go too, for the
+    same reason: what is banned is the code, not talking about the code.
+    """
+    tree = ast.parse(textwrap.dedent(inspect.getsource(fn)))
+    node = tree.body[0]
+    if (node.body
+            and isinstance(node.body[0], ast.Expr)
+            and isinstance(node.body[0].value, ast.Constant)
+            and isinstance(node.body[0].value.value, str)):
+        node.body = node.body[1:]
+    return ast.unparse(node)
 
 
 # Angles near 0 and 180 degrees cannot be computed to full precision, and that
@@ -45,7 +66,7 @@ def test_1_distance_loop():
     else:
         raise AssertionError("mismatched lengths must raise ValueError")
 
-    src = inspect.getsource(ex.distance_loop)
+    src = body(ex.distance_loop)
     assert "np." not in src and "numpy" not in src, "must be plain Python, no numpy"
 
 
@@ -64,7 +85,7 @@ def test_2_distance():
     assert close(ex.distance(np.array(a), np.array(b)), ex.distance_loop(a, b)), \
         "exercise 2 disagrees with exercise 1"
 
-    assert "for " not in inspect.getsource(ex.distance), "no for loops here"
+    assert "for " not in body(ex.distance), "no for loops here"
 
 
 def test_3_angle_between():
@@ -94,7 +115,7 @@ def test_3_angle_between():
         else:
             raise AssertionError("a zero vector has no direction: must raise ValueError")
 
-    assert "for " not in inspect.getsource(ex.angle_between), "no for loops here"
+    assert "for " not in body(ex.angle_between), "no for loops here"
 
 
 def test_4_project():
@@ -125,7 +146,7 @@ def test_4_project():
     else:
         raise AssertionError("there is no line through the zero vector: must raise ValueError")
 
-    assert "for " not in inspect.getsource(ex.project), "no for loops here"
+    assert "for " not in body(ex.project), "no for loops here"
 
 
 def test_5_reject():
@@ -144,7 +165,7 @@ def test_5_reject():
     assert close(float(np.dot(ex.reject(a, b), b)), 0.0, tol=1e-9), \
         "the rejection must be perpendicular to b"
 
-    assert "for " not in inspect.getsource(ex.reject), "no for loops here"
+    assert "for " not in body(ex.reject), "no for loops here"
 
 
 def test_6_is_orthogonal():
@@ -167,7 +188,7 @@ def test_6_is_orthogonal():
     assert ex.is_orthogonal(np.array([1.0, 0.0]), np.array([1.0, 1.0]), tol=1e-3) is False, \
         "tol must not swallow a 45 degree angle"
 
-    src = inspect.getsource(ex.is_orthogonal)
+    src = body(ex.is_orthogonal)
     assert "== 0" not in src and "==0" not in src, \
         "do not compare a float against 0 with ==; compare against tol"
     assert "for " not in src, "no for loops here"
