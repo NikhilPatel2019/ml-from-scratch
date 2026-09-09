@@ -4,6 +4,33 @@
 
 <h2>1 and 2 — distance, twice</h2>
 
+<figure class="diagram" data-solution="2">
+<svg viewBox="0 0 620 250" role="img" aria-label="Two points, a at the origin and b at three across and four up. Subtracting them gives the vector from one to the other. Squaring its two components gives nine and sixteen, which sum to twenty-five, and the square root of that is five.">
+  <line x1="60" y1="200" x2="300" y2="200" class="sep"></line>
+  <line x1="60" y1="200" x2="60" y2="60" class="sep"></line>
+
+  <line x1="60" y1="200" x2="180" y2="200" class="conn"></line>
+  <line x1="180" y1="200" x2="180" y2="90" class="conn"></line>
+  <line x1="60" y1="200" x2="180" y2="90" class="conn-hl"></line>
+  <path d="M 168 200 L 168 188 L 180 188" class="conn" fill="none"></path>
+
+  <circle cx="60" cy="200" r="4" class="box"></circle>
+  <circle cx="180" cy="90" r="4" class="box-hl"></circle>
+  <text x="42" y="216" class="lbl-sm">a</text>
+  <text x="188" y="86" class="lbl-sm">b</text>
+  <text x="112" y="218" class="lbl">3</text>
+  <text x="190" y="150" class="lbl">4</text>
+  <text x="96" y="136" class="lbl-hl">5</text>
+
+  <rect x="340" y="66" width="250" height="118" rx="4" class="box"></rect>
+  <text x="362" y="94" class="head">the one vector you measure</text>
+  <text x="362" y="122" class="lbl">b − a  =  [3, 4]</text>
+  <text x="362" y="146" class="lbl">3² + 4²  =  25</text>
+  <text x="362" y="170" class="lbl-hl">√25  =  5</text>
+</svg>
+<figcaption>Distance is not a new formula. Subtracting the two points gives a vector, and its length is the answer — so distance is <code>magnitude</code> from 1.1 applied to <code>a - b</code>. Squaring is also why the order of subtraction cannot matter: <code>(a−b)²</code> and <code>(b−a)²</code> are the same number.</figcaption>
+</figure>
+
 <p>Distance is <code>magnitude</code> from 1.1 applied to <code>a - b</code>. That is the whole insight, and it is worth pausing on because it is the first time you reuse a function you built rather than a formula you looked up.</p>
 
 <p>The length check in exercise 1 matters for the same reason it mattered in <code>dot_loop</code>: the operation is <em>undefined</em> for mismatched lengths. There is no sensible answer, so failing loudly beats guessing.</p>
@@ -11,6 +38,48 @@
 <p>For exercise 2, <code>np.linalg.norm(a - b)</code> does it in one call and is what you would reach for in real code. Write it out with square, sum and sqrt at least once — the point of the pair is to see that the vectorised version is the same three operations, composed.</p>
 
 <h2>3 — the angle, and the two things that go wrong</h2>
+
+<figure class="diagram" data-solution="3">
+<svg viewBox="0 0 620 210" role="img" aria-label="A four step pipeline. From a equals one zero and b equals one one, take three numbers: the dot product is one, the length of a is one, the length of b is 1.414. Dividing gives a cosine of 0.7071. Arccos gives 0.7854 radians, which converts to forty-five degrees.">
+  <defs>
+    <marker id="arw12c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="20" y="40" width="128" height="106" rx="4" class="box"></rect>
+  <text x="38" y="66" class="head">the inputs</text>
+  <text x="38" y="94" class="lbl">a = [1, 0]</text>
+  <text x="38" y="118" class="lbl">b = [1, 1]</text>
+
+  <line x1="152" y1="93" x2="170" y2="93" class="conn" marker-end="url(#arw12c)"></line>
+
+  <rect x="174" y="40" width="128" height="106" rx="4" class="box"></rect>
+  <text x="192" y="66" class="head">three numbers</text>
+  <text x="192" y="94" class="lbl">a · b = 1</text>
+  <text x="192" y="116" class="lbl">|a| = 1</text>
+  <text x="192" y="138" class="lbl">|b| = 1.414</text>
+
+  <line x1="306" y1="93" x2="324" y2="93" class="conn" marker-end="url(#arw12c)"></line>
+
+  <rect x="328" y="40" width="118" height="106" rx="4" class="box"></rect>
+  <text x="346" y="66" class="head">the cosine</text>
+  <text x="346" y="94" class="lbl">1 ÷ 1.414</text>
+  <text x="346" y="118" class="lbl-hl">= 0.7071</text>
+
+  <line x1="450" y1="93" x2="468" y2="93" class="conn" marker-end="url(#arw12c)"></line>
+
+  <rect x="472" y="40" width="128" height="106" rx="4" class="box-hl"></rect>
+  <text x="490" y="66" class="head">the angle</text>
+  <text x="490" y="94" class="lbl">arccos → 0.7854</text>
+  <text x="490" y="116" class="lbl">radians</text>
+  <text x="490" y="138" class="lbl-hl">= 45°</text>
+
+  <text x="20" y="180" class="lbl-sm">clip the cosine to [−1, 1] between box three and box four — after arccos is too late,</text>
+  <text x="20" y="198" class="lbl-sm">because arccos has already returned nan and clipping nan gives nan</text>
+</svg>
+<figcaption>Boxes two and three are <code>cosine_similarity</code> from 1.1. The only genuinely new steps are <code>arccos</code> and the unit conversion — the exercise is smaller than it looks once you notice you already own most of it.</figcaption>
+</figure>
 
 <p>Rearranging <code>a·b = |a||b|cos θ</code> for θ gives you <code>arccos</code> of the cosine similarity you already wrote. So the mathematical content of this exercise is one line. Everything else is the numerics, and that is deliberate.</p>
 
@@ -20,6 +89,65 @@
 
 <h2>4 and 5 — projection and rejection</h2>
 
+<figure class="diagram" data-solution="4">
+<svg viewBox="0 0 620 240" role="img" aria-label="The vector a at three three, and b along the horizontal axis. The scalar, the dot product of a and b divided by the dot product of b with itself, equals three. Multiplying b by three gives the projection at three zero. Doubling b to five zero leaves the projection unchanged, because the scalar halves as b lengthens.">
+  <defs>
+    <marker id="arw12d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="50" y1="180" x2="270" y2="180" class="conn" marker-end="url(#arw12d)"></line>
+  <text x="278" y="184" class="lbl">b</text>
+  <line x1="50" y1="180" x2="170" y2="60" class="conn-hl" marker-end="url(#arw12d)"></line>
+  <text x="178" y="56" class="lbl-hl">a</text>
+  <line x1="170" y1="60" x2="170" y2="180" class="conn" stroke-dasharray="4 4"></line>
+  <path d="M 158 180 L 158 168 L 170 168" class="conn" fill="none"></path>
+  <line x1="50" y1="196" x2="170" y2="196" class="conn-hl"></line>
+  <text x="110" y="216" class="lbl-hl" text-anchor="middle">projection</text>
+
+  <rect x="326" y="40" width="272" height="76" rx="4" class="box"></rect>
+  <text x="346" y="66" class="head">how many copies of b?</text>
+  <text x="346" y="94" class="lbl">(a · b) / (b · b)  =  3 / 1  =  3</text>
+
+  <rect x="326" y="130" width="272" height="86" rx="4" class="box-hl"></rect>
+  <text x="346" y="156" class="head">why b's length drops out</text>
+  <text x="346" y="182" class="lbl-sm">double b: numerator ×2, denominator ×4</text>
+  <text x="346" y="202" class="lbl-sm">so the scalar halves — same shadow</text>
+</svg>
+<figcaption>The denominator is <code>b · b</code>, not <code>|b|</code>, and that is deliberate: it cancels <em>both</em> factors of b's length — one from the numerator's alignment term and one from travelling along <code>b</code> at the end. Which is why only <code>b</code>'s direction reaches the answer.</figcaption>
+</figure>
+
+<figure class="diagram" data-solution="5">
+<svg viewBox="0 0 620 230" role="img" aria-label="The vector a at three three splits into two pieces: the projection three zero along b, and the rejection zero three perpendicular to b. The two pieces add back to a exactly, and the rejection meets b at a right angle.">
+  <defs>
+    <marker id="arw12e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <line x1="50" y1="180" x2="260" y2="180" class="sep"></line>
+  <line x1="50" y1="180" x2="170" y2="60" class="conn-hl" marker-end="url(#arw12e)"></line>
+  <text x="178" y="56" class="lbl-hl">a = [3, 3]</text>
+
+  <line x1="50" y1="180" x2="170" y2="180" class="conn" marker-end="url(#arw12e)"></line>
+  <text x="76" y="200" class="lbl">[3, 0]  along b</text>
+
+  <line x1="170" y1="180" x2="170" y2="60" class="conn" marker-end="url(#arw12e)"></line>
+  <text x="182" y="126" class="lbl">[0, 3]  across b</text>
+  <path d="M 158 180 L 158 168 L 170 168" class="conn" fill="none"></path>
+
+  <rect x="330" y="46" width="268" height="70" rx="4" class="box-hl"></rect>
+  <text x="350" y="72" class="head">the two pieces rebuild a</text>
+  <text x="350" y="98" class="lbl">[3, 0] + [0, 3]  =  [3, 3]</text>
+
+  <rect x="330" y="130" width="268" height="70" rx="4" class="box"></rect>
+  <text x="350" y="156" class="head">and the leftover is square to b</text>
+  <text x="350" y="182" class="lbl">[0, 3] · [1, 0]  =  0</text>
+</svg>
+<figcaption>The right angle is not a coincidence to check afterwards — it is what subtracting the projection <em>means</em>. You removed every part of <code>a</code> that lay along <code>b</code>, so nothing along <code>b</code> can be left. This split is what least squares, PCA and an attention head are all doing.</figcaption>
+</figure>
+
 <p>The formula is a ratio of two dot products, and the reason it is a ratio is the useful part. <code>a·b</code> tells you how aligned the two are, but it grows if <code>b</code> gets longer. Dividing by <code>b·b</code> removes exactly that growth, which is why doubling <code>b</code> does not move the answer. Then you travel that far <em>along</em> <code>b</code>, which means multiplying by <code>b</code>.</p>
 
 <p>You could also write it as <code>np.dot(a, unit_b) * unit_b</code> using your <code>normalise</code> from 1.1. That is the same arithmetic with the normalisation done once explicitly rather than folded into the ratio, and it is arguably clearer about what is happening. Either is correct; knowing they are the same thing is the point.</p>
@@ -27,6 +155,37 @@
 <p>Exercise 5 is one line, and if it is more than one line you have not used exercise 4. The property the test checks — that the two pieces add back to <code>a</code>, and that the leftover is perpendicular to <code>b</code> — is not a coincidence to verify, it is the definition. You are splitting a vector into two components along perpendicular directions.</p>
 
 <h2>6 — the tolerance</h2>
+
+<figure class="diagram" data-solution="6">
+<svg viewBox="0 0 620 220" role="img" aria-label="A number line near zero. A dot product of 3.06e-17 from two genuinely perpendicular vectors sits just off zero. A tolerance of 1e-9 includes it. A tolerance of 1e-30 excludes it and reports a right angle as not a right angle. A tolerance of 0.1 is so wide it also admits a visible 45 degree angle.">
+  <line x1="60" y1="96" x2="560" y2="96" class="sep"></line>
+  <line x1="70" y1="88" x2="70" y2="104" class="conn"></line>
+  <text x="70" y="124" class="lbl-sm" text-anchor="middle">0</text>
+
+  <line x1="150" y1="88" x2="150" y2="104" class="conn-hl"></line>
+  <text x="150" y="80" class="lbl-hl" text-anchor="middle">3.06e−17</text>
+  <text x="150" y="124" class="lbl-sm" text-anchor="middle">a real right angle</text>
+
+  <line x1="330" y1="88" x2="330" y2="104" class="conn"></line>
+  <text x="330" y="124" class="lbl-sm" text-anchor="middle">1e−9</text>
+
+  <line x1="520" y1="88" x2="520" y2="104" class="conn"></line>
+  <text x="520" y="124" class="lbl-sm" text-anchor="middle">0.1</text>
+
+  <rect x="60" y="150" width="172" height="52" rx="4" class="box"></rect>
+  <text x="78" y="172" class="head">tol = 1e−30</text>
+  <text x="78" y="192" class="lbl-sm">rejects a real right angle</text>
+
+  <rect x="244" y="150" width="172" height="52" rx="4" class="box-hl"></rect>
+  <text x="262" y="172" class="head">tol = 1e−9</text>
+  <text x="262" y="192" class="lbl-sm">the useful middle</text>
+
+  <rect x="428" y="150" width="172" height="52" rx="4" class="box"></rect>
+  <text x="446" y="172" class="head">tol = 0.1</text>
+  <text x="446" y="192" class="lbl-sm">admits a 45° angle</text>
+</svg>
+<figcaption><code>== 0</code> is the leftmost box taken to its limit: a tolerance of exactly nothing, which rejects every real right angle a computer will ever hand you. Picking <code>tol</code> is a decision about what "close enough" means for your data, not a default to copy.</figcaption>
+</figure>
 
 <p>The trap is <code>== 0</code>. The subtler question is what tolerance to pick, and it is worth thinking about for a minute rather than copying <code>1e-9</code> because it was in the signature.</p>
 

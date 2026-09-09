@@ -1,0 +1,67 @@
+{
+  "solutions": [
+    {
+      "n": 1,
+      "name": "distance_loop",
+      "headline": "Pythagoras between two points",
+      "mechanism": "One formula, three steps, in this order: subtract the two points position by position to get the gap, square each difference, add the squares, take the root. Squaring is what makes the order of subtraction irrelevant — (a-b)² and (b-a)² are the same number — which is why distance(a, b) always equals distance(b, a). The length check comes first because the operation is undefined for mismatched lengths: there is no sensible answer, so failing loudly beats guessing.",
+      "code": "def distance_loop(a: list[float], b: list[float]) -> float:\n    if len(a) != len(b):\n        raise ValueError(\"The two points must have the same number of components.\")\n\n    total = 0.0\n    for x, y in zip(a, b):\n        total += (x - y) ** 2\n    return math.sqrt(total)",
+      "why": "zip(a, b) walks two sequences in step and is the idiomatic form when you do not need the index for anything else. Accumulating with an explicit loop and indexing by range(len(a)) is equally correct and is what most people write first; both are fine here. A comprehension — math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b))) — collapses it to one line, and is worth writing out once you have seen the loop, because the loop is the thing you are proving you can do.",
+      "trap": "Starting the accumulator at 0 rather than 0.0 makes the return type depend on the input: integer points would give you an int back on some paths, and the annotation says float."
+    },
+    {
+      "n": 2,
+      "name": "distance",
+      "headline": "the length of one particular vector",
+      "mechanism": "The whole exercise is noticing which vector to measure. a - b is itself a vector — the one that points from b to a — and its length is the distance between the two points. So distance is not a new formula. It is the magnitude you wrote in 1.1, handed the difference instead of a single point.",
+      "code": "def distance(a: np.ndarray, b: np.ndarray) -> float:\n    return float(np.linalg.norm(a - b))",
+      "why": "np.linalg.norm is what you would reach for in real code, and it is more careful than the naive formula: for vectors with very large or very small components it rescales before squaring, so it avoids overflow that np.sqrt(np.sum(np.square(v))) would hit. Writing the long form once, as in 1.1, is worth it to see square-sum-sqrt compose; reaching for norm afterwards is not laziness, it is using the better tool.",
+      "trap": "np.linalg.norm returns np.float64, not a Python float. It behaves like one until something checks — it will not JSON-serialise, and `type(x) is float` is False. The float() wrapper is the difference between an annotation that is true and one that is decoration."
+    },
+    {
+      "n": 3,
+      "name": "angle_between",
+      "headline": "the identity, rearranged, in degrees",
+      "mechanism": "Start from a · b = |a| |b| cos θ and solve for θ. Divide both sides by the two lengths and the right-hand side is just cos θ; that quotient is exactly the cosine_similarity you wrote in 1.1. Then arccos turns a cosine back into an angle, and a unit conversion turns radians into degrees. Three of the four steps are things you already had.",
+      "code": "def angle_between(a: np.ndarray, b: np.ndarray) -> float:\n    a_len = np.linalg.norm(a)\n    b_len = np.linalg.norm(b)\n    if a_len == 0 or b_len == 0:\n        raise ValueError(\"A zero vector has no direction, so there is no angle.\")\n\n    cos_theta = np.clip(np.dot(a, b) / (a_len * b_len), -1.0, 1.0)\n    return float(np.degrees(np.arccos(cos_theta)))",
+      "why": "The clip has to come before arccos, not after. Once arccos has been handed 1.0000000000000002 it has already returned nan, and clipping nan gives you nan — the fix has to happen while there is still something to fix. Naming a_len and b_len rather than calling norm twice inside the expression is not only tidier; it also gives the zero check something to test that the reader can see is the same value used in the division.",
+      "trap": "arccos is ill-conditioned near 0° and 180°. Even clipped, the angle between [2,2] and [10,10] comes back as 1.2e-06 degrees rather than 0, because cos t ≈ 1 - t²/2 there means a cosine wrong in its last bit becomes an angle wrong by about 1e-6 degrees. When you need \"do these point the same way\" to full precision, ask the cosine, not the angle."
+    },
+    {
+      "n": 4,
+      "name": "project",
+      "headline": "how far along b, then travel that far",
+      "mechanism": "Two moves. First a plain number: (a · b) / (b · b), which says how many copies of b you have to travel. Then multiply b by it. The numerator is the alignment between a and b; the denominator is b's own squared length, and it is there to cancel b's size out of the answer. That is why doubling b changes nothing — the numerator doubles and the denominator quadruples, so the scalar halves, and then you travel half as far along a vector twice as long.",
+      "code": "def project(a: np.ndarray, b: np.ndarray) -> np.ndarray:\n    b_squared = np.dot(b, b)\n    if b_squared == 0:\n        raise ValueError(\"There is no line through the zero vector to project onto.\")\n\n    return (np.dot(a, b) / b_squared) * b",
+      "why": "np.dot(normalise(a_unit_b), ...) — that is, normalising b first and writing np.dot(a, unit_b) * unit_b — is the same arithmetic with the scaling done explicitly rather than folded into the ratio. Either is correct. The ratio form is shorter and does one fewer square root; the normalised form is more obviously \"project onto a direction\". Knowing they are the same expression is worth more than picking one.",
+      "trap": "Raise only when b is zero. A zero a is not an error: there is simply nothing to cast, and the answer is the zero vector. Guarding both makes project([0,0], [1,0]) raise when the docstring says it should return [0., 0.] — and the message blames b, which was fine."
+    },
+    {
+      "n": 5,
+      "name": "reject",
+      "headline": "everything the projection did not explain",
+      "mechanism": "Subtract the shadow from the original. What is left cannot have any component along b — you just removed all of it — so the result is perpendicular to b, always, for every a and b. That is not a property to verify afterwards; it is what subtraction of the projection means.",
+      "code": "def reject(a: np.ndarray, b: np.ndarray) -> np.ndarray:\n    return a - project(a, b)",
+      "why": "Calling project rather than repeating its formula gives you one source of truth: fix a bug in the ratio and both functions get it. It also inherits project's zero-vector check for free, which is the right behaviour — if there is no line to project onto, there is no decomposition either. The pair is a decomposition, and the test proves it by checking that project(a, b) + reject(a, b) reconstructs a on random six-dimensional input, where no amount of eyeballing would help.",
+      "trap": "This is the four lines with the longest reach in phase 1. Least squares finds the projection of your data onto what the model can express, and the rejection is the residual. PCA looks for directions that leave the smallest rejection. An attention head decides how much of one token to mix into another; the amount is a dot product and the mixing is a projection."
+    },
+    {
+      "n": 6,
+      "name": "is_orthogonal",
+      "headline": "never compare a float with ==",
+      "mechanism": "Perpendicular means the dot product is zero — that falls straight out of the identity, since cos 90° = 0 makes the whole right-hand side zero. In floating point it is never exactly zero. Two vectors that are perpendicular in exact arithmetic hand you 3.06e-17, because 0.1 + 0.2 is not 0.3 and never was. So the test is not \"is it zero\" but \"is it close enough to zero\", and tol is where you say what close enough means.",
+      "code": "def is_orthogonal(a: np.ndarray, b: np.ndarray, tol: float = 1e-9) -> bool:\n    return bool(abs(np.dot(a, b)) < tol)",
+      "why": "The zero vector needs no special case: its dot product with anything is exactly 0, which is inside any tolerance, so it returns True on its own. That is the convention every library uses. Picking tol is a real decision rather than a default to copy — too tight and genuinely perpendicular vectors are rejected because the rounding error exceeds your threshold; too loose and a visible angle passes. An absolute tolerance on the dot product is also the wrong tool for very large or very small vectors, where you would scale by the magnitudes or compare the cosine instead. That is what np.isclose's rtol is for.",
+      "trap": "abs(np.dot(a, b)) < tol compares two numpy scalars and returns np.True_, not True. The annotation says bool, and the test asserts `is True`, which np.True_ fails. numpy 2 makes this worse by naming the type \"bool\": type(x).__name__ prints bool and lies to you. Only isinstance(x, bool) or repr(type(x)) tells you the truth."
+    },
+    {
+      "n": 7,
+      "name": "nearest",
+      "headline": "1.1's search with two words changed",
+      "mechanism": "Score every item, then pick the best score. Identical in shape to most_similar from 1.1, with distance in place of cosine_similarity and min in place of max. The min is the interesting half: \"most similar\" wants the largest number, \"nearest\" wants the smallest, and that single flip is why the two searches disagree about a long document.",
+      "code": "def nearest(query: np.ndarray, library: dict[str, np.ndarray]) -> str:\n    if not library:\n        raise ValueError(\"An empty library has no nearest item.\")\n\n    scores = {name: distance(query, vector) for name, vector in library.items()}\n    return min(scores, key=scores.get)",
+      "why": "Iterating a dict yields its keys, and key= changes what gets compared, not what gets returned — so the comparison runs over distances while the value that comes back is a name. Raising on an empty library rather than returning None puts the error where the mistake is; None would travel, and some caller would fail on results[None] half a second later in a function that was never at fault.",
+      "trap": "min(scores.values()) hands you 1.41 with no way back to which item earned it. The whole point of key= is that you rank by one thing and return another."
+    }
+  ]
+}
