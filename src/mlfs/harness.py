@@ -137,6 +137,16 @@ def run_lesson(lesson_dir: Path) -> list[Result]:
         return []
     # Give the test module a unique name so several lessons can run in one process.
     unique = f"tests_{lesson_dir.parent.name}_{lesson_dir.name}".replace("-", "_")
+
+    # Every lesson's solution file is called `exercises`, and every test file
+    # imports it by that bare name. Python caches the first one it sees, so
+    # without this the second lesson in a run tests the first lesson's code and
+    # reports AttributeError on every exercise. Drop the cached module, and the
+    # previous lesson's directory, so the import resolves to this lesson.
+    sys.modules.pop("exercises", None)
+    here = str(lesson_dir)
+    sys.path[:] = [p for p in sys.path if p != here]
+
     try:
         module = load_module(test_file, unique)
     except Exception as e:
