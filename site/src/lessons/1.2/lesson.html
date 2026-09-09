@@ -98,92 +98,6 @@
   <li><strong>Set both lengths to 1.</strong> The right-hand side becomes just cos(theta), so for unit vectors <em>the dot product already is the cosine</em>, with nothing to divide out.</li>
 </ol>
 
-<h2>Every formula, worked</h2>
-
-<p>Five formulas, each with what the symbols mean and numbers small enough to check in your head. This is a reference to come back to while you write the exercises, not something to read through once. Notation, once: <code>a · b</code> is the dot product from 1.1, and <code>|a|</code> is the length of <code>a</code>, also from 1.1. Nothing else is introduced.</p>
-
-<h3>Distance — exercises 1 and 2</h3>
-
-<div class="codeblock">
-<div class="cap">subtract to get a vector, then take its length</div>
-<pre><code>distance(a, b)  =  |a - b|
-
-a = [0, 0]      a - b = [-3, -4]
-b = [3, 4]      (-3)&#178; + (-4)&#178; = 9 + 16 = 25
-                &#8730;25 = 5</code></pre>
-</div>
-
-<p>The squaring is also why <code>distance(a, b)</code> always equals <code>distance(b, a)</code>: <code>(-3)&#178;</code> and <code>3&#178;</code> are the same number, so the order of subtraction never reaches the answer.</p>
-
-<h3>The identity everything else comes from</h3>
-
-<div class="codeblock">
-<pre><code>a &#183; b  =  |a| &#215; |b| &#215; cos(theta)
-
-a = [1, 0]      a &#183; b = 1&#215;1 + 0&#215;1 = 1
-b = [1, 1]      |a| = 1,  |b| = &#8730;2 = 1.414
-
-                1 = 1 &#215; 1.414 &#215; cos(theta)
-                cos(theta) = 1 / 1.414 = 0.7071</code></pre>
-</div>
-
-<h3>Angle — exercise 3</h3>
-
-<div class="codeblock">
-<div class="cap">the identity, solved for theta</div>
-<pre><code>theta  =  arccos( (a &#183; b) / (|a| &#215; |b|) )
-
-cos(theta) = 0.7071
-arccos(0.7071) = 0.7854 radians
-0.7854 &#215; 180/&#960; = 45&#176;</code></pre>
-</div>
-
-<p>The quotient inside is <code>cosine_similarity</code> from 1.1 — you wrote it already. <code>arccos</code> undoes the cosine and gives you <strong>radians</strong>, so there is a unit conversion at the end. Clip the quotient into <code>[-1, 1]</code> <em>before</em> <code>arccos</code>, not after.</p>
-
-<h3>Projection — exercise 4</h3>
-
-<div class="codeblock">
-<div class="cap">how far along b, then travel that far</div>
-<pre><code>proj_b(a)  =  ( (a &#183; b) / (b &#183; b) ) &#215; b
-              \_________________/
-               one plain number:
-               how many copies of b
-
-a = [3, 3]      a &#183; b = 3&#215;1 + 3&#215;0 = 3
-b = [1, 0]      b &#183; b = 1&#215;1 + 0&#215;0 = 1
-                3 / 1 = 3
-                3 &#215; [1, 0] = [3, 0]</code></pre>
-</div>
-
-<p>Now make <code>b</code> five times longer and watch the answer refuse to move:</p>
-
-<div class="codeblock">
-<pre><code>b = [5, 0]      a &#183; b = 15
-                b &#183; b = 25
-                15 / 25 = 0.6
-                0.6 &#215; [5, 0] = [3, 0]      &#8592; the same shadow</code></pre>
-</div>
-
-<p>The numerator grew &#215;5 and the denominator grew &#215;25, so the scalar shrank &#215;5 — and then you travel a fifth as far along a vector five times as long. That is what "only <code>b</code>'s direction matters" means, in arithmetic.</p>
-
-<h3>Rejection — exercise 5</h3>
-
-<div class="codeblock">
-<pre><code>rej_b(a)  =  a - proj_b(a)
-
-a = [3, 3]      [3, 3] - [3, 0] = [0, 3]
-                check: [0, 3] &#183; [1, 0] = 0   &#8592; perpendicular, as promised</code></pre>
-</div>
-
-<h3>Orthogonality — exercise 6</h3>
-
-<div class="codeblock">
-<pre><code>perpendicular   in exact arithmetic:   a &#183; b = 0
-                in floating point:     |a &#183; b| &lt; tol</code></pre>
-</div>
-
-<p>From the identity: <code>cos(90&#176;) = 0</code>, so the whole right-hand side is zero. In floating point you get <code>3.06e-17</code> instead, which is why the second line is the one you write.</p>
-
 <h2>Two silent failures</h2>
 
 <p>Both of these bite on the easiest possible input, and neither raises anything.</p>
@@ -222,11 +136,11 @@ a = [3, 3]      [3, 3] - [3, 0] = [0, 3]
 
   <rect x="380" y="60" width="212" height="106" rx="4" class="box"></rect>
   <text x="398" y="88" class="head">how far along b?</text>
-  <text x="398" y="114" class="lbl">(a . b) / (b . b)</text>
+  <text x="398" y="114" class="lbl">one plain number</text>
   <text x="398" y="140" class="lbl-sm">one plain number, then</text>
   <text x="398" y="156" class="lbl-sm">travel that far along b</text>
 </svg>
-<figcaption>Two pieces. The part of <code>a</code> that lies <em>along</em> <code>b</code>, and the part that lies <em>across</em> it. Add them back together and you have <code>a</code> again, exactly. The denominator normalises for how long <code>b</code> is, which is why only <code>b</code>'s <em>direction</em> matters — <code>project([3,3],[1,0])</code> and <code>project([3,3],[5,0])</code> give the same answer.</figcaption>
+<figcaption>Two pieces. The part of <code>a</code> that lies <em>along</em> <code>b</code>, and the part that lies <em>across</em> it. Add them back together and you have <code>a</code> again, exactly. Working out that one plain number is most of exercise 4, and it has to satisfy one requirement: scaling <code>b</code> must not move the shadow, since the <em>line</em> through <code>b</code> has not moved. The derivation below builds it from that.</figcaption>
 </figure>
 
 <p>The leftover — <code>a</code> minus its projection — is the <strong>rejection</strong>, and it is always perpendicular to <code>b</code>. That is exercise 5, and it is one line.</p>
@@ -243,5 +157,144 @@ a = [3, 3]      [3, 3] - [3, 0] = [0, 3]
 </ul>
 
 <p>You are writing four lines. They come back for the rest of the curriculum.</p>
+
+<h2>Where these formulas come from</h2>
+
+<p>Every formula in this lesson can be built rather than memorised, and building one is how you end up able to reconstruct it a year from now. Each derivation below stops one step short of the finished expression — that last step is the exercise, and it is deliberately yours.</p>
+
+<p>Notation, stated once so nothing arrives unannounced: <code>a · b</code> is the dot product from 1.1, and <code>|a|</code> is the length of <code>a</code>, also from 1.1. Nothing else is introduced in this lesson.</p>
+
+<h3>Distance, from something you already have</h3>
+
+<p>Two points, and you want the gap. Subtracting them position by position gives you a third thing — and the useful realisation is that this third thing is <strong>itself a vector</strong>, the one that runs from <code>b</code> to <code>a</code>.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 220" role="img" aria-label="Two points, a at the origin and b at three across and four up. Subtracting gives the vector minus three minus four, which runs between them. Its components form the legs of a right triangle with a hypotenuse of five.">
+  <line x1="60" y1="180" x2="290" y2="180" class="sep"></line>
+  <line x1="60" y1="180" x2="60" y2="50" class="sep"></line>
+
+  <line x1="60" y1="180" x2="180" y2="180" class="conn"></line>
+  <line x1="180" y1="180" x2="180" y2="80" class="conn"></line>
+  <line x1="60" y1="180" x2="180" y2="80" class="conn-hl"></line>
+  <path d="M 168 180 L 168 168 L 180 168" class="conn" fill="none"></path>
+
+  <circle cx="60" cy="180" r="4" class="box"></circle>
+  <circle cx="180" cy="80" r="4" class="box-hl"></circle>
+  <text x="42" y="198" class="lbl-sm">a</text>
+  <text x="188" y="76" class="lbl-sm">b</text>
+
+  <rect x="340" y="52" width="256" height="112" rx="4" class="box"></rect>
+  <text x="360" y="80" class="head">subtracting gives a vector</text>
+  <text x="360" y="108" class="lbl">a &#8722; b  =  [&#8722;3, &#8722;4]</text>
+  <text x="360" y="134" class="lbl-sm">and you already have a function</text>
+  <text x="360" y="152" class="lbl-sm">that takes a vector's length</text>
+</svg>
+<figcaption>You wrote <code>magnitude</code> in 1.1. Exercises 1 and 2 are that function, pointed at the right vector. The only question is which vector, and the picture answers it.</figcaption>
+</figure>
+
+<p>One thing worth noticing before you write it: <code>(&#8722;3)&#178;</code> and <code>3&#178;</code> are the same number. So whichever order you subtract in, the squares are identical — which is why distance can never depend on which point you started from.</p>
+
+<h3>The identity, which is given rather than derived</h3>
+
+<p>This one is not an exercise and not something to work out. It is the fact the rest of the lesson stands on, so here it is in full, with numbers:</p>
+
+<div class="codeblock">
+<div class="cap">the dot product, written geometrically</div>
+<pre><code>a &#183; b  =  |a| &#215; |b| &#215; cos(theta)
+
+a = [1, 0]      a &#183; b = 1&#215;1 + 0&#215;1 = 1
+b = [1, 1]      |a| = 1
+                |b| = &#8730;2 = 1.414
+
+                so:  1  =  1 &#215; 1.414 &#215; cos(theta)</code></pre>
+</div>
+
+<p>In words: the dot product is the two lengths multiplied together, scaled down by how aligned the directions are. Everything else in this lesson is this equation, rearranged.</p>
+
+<h3>The angle: three questions</h3>
+
+<p>Look at that last line — <code>1 = 1 &#215; 1.414 &#215; cos(theta)</code> — and get <code>theta</code> on its own. Three steps, each a question with one sensible answer:</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 200" role="img" aria-label="Three questions in sequence. First: the two lengths are multiplying the cosine, so what do you do to both sides to remove them. Second: you now have the cosine of theta, so what function undoes a cosine. Third: that function returns radians, so what has to happen before you return degrees.">
+  <defs>
+    <marker id="arwd1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="20" y="46" width="178" height="96" rx="4" class="box"></rect>
+  <text x="38" y="72" class="head">1 &#183; you have a &#183; b</text>
+  <text x="38" y="98" class="lbl-sm">the two lengths multiply</text>
+  <text x="38" y="116" class="lbl-sm">the cosine. what removes</text>
+  <text x="38" y="134" class="lbl-sm">them from that side?</text>
+
+  <line x1="202" y1="94" x2="218" y2="94" class="conn" marker-end="url(#arwd1)"></line>
+
+  <rect x="222" y="46" width="178" height="96" rx="4" class="box"></rect>
+  <text x="240" y="72" class="head">2 &#183; you have cos(theta)</text>
+  <text x="240" y="98" class="lbl-sm">but you want theta.</text>
+  <text x="240" y="116" class="lbl-sm">what function undoes</text>
+  <text x="240" y="134" class="lbl-sm">a cosine?</text>
+
+  <line x1="404" y1="94" x2="420" y2="94" class="conn" marker-end="url(#arwd1)"></line>
+
+  <rect x="424" y="46" width="178" height="96" rx="4" class="box-hl"></rect>
+  <text x="442" y="72" class="head">3 &#183; you have theta</text>
+  <text x="442" y="98" class="lbl-sm">in radians. a right angle</text>
+  <text x="442" y="116" class="lbl-sm">reads 1.5708, not 90.</text>
+  <text x="442" y="134" class="lbl-sm">one more step.</text>
+
+  <text x="20" y="180" class="lbl-sm">step 1 produces exactly the cosine_similarity you wrote in 1.1 &#8212; you own two thirds of this already</text>
+</svg>
+<figcaption>Work the numbers through with <code>a = [1, 0]</code> and <code>b = [1, 1]</code> and you should land on 45&#176;. If you get 0.785, you stopped at step 2 — that is the same angle in radians.</figcaption>
+</figure>
+
+<h3>Projection: let two cases tell you the answer</h3>
+
+<p>This is the one worth deriving rather than being told, because the derivation explains a property you would otherwise have to take on faith.</p>
+
+<p>You want the shadow of <code>a = [3, 3]</code> on the line through <code>b</code>. Here is the same question asked twice, with a <code>b</code> that points the same way but is five times longer. The shadow cannot move — the <em>line</em> is identical, and a shadow falls on a line, not on an arrow.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 620 260" role="img" aria-label="The same projection computed with b equals one zero and with b equals five zero. The dot product of a and b is three in the first case and fifteen in the second, but the shadow is three zero in both. The question posed is what quantity built from b equals one and twenty-five in those two cases.">
+  <line x1="40" y1="66" x2="600" y2="66" class="sep"></line>
+  <text x="52" y="58" class="lbl-sm">case</text>
+  <text x="210" y="58" class="lbl-sm">a &#183; b</text>
+  <text x="330" y="58" class="lbl-sm">travel this far</text>
+  <text x="500" y="58" class="lbl-sm">shadow</text>
+
+  <text x="52" y="96" class="lbl">b = [1, 0]</text>
+  <text x="210" y="96" class="lbl">3</text>
+  <text x="330" y="96" class="lbl">3 copies of b</text>
+  <text x="500" y="96" class="lbl-hl">[3, 0]</text>
+
+  <text x="52" y="126" class="lbl">b = [5, 0]</text>
+  <text x="210" y="126" class="lbl">15</text>
+  <text x="330" y="126" class="lbl">0.6 copies of b</text>
+  <text x="500" y="126" class="lbl-hl">[3, 0]</text>
+
+  <line x1="40" y1="146" x2="600" y2="146" class="sep"></line>
+
+  <rect x="40" y="168" width="560" height="76" rx="4" class="box-hl"></rect>
+  <text x="60" y="194" class="head">so the alignment alone cannot be the answer</text>
+  <text x="60" y="220" class="lbl-sm">a &#183; b grew from 3 to 15, but you had to travel 3 copies and then 0.6 copies.</text>
+  <text x="60" y="238" class="lbl-sm">What quantity, built only from b, is 1 in the first row and 25 in the second?</text>
+</svg>
+<figcaption>Find that quantity and you have the divisor. Notice it is not <code>|b|</code>, which would be 1 and 5 — you need something that grew by twenty-five, because b's length has to cancel <em>twice</em>: once out of the alignment, and once more because you finish by travelling along a <code>b</code> that is itself five times longer.</figcaption>
+</figure>
+
+<h3>Rejection: one subtraction</h3>
+
+<p>Once you have the part of <code>a</code> that lies along <code>b</code>, the rest of <code>a</code> is whatever is left when you take that part away. With <code>a = [3, 3]</code> and a shadow of <code>[3, 0]</code>, you should be able to say what the leftover is without writing anything down — and then check that it meets <code>b</code> at a right angle by taking one dot product.</p>
+
+<p>That perpendicularity is not luck. You removed every part of <code>a</code> that pointed along <code>b</code>, so nothing pointing along <code>b</code> can remain.</p>
+
+<h3>Orthogonality: read it off the identity</h3>
+
+<p>Put <code>theta = 90&#176;</code> into <code>a &#183; b = |a| &#215; |b| &#215; cos(theta)</code>. Since <code>cos(90&#176;) = 0</code>, the entire right-hand side collapses, whatever the two lengths are. That is the test, and it is why "a dot product of zero means unrelated" was never an analogy.</p>
+
+<p>The complication is not the maths, it is the arithmetic your computer does. Two vectors that are perpendicular in theory will hand you <code>3.06e-17</code> rather than <code>0</code>, so a test written with <code>==</code> reports a textbook right angle as not a right angle. What you compare against instead is the <code>tol</code> parameter already sitting in the signature.</p>
+
 
 </div>

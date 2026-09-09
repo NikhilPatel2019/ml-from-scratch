@@ -170,17 +170,14 @@ picture. Shine a light straight down onto the line through `b`. The shadow that
 Two pieces. The part of `a` that lies **along** `b`, and the part that lies
 **across** it. Add them back together and you have `a` again, exactly.
 
-How far along `b` do you travel? That is one number:
+How far along `b` do you travel? That is **one plain number**, built from `a`
+and `b` — and working out which number is most of exercise 4.
 
-```
-(a . b) / (b . b)
-```
-
-The numerator is the alignment. The denominator normalises for how long `b` is,
-so the answer does not change when you scale `b` — only `b`'s *direction*
-matters, which is why `project([3,3], [1,0])` and `project([3,3], [5,0])` give
-the same answer. Then you travel that far along `b`, which means multiplying by
-`b`.
+Whatever it turns out to be, it has to have one property: scaling `b` must not
+move the shadow, because the *line* through `b` has not moved. That is why
+`project([3,3], [1,0])` and `project([3,3], [5,0])` give the same answer. The
+derivation section below builds the number out of exactly that requirement.
+Once you have it, you travel that far along `b`, which means multiplying by `b`.
 
 The leftover — `a` minus its projection — is the **rejection**, and it is always
 perpendicular to `b`. That is exercise 5, and it is one line.
@@ -215,123 +212,119 @@ they all exist is that the naive version is wrong often enough to matter.
 Build the reflex here, on four lines you can see all of, rather than at 2am
 inside something you cannot.
 
-## Every formula in this lesson, worked
+## Where these formulas come from
 
-Five formulas, each with what the symbols mean and numbers small enough to check
-in your head. Come back to this while you write the exercises — it is meant as a
-reference, not as reading.
+Every formula in this lesson can be built rather than memorised, and building
+one is how you end up able to reconstruct it a year from now. Each derivation
+below stops one step short of the finished expression — that last step is the
+exercise, and it is deliberately yours.
 
-Notation, once: `a · b` is the dot product from 1.1, and `|a|` is the length of
-`a`, also from 1.1. Nothing else is introduced.
+Notation, stated once so nothing arrives unannounced: `a · b` is the dot product
+from 1.1, and `|a|` is the length of `a`, also from 1.1. Nothing else is
+introduced in this lesson.
 
-### 1. Distance — exercises 1 and 2
+### Distance, from something you already have
+
+Two points, and you want the gap. Subtracting them position by position gives a
+third thing — and the useful realisation is that this third thing is **itself a
+vector**, the one running from `b` to `a`.
 
 ```
-distance(a, b)  =  |a - b|
+a = [0, 0]      a - b  =  [-3, -4]      ← a vector
+b = [3, 4]
 ```
 
-Subtract position by position, which gives you a **vector**; then take that
-vector's length. Two steps, and you already own both.
+You wrote `magnitude` in 1.1. Exercises 1 and 2 are that function, pointed at
+the right vector. The only question is which vector, and the line above answers
+it.
 
-```
-a = [0, 0]      a - b = [-3, -4]
-b = [3, 4]      (-3)² + (-4)² = 9 + 16 = 25
-                √25 = 5
-```
+One thing worth noticing before you write it: `(-3)²` and `3²` are the same
+number. So whichever order you subtract in, the squares are identical — which is
+why distance can never depend on which point you started from.
 
-The squaring is also why `distance(a, b)` always equals `distance(b, a)`:
-`(-3)²` and `3²` are the same number, so the order of subtraction cannot reach
-the answer.
+### The identity, which is given rather than derived
 
-### 2. The identity everything else comes from
+Not an exercise, and not something to work out. It is the fact the rest of the
+lesson stands on:
 
 ```
 a · b  =  |a| × |b| × cos(θ)
-```
 
-The dot product is the two lengths multiplied together, scaled down by how
-aligned the directions are.
-
-```
 a = [1, 0]      a · b = 1×1 + 0×1 = 1
-b = [1, 1]      |a| = 1,  |b| = √2 = 1.414
+b = [1, 1]      |a| = 1
+                |b| = √2 = 1.414
 
-                1 = 1 × 1.414 × cos(θ)
-                cos(θ) = 1 / 1.414 = 0.7071
+                so:  1  =  1 × 1.414 × cos(θ)
 ```
 
-### 3. Angle — exercise 3
+In words: the dot product is the two lengths multiplied together, scaled down by
+how aligned the directions are. Everything else here is this equation,
+rearranged.
 
-Rearranging the identity for `θ`:
+### The angle: three questions
 
-```
-θ  =  arccos( (a · b) / (|a| × |b|) )
-```
+Look at that last line and get `θ` on its own. Three steps, each a question with
+one sensible answer:
 
-The quotient inside is `cosine_similarity` from 1.1 — you wrote it already.
-`arccos` undoes the cosine and gives you **radians**, so there is a unit
-conversion at the end.
+1. The two lengths are **multiplying** the cosine. What do you do to both sides
+   to remove them from that side?
+2. You now have `cos(θ)` but you want `θ`. What function undoes a cosine?
+3. That function returns **radians** — a right angle reads `1.5708`, not `90`.
+   One more step.
 
-```
-cos(θ) = 0.7071
-arccos(0.7071) = 0.7854 radians
-0.7854 × 180/π = 45°
-```
+Step 1 produces exactly the `cosine_similarity` you wrote in 1.1, so you own two
+thirds of this already. Work it through with `a = [1, 0]` and `b = [1, 1]` and
+you should land on 45°. If you get `0.785`, you stopped at step 2 — that is the
+same angle in radians.
 
-Clip the quotient into `[-1, 1]` *before* `arccos`, not after.
+### Projection: let two cases tell you the answer
 
-### 4. Projection — exercise 4
+This is the one worth deriving rather than being told, because the derivation
+explains a property you would otherwise take on faith.
 
-```
-proj_b(a)  =  ( (a · b) / (b · b) ) × b
-             \_________________/
-              one plain number:
-              how many copies of b
-```
+You want the shadow of `a = [3, 3]` on the line through `b`. Here is the same
+question asked twice, with a `b` that points the same way but is five times
+longer. The shadow cannot move — the *line* is identical, and a shadow falls on
+a line, not on an arrow.
 
-Work out how far along `b` to travel, then travel that far along `b`.
+| case | `a · b` | travel this far | shadow |
+|---|---|---|---|
+| `b = [1, 0]` | 3 | 3 copies of `b` | `[3, 0]` |
+| `b = [5, 0]` | 15 | 0.6 copies of `b` | `[3, 0]` |
 
-```
-a = [3, 3]      a · b = 3×1 + 3×0 = 3
-b = [1, 0]      b · b = 1×1 + 0×0 = 1
-                3 / 1 = 3
-                3 × [1, 0] = [3, 0]
-```
+So the alignment alone cannot be the answer: `a · b` grew from 3 to 15, but you
+had to travel 3 copies and then 0.6 copies.
 
-Now make `b` five times longer and watch the answer refuse to move:
+**What quantity, built only from `b`, is 1 in the first row and 25 in the
+second?** Find it and you have the divisor.
 
-```
-b = [5, 0]      a · b = 15
-                b · b = 25
-                15 / 25 = 0.6
-                0.6 × [5, 0] = [3, 0]      ← the same shadow
-```
+Notice it is not `|b|`, which would be 1 and 5. You need something that grew by
+twenty-five, because `b`'s length has to cancel *twice*: once out of the
+alignment, and once more because you finish by travelling along a `b` that is
+itself five times longer.
 
-The numerator grew ×5 and the denominator grew ×25, so the scalar shrank ×5 —
-and then you travel a fifth as far along a vector five times as long. That is
-what "only `b`'s direction matters" means, in arithmetic.
+### Rejection: one subtraction
 
-### 5. Rejection — exercise 5
+Once you have the part of `a` lying along `b`, the rest of `a` is whatever is
+left when you take that part away. With `a = [3, 3]` and a shadow of `[3, 0]`,
+you should be able to say what the leftover is without writing anything down —
+then check it meets `b` at a right angle with one dot product.
 
-```
-rej_b(a)  =  a - proj_b(a)
-```
+That perpendicularity is not luck. You removed every part of `a` that pointed
+along `b`, so nothing pointing along `b` can remain.
 
-```
-a = [3, 3]      [3, 3] - [3, 0] = [0, 3]
-                check: [0, 3] · [1, 0] = 0   ← perpendicular, as promised
-```
+### Orthogonality: read it off the identity
 
-### 6. Orthogonality — exercise 6
+Put `θ = 90°` into `a · b = |a| × |b| × cos(θ)`. Since `cos(90°) = 0`, the
+entire right-hand side collapses, whatever the two lengths are. That is the
+test, and it is why "a dot product of zero means unrelated" was never an
+analogy.
 
-```
-perpendicular  ⟺  a · b = 0        (in exact arithmetic)
-                  |a · b| < tol    (in floating point)
-```
+The complication is not the maths, it is the arithmetic your computer does. Two
+vectors perpendicular in theory hand you `3.06e-17` rather than `0`, so a test
+written with `==` reports a textbook right angle as not a right angle. What you
+compare against instead is the `tol` parameter already sitting in the signature.
 
-From the identity: `cos(90°) = 0`, so the whole right-hand side is zero. In
-floating point you will get `3.06e-17` instead of `0`, which is why the second
-line is the one you write.
 
 ## Your work
 
