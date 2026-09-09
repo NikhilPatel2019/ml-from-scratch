@@ -1,0 +1,53 @@
+<div class="prose">
+
+<div data-exercise-rows></div>
+
+<h2>The shape of the file</h2>
+
+<p>Same structure as 1.1: once by hand, then vectorised, then built up. Exercises 4 and 5 are a pair — do 4 first, and 5 is one line that uses it.</p>
+
+<div class="codeblock">
+<div class="cap">exercises.py &#8212; the only file you edit</div>
+<pre><code class="language-python">def project(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """EXERCISE 4 &#8212; the projection of a onto b.
+
+    The shadow a casts on the line through b. Returns a VECTOR,
+    pointing along b.
+
+        project([3, 3], [1, 0])  ->  array([3., 0.])
+        project([3, 3], [5, 0])  ->  array([3., 0.])
+        project([0, 5], [1, 0])  ->  array([0., 0.])
+
+    Numpy, no loops. Raise ValueError if b has zero magnitude.
+    """
+    raise NotImplementedError("exercise 4")</code></pre>
+</div>
+
+<h2>What the tests check that you might not</h2>
+
+<p>These are not there to be awkward. Each one is a property that must hold, and each one has caught somebody.</p>
+
+<ul>
+  <li><strong>Distance is symmetric.</strong> <code>distance(a, b)</code> must equal <code>distance(b, a)</code>. If you subtract in one order and forget that squaring removes the sign, you will not notice until it matters.</li>
+  <li><strong>Exercise 2 must agree with exercise 1.</strong> Two implementations of the same idea, checked against each other on the same input. If they disagree, one of them is wrong and you get to find out which.</li>
+  <li><strong>Scaling must not change an angle.</strong> <code>angle_between([2,2], [10,10])</code> is zero. If your answer moves when a vector gets longer, you have not divided out the magnitudes.</li>
+  <li><strong>The projection must point along b.</strong> Checked with a cross product, which is zero exactly when two vectors are parallel.</li>
+  <li><strong>project + reject must reconstruct a.</strong> The two pieces are a decomposition, so they must add back to what you started with. This is checked on random vectors in six dimensions, where you cannot eyeball it.</li>
+  <li><strong>The rejection must be perpendicular to b.</strong> Not approximately, by argument &#8212; measured, with a dot product.</li>
+</ul>
+
+<h2>Then run the demo</h2>
+
+<p>Once all seven pass, run the file directly. It builds the disagreement case from the lesson so you can watch it rather than take my word for it.</p>
+
+<div class="codeblock">
+<pre><code class="language-bash">python lessons/01-foundations/02-geometry/exercises.py</code></pre>
+</div>
+
+<h2>The stretch, if you want it</h2>
+
+<p><code>stretch.py</code> is optional and not scored. Two tasks: build the full <em>n</em>&#215;<em>n</em> distance matrix with no loop anywhere, and check the claim that normalised vectors rank the same by distance and by cosine.</p>
+
+<p>The first one is your introduction to <strong>broadcasting</strong>, which is the entire subject of lesson 1.3. The file walks you into it rather than assuming it.</p>
+
+</div>

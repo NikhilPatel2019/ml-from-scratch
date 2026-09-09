@@ -23,7 +23,8 @@
           "id": "1.2",
           "title": "Vector geometry",
           "summary": "Length, distance, angle, cosine similarity, projection. Why 'similarity' turns out to be a geometry problem.",
-          "status": "planned"
+          "status": "available",
+          "dir": "lessons/01-foundations/02-geometry"
         },
         {
           "id": "1.3",

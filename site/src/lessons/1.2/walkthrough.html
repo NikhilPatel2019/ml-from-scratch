@@ -1,0 +1,43 @@
+<div class="prose">
+
+<p class="lead">The mechanisms, not the implementations. No code here — that is yours to write, and there is nothing on this page you can copy.</p>
+
+<h2>1 and 2 — distance, twice</h2>
+
+<p>Distance is <code>magnitude</code> from 1.1 applied to <code>a - b</code>. That is the whole insight, and it is worth pausing on because it is the first time you reuse a function you built rather than a formula you looked up.</p>
+
+<p>The length check in exercise 1 matters for the same reason it mattered in <code>dot_loop</code>: the operation is <em>undefined</em> for mismatched lengths. There is no sensible answer, so failing loudly beats guessing.</p>
+
+<p>For exercise 2, <code>np.linalg.norm(a - b)</code> does it in one call and is what you would reach for in real code. Write it out with square, sum and sqrt at least once — the point of the pair is to see that the vectorised version is the same three operations, composed.</p>
+
+<h2>3 — the angle, and the two things that go wrong</h2>
+
+<p>Rearranging <code>a·b = |a||b|cos θ</code> for θ gives you <code>arccos</code> of the cosine similarity you already wrote. So the mathematical content of this exercise is one line. Everything else is the numerics, and that is deliberate.</p>
+
+<p>The first failure is <code>nan</code>, and <code>np.clip</code> fixes it. The second is that a zero angle still does not come back as zero, and nothing fixes it — you accommodate it. Read the "two silent failures" section of the lesson again if the reason is not sitting comfortably; <em>why</em> the error is around <code>1e-6</code> rather than <code>1e-16</code> is the part worth being able to explain.</p>
+
+<p>The general shape, which recurs: an operation can be perfectly correct and still lose you precision, if it is <em>ill-conditioned</em> — if its output moves much faster than its input near the value you care about. Conditioning is a property of the problem, not of your code.</p>
+
+<h2>4 and 5 — projection and rejection</h2>
+
+<p>The formula is a ratio of two dot products, and the reason it is a ratio is the useful part. <code>a·b</code> tells you how aligned the two are, but it grows if <code>b</code> gets longer. Dividing by <code>b·b</code> removes exactly that growth, which is why doubling <code>b</code> does not move the answer. Then you travel that far <em>along</em> <code>b</code>, which means multiplying by <code>b</code>.</p>
+
+<p>You could also write it as <code>np.dot(a, unit_b) * unit_b</code> using your <code>normalise</code> from 1.1. That is the same arithmetic with the normalisation done once explicitly rather than folded into the ratio, and it is arguably clearer about what is happening. Either is correct; knowing they are the same thing is the point.</p>
+
+<p>Exercise 5 is one line, and if it is more than one line you have not used exercise 4. The property the test checks — that the two pieces add back to <code>a</code>, and that the leftover is perpendicular to <code>b</code> — is not a coincidence to verify, it is the definition. You are splitting a vector into two components along perpendicular directions.</p>
+
+<h2>6 — the tolerance</h2>
+
+<p>The trap is <code>== 0</code>. The subtler question is what tolerance to pick, and it is worth thinking about for a minute rather than copying <code>1e-9</code> because it was in the signature.</p>
+
+<p>Too tight — say <code>1e-30</code> — and genuinely perpendicular vectors are reported as not perpendicular, because the rounding error is bigger than your threshold. Too loose — say <code>0.1</code> — and vectors that are visibly not perpendicular pass. The default here is a reasonable middle for vectors of modest size. For very large or very small vectors, an absolute tolerance on the dot product is the wrong tool entirely; you would scale it by the magnitudes, or compare the cosine instead. That is what <code>np.isclose</code>'s <code>rtol</code> exists for.</p>
+
+<h2>7 — the same search, one thing changed</h2>
+
+<p>This is exercise 7 of 1.1 with <code>cosine_similarity</code> swapped for <code>distance</code> and <code>max</code> swapped for <code>min</code>. If it took you longer than that, check whether you rewrote something you already had.</p>
+
+<p>The interesting part is not the code, it is the result. Run it beside <code>most_similar</code> from 1.1 on the same library and watch them disagree. The disagreement is the lesson; the function is just how you get to see it.</p>
+
+<p>The empty-library check is worth a thought too. Returning <code>None</code> would push the failure somewhere further away — some caller would do <code>results[None]</code> half a second later and you would debug the wrong function. Raising here puts the error where the mistake is.</p>
+
+</div>
