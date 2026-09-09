@@ -7,28 +7,47 @@ it the same way for everyone who clones it.
 | File | What it does |
 |---|---|
 | `../CLAUDE.md` | Loaded automatically. Carries the one rule — never write an exercise solution — and the repository's layout, commands and conventions. |
-| `settings.json` | Allows the safe commands you run constantly without a prompt each time, and **denies edits to `exercises.py`, `stretch.py` and `test_exercises.py`**. |
+| `settings.json` | Allows the safe commands you run constantly without a prompt each time, and denies edits to `site/index.html`, which is generated. |
 | `commands/hint.md` | `/hint` — the smallest next step on an exercise, never the answer. |
 | `commands/review.md` | `/review` — review what you already wrote, without rewriting it. |
 | `commands/why.md` | `/why` — explain an idea from first principles, for someone with no maths background. |
 
-## Why the deny list matters
+## Why there is no deny rule on the exercise files
 
-`CLAUDE.md` asks an assistant not to write your exercises. `settings.json` makes
-it so it cannot, by denying edits to those files outright. Prose is a request;
-a deny rule is a wall. The wall is the point — an instruction you can talk a
-model out of at 1am is not a rule you have.
+There used to be. `settings.json` denied edits to `exercises.py`, `stretch.py`
+and `test_exercises.py`, on the theory that prose is a request and a deny rule
+is a wall.
 
-You still edit those files yourself, in your editor, which is the whole idea.
+It was removed, for two reasons that are worth writing down.
 
-If you ever genuinely need an assistant to touch one — say a broken import that
-has nothing to do with the exercise — override it in your own
-`.claude/settings.local.json`, which is gitignored, and put it back afterwards.
+**It blocked the wrong people.** Writing a new lesson means writing a stub file
+and a test file. Both are denied by that rule, and it cannot tell authoring from
+solving — a file full of `raise NotImplementedError` is not an answer to
+anything. Every new lesson hit the wall.
 
-The deny paths use a single leading slash (`Edit(/lessons/**/exercises.py)`),
-which anchors them to the project root. A `./` prefix would anchor to whatever
-directory you happened to start Claude Code in, so the rules would quietly
-protect nothing if you launched from inside `lessons/`.
+**And it was not a wall.** It blocked `Write` and it blocked `cp`, but a Python
+one-liner that opens the file and writes to it went straight through. So the
+rule stopped the direct route and not the indirect one, which is the wrong way
+round: it inconvenienced honest work while stopping nothing determined. A
+control that only looks like protection is worse than none, because you rely on
+it.
+
+There is also a mechanical trap here. Permission rules are evaluated
+**deny, then ask, then allow**, across every settings file — so a deny in
+`settings.json` cannot be relaxed by an allow in `settings.local.json`. A deny
+rule carries no exceptions. If you add one, it is absolute.
+
+## What actually holds the line
+
+`CLAUDE.md`, and your own preference for learning this properly. That has worked
+in practice: the assistant that wrote this paragraph diagnosed a missing
+`return` in exercise 2 by naming the line and asking what the function owed its
+caller, rather than writing it.
+
+If you want a real mechanical guard rather than an instruction, the tool for it
+is a [PreToolUse hook](https://code.claude.com/docs/en/hooks-guide), which sees
+the actual edit and can allow a docstring change while rejecting a filled-in
+function body. A static path rule cannot make that distinction.
 
 ## If you use a different assistant
 
