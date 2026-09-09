@@ -98,6 +98,92 @@
   <li><strong>Set both lengths to 1.</strong> The right-hand side becomes just cos(theta), so for unit vectors <em>the dot product already is the cosine</em>, with nothing to divide out.</li>
 </ol>
 
+<h2>Every formula, worked</h2>
+
+<p>Five formulas, each with what the symbols mean and numbers small enough to check in your head. This is a reference to come back to while you write the exercises, not something to read through once. Notation, once: <code>a · b</code> is the dot product from 1.1, and <code>|a|</code> is the length of <code>a</code>, also from 1.1. Nothing else is introduced.</p>
+
+<h3>Distance — exercises 1 and 2</h3>
+
+<div class="codeblock">
+<div class="cap">subtract to get a vector, then take its length</div>
+<pre><code>distance(a, b)  =  |a - b|
+
+a = [0, 0]      a - b = [-3, -4]
+b = [3, 4]      (-3)&#178; + (-4)&#178; = 9 + 16 = 25
+                &#8730;25 = 5</code></pre>
+</div>
+
+<p>The squaring is also why <code>distance(a, b)</code> always equals <code>distance(b, a)</code>: <code>(-3)&#178;</code> and <code>3&#178;</code> are the same number, so the order of subtraction never reaches the answer.</p>
+
+<h3>The identity everything else comes from</h3>
+
+<div class="codeblock">
+<pre><code>a &#183; b  =  |a| &#215; |b| &#215; cos(theta)
+
+a = [1, 0]      a &#183; b = 1&#215;1 + 0&#215;1 = 1
+b = [1, 1]      |a| = 1,  |b| = &#8730;2 = 1.414
+
+                1 = 1 &#215; 1.414 &#215; cos(theta)
+                cos(theta) = 1 / 1.414 = 0.7071</code></pre>
+</div>
+
+<h3>Angle — exercise 3</h3>
+
+<div class="codeblock">
+<div class="cap">the identity, solved for theta</div>
+<pre><code>theta  =  arccos( (a &#183; b) / (|a| &#215; |b|) )
+
+cos(theta) = 0.7071
+arccos(0.7071) = 0.7854 radians
+0.7854 &#215; 180/&#960; = 45&#176;</code></pre>
+</div>
+
+<p>The quotient inside is <code>cosine_similarity</code> from 1.1 — you wrote it already. <code>arccos</code> undoes the cosine and gives you <strong>radians</strong>, so there is a unit conversion at the end. Clip the quotient into <code>[-1, 1]</code> <em>before</em> <code>arccos</code>, not after.</p>
+
+<h3>Projection — exercise 4</h3>
+
+<div class="codeblock">
+<div class="cap">how far along b, then travel that far</div>
+<pre><code>proj_b(a)  =  ( (a &#183; b) / (b &#183; b) ) &#215; b
+              \_________________/
+               one plain number:
+               how many copies of b
+
+a = [3, 3]      a &#183; b = 3&#215;1 + 3&#215;0 = 3
+b = [1, 0]      b &#183; b = 1&#215;1 + 0&#215;0 = 1
+                3 / 1 = 3
+                3 &#215; [1, 0] = [3, 0]</code></pre>
+</div>
+
+<p>Now make <code>b</code> five times longer and watch the answer refuse to move:</p>
+
+<div class="codeblock">
+<pre><code>b = [5, 0]      a &#183; b = 15
+                b &#183; b = 25
+                15 / 25 = 0.6
+                0.6 &#215; [5, 0] = [3, 0]      &#8592; the same shadow</code></pre>
+</div>
+
+<p>The numerator grew &#215;5 and the denominator grew &#215;25, so the scalar shrank &#215;5 — and then you travel a fifth as far along a vector five times as long. That is what "only <code>b</code>'s direction matters" means, in arithmetic.</p>
+
+<h3>Rejection — exercise 5</h3>
+
+<div class="codeblock">
+<pre><code>rej_b(a)  =  a - proj_b(a)
+
+a = [3, 3]      [3, 3] - [3, 0] = [0, 3]
+                check: [0, 3] &#183; [1, 0] = 0   &#8592; perpendicular, as promised</code></pre>
+</div>
+
+<h3>Orthogonality — exercise 6</h3>
+
+<div class="codeblock">
+<pre><code>perpendicular   in exact arithmetic:   a &#183; b = 0
+                in floating point:     |a &#183; b| &lt; tol</code></pre>
+</div>
+
+<p>From the identity: <code>cos(90&#176;) = 0</code>, so the whole right-hand side is zero. In floating point you get <code>3.06e-17</code> instead, which is why the second line is the one you write.</p>
+
 <h2>Two silent failures</h2>
 
 <p>Both of these bite on the easiest possible input, and neither raises anything.</p>

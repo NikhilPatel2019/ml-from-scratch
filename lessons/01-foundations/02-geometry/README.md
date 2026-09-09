@@ -215,6 +215,124 @@ they all exist is that the naive version is wrong often enough to matter.
 Build the reflex here, on four lines you can see all of, rather than at 2am
 inside something you cannot.
 
+## Every formula in this lesson, worked
+
+Five formulas, each with what the symbols mean and numbers small enough to check
+in your head. Come back to this while you write the exercises — it is meant as a
+reference, not as reading.
+
+Notation, once: `a · b` is the dot product from 1.1, and `|a|` is the length of
+`a`, also from 1.1. Nothing else is introduced.
+
+### 1. Distance — exercises 1 and 2
+
+```
+distance(a, b)  =  |a - b|
+```
+
+Subtract position by position, which gives you a **vector**; then take that
+vector's length. Two steps, and you already own both.
+
+```
+a = [0, 0]      a - b = [-3, -4]
+b = [3, 4]      (-3)² + (-4)² = 9 + 16 = 25
+                √25 = 5
+```
+
+The squaring is also why `distance(a, b)` always equals `distance(b, a)`:
+`(-3)²` and `3²` are the same number, so the order of subtraction cannot reach
+the answer.
+
+### 2. The identity everything else comes from
+
+```
+a · b  =  |a| × |b| × cos(θ)
+```
+
+The dot product is the two lengths multiplied together, scaled down by how
+aligned the directions are.
+
+```
+a = [1, 0]      a · b = 1×1 + 0×1 = 1
+b = [1, 1]      |a| = 1,  |b| = √2 = 1.414
+
+                1 = 1 × 1.414 × cos(θ)
+                cos(θ) = 1 / 1.414 = 0.7071
+```
+
+### 3. Angle — exercise 3
+
+Rearranging the identity for `θ`:
+
+```
+θ  =  arccos( (a · b) / (|a| × |b|) )
+```
+
+The quotient inside is `cosine_similarity` from 1.1 — you wrote it already.
+`arccos` undoes the cosine and gives you **radians**, so there is a unit
+conversion at the end.
+
+```
+cos(θ) = 0.7071
+arccos(0.7071) = 0.7854 radians
+0.7854 × 180/π = 45°
+```
+
+Clip the quotient into `[-1, 1]` *before* `arccos`, not after.
+
+### 4. Projection — exercise 4
+
+```
+proj_b(a)  =  ( (a · b) / (b · b) ) × b
+             \_________________/
+              one plain number:
+              how many copies of b
+```
+
+Work out how far along `b` to travel, then travel that far along `b`.
+
+```
+a = [3, 3]      a · b = 3×1 + 3×0 = 3
+b = [1, 0]      b · b = 1×1 + 0×0 = 1
+                3 / 1 = 3
+                3 × [1, 0] = [3, 0]
+```
+
+Now make `b` five times longer and watch the answer refuse to move:
+
+```
+b = [5, 0]      a · b = 15
+                b · b = 25
+                15 / 25 = 0.6
+                0.6 × [5, 0] = [3, 0]      ← the same shadow
+```
+
+The numerator grew ×5 and the denominator grew ×25, so the scalar shrank ×5 —
+and then you travel a fifth as far along a vector five times as long. That is
+what "only `b`'s direction matters" means, in arithmetic.
+
+### 5. Rejection — exercise 5
+
+```
+rej_b(a)  =  a - proj_b(a)
+```
+
+```
+a = [3, 3]      [3, 3] - [3, 0] = [0, 3]
+                check: [0, 3] · [1, 0] = 0   ← perpendicular, as promised
+```
+
+### 6. Orthogonality — exercise 6
+
+```
+perpendicular  ⟺  a · b = 0        (in exact arithmetic)
+                  |a · b| < tol    (in floating point)
+```
+
+From the identity: `cos(90°) = 0`, so the whole right-hand side is zero. In
+floating point you will get `3.06e-17` instead of `0`, which is why the second
+line is the one you write.
+
 ## Your work
 
 Seven functions in `exercises.py`, same shape as 1.1: once by hand, then
