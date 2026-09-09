@@ -49,7 +49,11 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["lessons"]
 python_files = ["test_exercises.py"]
-addopts = "-q"
+# Every lesson's test file has the same basename. Under the default import mode
+# pytest cannot tell them apart and refuses to collect the second one; importlib
+# mode gives each its own module identity. The matching half of this fix, for
+# the `exercises` module they all import, is in lessons/conftest.py.
+addopts = "-q --import-mode=importlib"
 
 [tool.ruff]
 line-length = 100
