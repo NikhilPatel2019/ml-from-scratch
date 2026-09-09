@@ -170,8 +170,17 @@ def test_5_reject():
 
 def test_6_is_orthogonal():
     """6  is_orthogonal — a right angle, within a tolerance"""
-    assert ex.is_orthogonal(np.array([1.0, 0.0]), np.array([0.0, 1.0])) is True, \
-        "perpendicular -> True"
+    got = ex.is_orthogonal(np.array([1.0, 0.0]), np.array([0.0, 1.0]))
+    # Checked before the value, because the value is usually right when this is
+    # wrong, and "perpendicular -> True" is a baffling message to get back when
+    # your function did return True.
+    assert isinstance(got, bool), (
+        f"return a plain bool, not {type(got)}. A numpy comparison such as "
+        "`abs(np.dot(a, b)) < tol` gives np.True_, and numpy 2 also calls that "
+        'type "bool" when you print its name — so type(x).__name__ will tell you '
+        "everything is fine. isinstance(x, bool) is the check that does not lie."
+    )
+    assert got is True, "perpendicular -> True"
     assert ex.is_orthogonal(np.array([1.0, 0.0]), np.array([1.0, 1.0])) is False, \
         "45 degrees -> False"
     assert ex.is_orthogonal(np.array([1.0, 0.0]), np.zeros(2)) is True, \

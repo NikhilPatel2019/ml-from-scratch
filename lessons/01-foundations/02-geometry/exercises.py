@@ -169,6 +169,30 @@ def _demo() -> None:
     It builds the case where distance and angle give different answers, so you
     can watch the thing this lesson is about rather than take my word for it.
     """
+    # Running this file is the natural way to test your work, so it should say
+    # what is still missing rather than hand you a traceback from three frames
+    # down. Only NotImplementedError is caught -- a real bug in your own code
+    # should surface here, not be swallowed.
+    unit = np.ones(2)
+    todo = []
+    for name, call in (
+        ("distance", lambda: distance(unit, unit)),
+        ("angle_between", lambda: angle_between(unit, unit)),
+        ("nearest", lambda: nearest(unit, {"x": unit})),
+    ):
+        try:
+            call()
+        except NotImplementedError:
+            todo.append(name)
+
+    if todo:
+        print("This demo needs " + ", ".join(todo) + ", still to write.")
+        print("")
+        print("To see where you are, exercise by exercise:")
+        print("")
+        print("    progress 1.2")
+        return
+
     library = {
         "short_doc": np.array([1.0, 1.0]),
         "long_doc": np.array([10.0, 10.0]),
