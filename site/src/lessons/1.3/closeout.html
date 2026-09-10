@@ -1,0 +1,30 @@
+<div class="prose">
+
+<p class="lead">Passing tests is the floor, not the finish. This is the part that decides whether any of it stays with you.</p>
+
+<h2>You are done when</h2>
+
+<p>Not when the tests pass &#8212; when you can answer these out loud, without looking anything up:</p>
+
+<ol class="checkq">
+  <li><code>X.shape</code> is <code>(50, 4)</code>. What is the shape of <code>X.sum(axis=0)</code>? Of <code>X.sum(axis=1)</code>? Say the rule you used, not the answer you remember.</li>
+  <li>What is the difference between shape <code>(3,)</code>, <code>(1, 3)</code> and <code>(3, 1)</code>? All three hold three numbers &#8212; so what actually differs?</li>
+  <li>Line up <code>(6, 4)</code> and <code>(4,)</code> and say whether they broadcast. Now <code>(6, 4)</code> and <code>(6,)</code>. Why does one work and the other not, in terms of the rule rather than the outcome?</li>
+  <li>What does <code>keepdims=True</code> do, and when do you need it? State it as a situation you would recognise, not a fact about one exercise.</li>
+  <li>Why is the <code>keepdims</code> bug more dangerous on a square matrix than a rectangular one? What did you actually see when you hit it?</li>
+  <li><code>A</code> is <code>(5, 3)</code> and <code>B</code> is <code>(3, 8)</code>. What shape is <code>A @ B</code>? Which number disappeared, and what was it?</li>
+  <li>You have ten million documents. Which of these seven functions would you not run on all of them at once, and what breaks first &#8212; time or memory?</li>
+</ol>
+
+<p>If one of those makes you hesitate, the fix is not to re-read this page. Open a Python prompt, build a small array, and check. Shapes are learned at a REPL, not from prose.</p>
+
+<h2>Write your notes</h2>
+
+<p><code>notes.md</code> in the lesson folder holds the same questions plus two more, including one asking which bug in this lesson raised an error and which one did not. Answer them in your own words &#8212; the <em>things I got wrong</em> section will be the most valuable thing in your repository six months from now.</p>
+
+<div class="callout">
+  <span class="lbl">What this sets up</span>
+  <p>You have been treating a matrix as a <strong>table of data</strong>. Lesson <strong>1.4</strong> treats the same object as a <strong>function that moves space</strong> &#8212; the same numbers, a completely different reading, and the one that makes neural networks click. If you watched 3Blue1Brown chapter 3 alongside this lesson and it felt like it was describing something else, that is because it was. It was describing 1.4.</p>
+</div>
+
+</div>

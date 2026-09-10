@@ -1,0 +1,57 @@
+<div class="prose">
+
+<div data-exercise-rows></div>
+
+<h2>Every one is checked for shape</h2>
+
+<p>A right answer in the wrong shape is this lesson's characteristic bug, so the tests assert the output shape as well as the values. When one fails, read the shape line first — it usually says exactly what went wrong.</p>
+
+<div class="codeblock">
+<div class="cap">exercises.py &#8212; the only file you edit</div>
+<pre><code class="language-python">def unit_rows(X: np.ndarray) -&gt; np.ndarray:
+    """EXERCISE 4 &#8212; scale every row to length 1, keeping its direction.
+
+    THIS IS THE ONE THAT BITES. You need to divide an (n, d) matrix
+    by the n row lengths from exercise 2 &#8212; but those come back with
+    shape (n,), and dividing (n, d) by (n,) is not the operation you
+    want.
+
+    On a square matrix this bug produces plausible numbers and no
+    error at all. The tests use a non-square X on purpose, so you get
+    an exception instead of a wrong answer you would have shipped.
+    """
+    raise NotImplementedError("exercise 4")</code></pre>
+</div>
+
+<h2>Build each one in stages</h2>
+
+<p>Every exercise past the second is two or three operations composed. Do not write the whole line and then debug it. Write one operation, print its <code>.shape</code>, check it is what you predicted, then add the next.</p>
+
+<p>That loop feels slow for about ten minutes and then stops being slow, because you start predicting correctly. It is the single habit this lesson exists to build.</p>
+
+<h2>What the tests check that you might not</h2>
+
+<ul>
+  <li><strong>Shape follows the rows, not the columns.</strong> Exercise 2 is tested on a 4&#215;3 as well as a 2&#215;2, so a divisor lined up the wrong way cannot pass by coincidence.</li>
+  <li><strong>Centring moves the data without changing its spread.</strong> Checked by confirming the differences between rows are identical before and after.</li>
+  <li><strong>Directions survive normalisation.</strong> Every row of the result must be a positive multiple of the row it came from — scaling a row must not turn it.</li>
+  <li><strong>The Gram matrix equals its own transpose.</strong> Row <em>i</em> dotted with row <em>j</em> is the same number as row <em>j</em> dotted with row <em>i</em>, so anything else means the pairing went wrong.</li>
+  <li><strong>The distance matrix has a zero diagonal.</strong> A row is zero distance from itself. If your diagonal is not zero, your indices are crossed.</li>
+  <li><strong>Scaling the library must not reorder a cosine ranking.</strong> Exercise 7 is tested with rows scaled by 90&#215;, because cosine is supposed to ignore exactly that.</li>
+</ul>
+
+<h2>Then run the demo</h2>
+
+<p>Once all seven pass, run the file directly. It pushes six documents through every function so you can watch the shapes change, and finishes by ranking them.</p>
+
+<div class="codeblock">
+<pre><code class="language-bash">python lessons/01-foundations/03-matrices/exercises.py</code></pre>
+</div>
+
+<h2>The stretch, if you want it</h2>
+
+<p><code>stretch.py</code> is optional and not scored. Two measurements: how much faster <code>rank_all</code> is than the one-at-a-time version you wrote in 1.1, and what the <code>(n, n, d)</code> intermediate in exercise 6 costs in memory.</p>
+
+<p>The second one matters more. It is the reason production systems do not use the expression you just wrote, and the file walks you to the identity they use instead.</p>
+
+</div>

@@ -1,0 +1,22 @@
+{
+  "before": [
+    {
+      "title": "3Blue1Brown — ch. 3, “Linear transformations and matrices”",
+      "length": "~11 min",
+      "why": "It treats a matrix as a movement of space; this lesson treats it as a table of data. Both are true and they are not the same idea. Watch anyway — 1.4 is entirely the other view.",
+      "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+    },
+    {
+      "title": "NumPy docs — Broadcasting",
+      "length": "~15 min read",
+      "why": "Read it after the broadcasting section below, so you are checking your understanding rather than forming it. “General Broadcasting Rules” is the whole thing in six lines.",
+      "url": "https://numpy.org/doc/stable/user/basics.broadcasting.html"
+    }
+  ],
+  "after": {
+    "title": "3Blue1Brown — ch. 4, “Matrix multiplication as composition”",
+    "length": "~10 min",
+    "why": "Only once exercise 5 passes. You will have written a matmul as “every pairwise dot product”; this says what it means when neither side is data.",
+    "url": "https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab"
+  }
+}
