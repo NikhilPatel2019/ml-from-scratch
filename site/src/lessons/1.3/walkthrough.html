@@ -1,0 +1,63 @@
+<div class="prose">
+
+<p class="lead">The mechanisms, not the implementations. No code here &#8212; that is yours to write, and there is nothing on this page you can copy.</p>
+
+<h2>1 — shape_of, and why you write it by hand once</h2>
+
+<p>This is the last shape check you write yourself, and the point of writing it is that <code>.shape</code> stops being magic afterwards. All numpy is doing is what you just did: recording how long each axis is, and refusing to guess when the input is not a rectangle.</p>
+
+<p>The ragged case matters more than it looks. <code>np.array([[1, 2], [3]])</code> does not raise — it gives you an array of Python list objects, and the failure surfaces somewhere much later with a message about types rather than about shapes. Raising here puts the error where the mistake is.</p>
+
+<h2>2 — row_lengths, and the axis rule</h2>
+
+<p>You know how to take the length of one vector. The only new thing is doing it to every row at once, and the whole question is which axis to name.</p>
+
+<p>Derive it rather than recalling it: you start at <code>(n, d)</code> and you want <code>(n,)</code>. The <code>d</code> has to go, and <code>d</code> is axis 1. That reasoning takes two seconds and is right every time, which is more than can be said for remembering whether axis 0 means rows.</p>
+
+<p><code>np.linalg.norm(X, axis=1)</code> does the whole thing in one call and is what you would reach for in real code. Compose it from square, sum and sqrt at least once, because exercise 6 needs the composed version on a three-dimensional array where <code>norm</code> is less obvious.</p>
+
+<h2>3 — centre, and your first real broadcast</h2>
+
+<p>Two operations: get the column means, subtract them. The interesting part is that the second one is between different shapes and works anyway.</p>
+
+<p>Walk the rule rather than trusting it. The means are <code>(d,)</code>, the table is <code>(n, d)</code>. Lined up from the right, <code>d</code> matches <code>d</code>; the table's <code>n</code> has nothing opposite it, so the missing dimension is treated as 1, and 1 stretches. That is why one row of means gets applied to every row.</p>
+
+<p>Worth noticing: centring moves the data without changing its shape or its spread. Every pairwise distance in the centred data is identical to the original. That is exactly why it is safe as a first step in PCA and regression — it throws away the location and keeps everything else.</p>
+
+<h2>4 — unit_rows, and the bug that says nothing</h2>
+
+<p>The arithmetic is <code>normalise</code> from 1.1. Everything hard about this exercise is the shape of the divisor, which is deliberate.</p>
+
+<p>The failure mode is worth naming precisely, because it recurs for the rest of your career: <strong>an operation between compatible-but-wrong shapes is silent.</strong> Numpy cannot know you meant the numbers to go down the rows rather than across the columns. It has one rule, it applies it, and it hands you plausible floats.</p>
+
+<p>The defence is not vigilance, it is a habit: after any reduction whose result goes back into arithmetic with the thing you reduced, look at the shape. Either keep the axis with <code>keepdims</code>, or be able to say why you did not need to.</p>
+
+<p>The zero-row check has the same character as the zero-vector checks in 1.1 and 1.2. A row with no direction cannot be pointed anywhere, and dividing by its length is division by zero — which numpy answers with <code>nan</code> and a warning you will not see.</p>
+
+<h2>5 — gram, and reading a matmul by its shapes</h2>
+
+<p>Two facts, combined: <code>.T</code> turns rows into columns, and <code>@</code> pairs rows on the left with columns on the right. Once you see that the second one wants columns and the first one produces them, the exercise is one operation.</p>
+
+<p>The habit to take from this is shape arithmetic. <code>(n, d) @ (d, n)</code> gives <code>(n, n)</code>: the inner numbers must match and they vanish, the outer ones survive. Do that before writing the line and matmul stops being a source of surprises.</p>
+
+<p>Three checks you can do in your head, and should: the result is square, it equals its own transpose, and entry <code>[i, i]</code> is a row dotted with itself, which is its length squared. If any of those fails, you have paired the wrong things.</p>
+
+<h2>6 — pairwise_distances, and the cost of elegance</h2>
+
+<p>The move is the new axis. Both operands are the same data; inserting an empty dimension in different places makes broadcasting produce every pair rather than element-by-element results.</p>
+
+<p>Then the collapse. The components live on the last axis now, and <code>axis=-1</code> says "the last one" without you having to count. Getting into that habit early pays off once arrays have four and five axes.</p>
+
+<p>What this exercise does <em>not</em> tell you is that it does not scale, and that is what <code>stretch.py</code> is for. You build an <code>(n, n, d)</code> array to produce an <code>(n, n)</code> answer, so you pay <em>d</em> times the memory of your result. At <code>d = 128</code> that is a factor of 128, and it is the reason production code uses an algebraic identity instead. The stretch file walks you to it.</p>
+
+<h2>7 — rank_all, and what you have actually built</h2>
+
+<p>Three lessons have now written the same search three times. 1.1 looped a dictionary and returned one name. 1.2 did the same by distance. This one does not loop at all.</p>
+
+<p>Build it in stages and check the shape at each: normalise the rows, normalise the query, and one matmul gives you <em>n</em> similarities. That last step is worth sitting with — a matrix against a vector is the same pairing rule as a matrix against a matrix, with the right-hand side happening to have one column.</p>
+
+<p><code>np.argsort</code> returns the positions that would sort an array, ascending. You want descending, and there are at least three ways to get it; the one you pick is a style choice, but be able to say which you used and why. Then one comprehension turns positions into names, which is the single loop this exercise allows.</p>
+
+<p>The test that scales the library by 90&#215; is the one that matters. Cosine is supposed to ignore length, so a ranking that moves when you scale a row is not a cosine ranking, however plausible its numbers look.</p>
+
+</div>

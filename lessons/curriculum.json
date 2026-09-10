@@ -30,7 +30,8 @@
           "id": "1.3",
           "title": "Matrices as data",
           "summary": "Shape, indexing, slicing, broadcasting, transpose. Thinking in two dimensions without loops.",
-          "status": "planned"
+          "status": "available",
+          "dir": "lessons/01-foundations/03-matrices"
         },
         {
           "id": "1.4",

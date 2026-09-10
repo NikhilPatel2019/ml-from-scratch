@@ -1,0 +1,32 @@
+<div class="prose">
+
+<h2>Watch and read</h2>
+
+<ul>
+  <li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown, Essence of Linear Algebra — ch. 3, "Linear transformations and matrices"</a> (~11 min). A warning, because it will feel like a mismatch: 3B1B treats a matrix as a <strong>movement of space</strong>, and this lesson treats it as a <strong>table of data</strong>. Both are true and they are not the same idea. Today you want the table. Watch it anyway — 1.4 is entirely the other view, and seeing it early makes that lesson land faster.</li>
+  <li><a href="https://numpy.org/doc/stable/user/basics.broadcasting.html" target="_blank" rel="noopener">NumPy — Broadcasting</a> (~15 min read). Official, short, good diagrams. Read it <em>after</em> the broadcasting section here, so you are checking your understanding rather than forming it. "General Broadcasting Rules" is the whole thing in six lines.</li>
+</ul>
+
+<h2>Reference, when you hit it</h2>
+
+<ul>
+  <li><a href="https://numpy.org/doc/stable/user/basics.indexing.html" target="_blank" rel="noopener">NumPy — Indexing on ndarrays</a>. Go here when <code>X[:, None, :]</code> stops making sense. The section you want is "Dimensional indexing tools".</li>
+  <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.norm.html" target="_blank" rel="noopener">numpy.linalg.norm</a>. Read the <code>axis</code> and <code>keepdims</code> parameters together — they are exercises 2 and 4 in one page.</li>
+  <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.argsort.html" target="_blank" rel="noopener">numpy.argsort</a>. Needed for exercise 7. Note which direction it sorts in, and what <code>kind="stable"</code> guarantees about ties.</li>
+</ul>
+
+<h2>After the exercises pass</h2>
+
+<ul>
+  <li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab" target="_blank" rel="noopener">3Blue1Brown — ch. 4, "Matrix multiplication as composition"</a> (~10 min). Only once exercise 5 passes. You have just written a matmul as "every pairwise dot product"; this says what <code>@</code> means when neither side is data, and it is the bridge into 1.4.</li>
+  <li><strong>Your own <code>stretch.py</code> output.</strong> The speed number and the memory number are the two facts that decide whether this approach survives real data, and neither means anything until measured on your machine.</li>
+</ul>
+
+<h2>Deliberately not yet</h2>
+
+<ul>
+  <li><strong><code>np.einsum</code></strong>. It does everything in this lesson in one call and is genuinely worth learning — later. Learn to predict shapes first; einsum rewards people who already can and punishes people who cannot.</li>
+  <li><strong>Sparse matrices, BLAS, GPU arrays.</strong> The same ideas with different storage. Phase 5.</li>
+</ul>
+
+</div>
