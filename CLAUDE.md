@@ -119,6 +119,53 @@ and commit the result in the same commit.
    `test_exercises.py`, `watch.md`, `notes.md`.
 3. Create `site/src/lessons/<id>/` with `brief.html`, `lesson.html`,
    `exercises.html`, `walkthrough.html`, `closeout.html`, `resources.html`, plus
-   optional `watch.json` and `solutions.json`.
+   optional `watch.json`. `solutions.json` comes later — see below.
 4. `python site/build.py` — it will refuse if a lesson is advertised without
    content, and it derives everything else.
+
+### Before a lesson ships
+
+Every item here has already gone wrong once in this repository.
+
+- **Test the tests against the file the learner gets.** Write a reference
+  solution outside the repository, splice it into the shipped `exercises.py`
+  with every docstring intact, and run the suite against that. A stripped-down
+  reference hides exactly the bugs that matter: in 1.2 a docstring saying "no
+  numpy" failed its own no-numpy check, and in 1.3 a test expected 5.0 where
+  the docstring's own example gave √18.
+- **Source checks go through `body()`.** Never search raw `inspect.getsource`
+  for a banned word — the docstring that states the rule contains it. Copy
+  `body()` from `lessons/01-foundations/03-matrices/test_exercises.py`.
+- **Run every claim about library behaviour before writing it down.** "norm
+  rescales to avoid overflow" and "np.array accepts ragged lists" both
+  shipped, and both were false on the installed numpy. The same goes for any
+  error message or printed value you quote.
+- **Shape and type are part of the answer.** Assert output shapes. Wherever a
+  transposed or mis-broadcast result would coincide with the right one on a
+  square input, test a non-square input first. Check `isinstance(x, bool)`
+  before `x is True`, so an `np.True_` gets a message instead of a bare
+  assertion failure.
+- **Work every formula with small numbers.** The learner has no maths
+  background. A formula in `README.md` or `lesson.html` arrives with a worked
+  example in concrete values, and a docstring is a specification, not a riddle.
+- **Derive, never assemble.** Prose may build a formula up step by step, but no
+  line in `README.md`, `lesson.html` or a docstring may map one-to-one onto a
+  stub's body. That is a cheat sheet. Finished formulas belong behind the gate,
+  in `solutions.json`.
+- **`_demo()` checks before it runs.** It calls each function it needs, catches
+  only `NotImplementedError`, and prints what is left to write plus
+  `progress <id>`, instead of a traceback from three frames down.
+
+### After the learner finishes
+
+Write `solutions.json` once the learner's exercises pass, not before — its
+`why` and `trap` are better for having real attempts to discuss. Each entry has
+`n`, `name`, `headline`, `mechanism`, `code`, `why` and `trap`. Verify every
+`code` the way you verify a reference solution, and run every claim in the
+prose.
+
+A diagram for a solution goes in `walkthrough.html` under that exercise's
+heading, as `<figure class="diagram" data-solution="n">`. `app.js` moves it
+into solution card *n* and removes it from the walkthrough, so it is seen only
+once the gate opens. Every lesson shares one page, so SVG ids — arrow markers
+especially — must be unique across all of them.
