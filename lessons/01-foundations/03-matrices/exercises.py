@@ -40,6 +40,11 @@ def shape_of(rows: list[list[float]]) -> tuple[int, int]:
     you an array of Python list objects, which then fails somewhere much later
     with a message about types rather than about shapes.
     """
+    result = (len(rows), len(rows[0]) if rows else 0)
+    for row in rows:
+        if len(row) != result[1]:
+            raise ValueError("rows are not all the same length")
+    return result
     raise NotImplementedError("exercise 1")
 
 
@@ -60,6 +65,7 @@ def row_lengths(X: np.ndarray) -> np.ndarray:
     which axis you want to collapse: you start with (n, d) and you want (n,),
     so the d has to go.
     """
+    return np.sqrt(np.sum(X ** 2, axis=1))
     raise NotImplementedError("exercise 2")
 
 
@@ -84,6 +90,7 @@ def centre(X: np.ndarray) -> np.ndarray:
     Centring is the first step of PCA, of most regression, and of every
     "standardise your features" instruction you have ever skimmed past.
     """
+    return X - np.mean(X, axis=0)
     raise NotImplementedError("exercise 3")
 
 
@@ -110,6 +117,9 @@ def unit_rows(X: np.ndarray) -> np.ndarray:
     Raise ValueError if any row has zero length — a row with no direction
     cannot be pointed anywhere.
     """
+    if np.any(row_lengths(X) == 0):
+        raise ValueError("row with zero length cannot be normalised")
+    return X / row_lengths(X)[:, np.newaxis]
     raise NotImplementedError("exercise 4")
 
 
@@ -135,6 +145,7 @@ def gram(X: np.ndarray) -> np.ndarray:
     equal its own transpose, and entry [i, i] is row i dotted with itself,
     which is its length squared.
     """
+    return X @ X.T
     raise NotImplementedError("exercise 5")
 
 
@@ -158,6 +169,7 @@ def pairwise_distances(X: np.ndarray) -> np.ndarray:
 
     Checks: the diagonal is all zeros, and the matrix equals its own transpose.
     """
+    return np.sqrt(np.sum((X[:, np.newaxis, :] - X[np.newaxis, :, :]) ** 2, axis=2))
     raise NotImplementedError("exercise 6")
 
 
@@ -188,6 +200,12 @@ def rank_all(query: np.ndarray, X: np.ndarray, names: list[str]) -> list[str]:
     This is what a vector database runs, and stretch.py times it against your
     1.1 version so you can see what the difference actually costs.
     """
+    dot_product = np.dot(X, query)
+    query_length = np.linalg.norm(query)
+    row_lengths_X = np.linalg.norm(X, axis=1)
+    similarities = dot_product / (row_lengths_X * query_length)
+    sorted_indices = np.argsort(-similarities)  # Sort in descending order
+    return [names[i] for i in sorted_indices]
     raise NotImplementedError("exercise 7")
 
 
