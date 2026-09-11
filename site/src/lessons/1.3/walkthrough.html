@@ -4,11 +4,86 @@
 
 <h2>1 — shape_of, and why you write it by hand once</h2>
 
+<figure class="diagram" data-solution="1">
+<svg viewBox="0 0 620 214" role="img" aria-label="On the left, a table of two rows of three numbers. The first row's length gives a width of three, every row agrees, and the shape is two by three. On the right, a ragged table whose second row is one number short. It is not a matrix and must raise ValueError.">
+  <text x="40" y="36" class="head">a matrix</text>
+  <rect x="40" y="50" width="40" height="28" class="box"></rect>
+  <rect x="80" y="50" width="40" height="28" class="box"></rect>
+  <rect x="120" y="50" width="40" height="28" class="box"></rect>
+  <rect x="40" y="78" width="40" height="28" class="box"></rect>
+  <rect x="80" y="78" width="40" height="28" class="box"></rect>
+  <rect x="120" y="78" width="40" height="28" class="box"></rect>
+  <text x="60" y="69" class="lbl" text-anchor="middle">1</text>
+  <text x="100" y="69" class="lbl" text-anchor="middle">2</text>
+  <text x="140" y="69" class="lbl" text-anchor="middle">3</text>
+  <text x="60" y="97" class="lbl" text-anchor="middle">4</text>
+  <text x="100" y="97" class="lbl" text-anchor="middle">5</text>
+  <text x="140" y="97" class="lbl" text-anchor="middle">6</text>
+  <text x="176" y="69" class="lbl-sm">width = 3</text>
+  <text x="176" y="97" class="lbl-sm">every row agrees</text>
+  <text x="40" y="138" class="lbl-hl">shape  (2, 3)</text>
+
+  <text x="340" y="36" class="head">not a matrix</text>
+  <rect x="340" y="50" width="40" height="28" class="box"></rect>
+  <rect x="380" y="50" width="40" height="28" class="box"></rect>
+  <rect x="340" y="78" width="40" height="28" class="box"></rect>
+  <rect x="380" y="78" width="40" height="28" class="box-hl" stroke-dasharray="4 4"></rect>
+  <text x="360" y="69" class="lbl" text-anchor="middle">1</text>
+  <text x="400" y="69" class="lbl" text-anchor="middle">2</text>
+  <text x="360" y="97" class="lbl" text-anchor="middle">3</text>
+  <text x="436" y="69" class="lbl-sm">width = 2</text>
+  <text x="436" y="97" class="lbl-sm">row 1 has 1</text>
+  <text x="340" y="138" class="lbl-hl">ValueError</text>
+
+  <text x="40" y="178" class="lbl-sm">Plain lists never check themselves. numpy refuses the right-hand table too, but</text>
+  <text x="40" y="196" class="lbl-sm">only when you convert — so the check belongs where the data comes in.</text>
+</svg>
+<figcaption>A shape is two facts: how many rows, and how long they are. Measure the first row, then check every other row against it. The empty table is handled before any of that, because <code>rows[0]</code> of an empty list raises before your own check can run.</figcaption>
+</figure>
+
 <p>This is the last shape check you write yourself, and the point of writing it is that <code>.shape</code> stops being magic afterwards. All numpy is doing is what you just did: recording how long each axis is, and refusing to guess when the input is not a rectangle.</p>
 
-<p>The ragged case matters more than it looks. <code>np.array([[1, 2], [3]])</code> does not raise — it gives you an array of Python list objects, and the failure surfaces somewhere much later with a message about types rather than about shapes. Raising here puts the error where the mistake is.</p>
+<p>The ragged case matters more than it looks, because plain Python lists never check that their rows agree: ragged data read in one row at a time travels through any amount of code without complaint. Current numpy does refuse <code>np.array([[1, 2], [3]])</code>, with a <code>ValueError</code> about an "inhomogeneous shape" — but only at the moment you convert, and not at all if something passed <code>dtype=object</code>. Then you get an array of Python lists, and the failure surfaces much later as a <code>TypeError</code> about lists rather than a complaint about shape. Raising here puts the error where the data comes in.</p>
 
 <h2>2 — row_lengths, and the axis rule</h2>
+
+<figure class="diagram" data-solution="2">
+<svg viewBox="0 0 620 196" role="img" aria-label="A four-step pipeline for row lengths. The two by two table three four, five twelve is squared to nine sixteen, twenty-five one hundred and forty-four. Summing along axis one gives twenty-five and one hundred and sixty-nine, and the shape drops from two by two to two. The square root gives five and thirteen.">
+  <defs>
+    <marker id="ar13b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="20" y="36" width="128" height="104" rx="4" class="box"></rect>
+  <text x="36" y="60" class="head">X</text>
+  <text x="36" y="86" class="lbl">[[3, 4],</text>
+  <text x="44" y="106" class="lbl">[5, 12]]</text>
+  <text x="36" y="128" class="lbl-sm">(2, 2)</text>
+  <line x1="152" y1="88" x2="168" y2="88" class="conn" marker-end="url(#ar13b)"></line>
+
+  <rect x="172" y="36" width="128" height="104" rx="4" class="box"></rect>
+  <text x="188" y="60" class="head">square</text>
+  <text x="188" y="86" class="lbl">[[9, 16],</text>
+  <text x="196" y="106" class="lbl">[25, 144]]</text>
+  <text x="188" y="128" class="lbl-sm">(2, 2)</text>
+  <line x1="304" y1="88" x2="320" y2="88" class="conn" marker-end="url(#ar13b)"></line>
+
+  <rect x="324" y="36" width="128" height="104" rx="4" class="box-hl"></rect>
+  <text x="340" y="60" class="head">sum, axis=1</text>
+  <text x="340" y="86" class="lbl">[25, 169]</text>
+  <text x="340" y="128" class="lbl-hl">(2,)</text>
+  <line x1="456" y1="88" x2="472" y2="88" class="conn" marker-end="url(#ar13b)"></line>
+
+  <rect x="476" y="36" width="128" height="104" rx="4" class="box"></rect>
+  <text x="492" y="60" class="head">sqrt</text>
+  <text x="492" y="86" class="lbl">[5, 13]</text>
+  <text x="492" y="128" class="lbl-sm">(2,)</text>
+
+  <text x="20" y="172" class="lbl-sm">axis=1 names the columns, so the columns are what vanish: (2, 2) becomes (2,).</text>
+</svg>
+<figcaption>The only new decision in this exercise is the axis, and the third box is where it happens. You start at <code>(n, d)</code> and want <code>(n,)</code>, so the <code>d</code> has to go, and <code>d</code> is axis 1.</figcaption>
+</figure>
 
 <p>You know how to take the length of one vector. The only new thing is doing it to every row at once, and the whole question is which axis to name.</p>
 
@@ -18,6 +93,55 @@
 
 <h2>3 — centre, and your first real broadcast</h2>
 
+<figure class="diagram" data-solution="3">
+<svg viewBox="0 0 620 214" role="img" aria-label="The table one ten, three thirty minus the column means two and twenty. The row of means has shape two and is stretched down both rows without being copied, giving minus one minus ten, one ten. The shape alignment shows two matching two, and the missing left axis stretching to two.">
+  <rect x="30" y="50" width="44" height="28" class="box"></rect>
+  <rect x="74" y="50" width="44" height="28" class="box"></rect>
+  <rect x="30" y="78" width="44" height="28" class="box"></rect>
+  <rect x="74" y="78" width="44" height="28" class="box"></rect>
+  <text x="52" y="69" class="lbl" text-anchor="middle">1</text>
+  <text x="96" y="69" class="lbl" text-anchor="middle">10</text>
+  <text x="52" y="97" class="lbl" text-anchor="middle">3</text>
+  <text x="96" y="97" class="lbl" text-anchor="middle">30</text>
+  <text x="30" y="128" class="lbl-sm">X  (2, 2)</text>
+
+  <text x="138" y="84" class="lbl">&#8722;</text>
+
+  <text x="160" y="40" class="lbl-sm">column means (2,)</text>
+  <rect x="160" y="50" width="44" height="28" class="box-hl"></rect>
+  <rect x="204" y="50" width="44" height="28" class="box-hl"></rect>
+  <rect x="160" y="78" width="44" height="28" class="box" stroke-dasharray="4 4"></rect>
+  <rect x="204" y="78" width="44" height="28" class="box" stroke-dasharray="4 4"></rect>
+  <text x="182" y="69" class="lbl-hl" text-anchor="middle">2</text>
+  <text x="226" y="69" class="lbl-hl" text-anchor="middle">20</text>
+  <text x="182" y="97" class="lbl-sm" text-anchor="middle">2</text>
+  <text x="226" y="97" class="lbl-sm" text-anchor="middle">20</text>
+  <text x="160" y="128" class="lbl-sm">stretched down</text>
+
+  <text x="262" y="84" class="lbl">=</text>
+
+  <rect x="284" y="50" width="44" height="28" class="box"></rect>
+  <rect x="328" y="50" width="44" height="28" class="box"></rect>
+  <rect x="284" y="78" width="44" height="28" class="box"></rect>
+  <rect x="328" y="78" width="44" height="28" class="box"></rect>
+  <text x="306" y="69" class="lbl" text-anchor="middle">&#8722;1</text>
+  <text x="350" y="69" class="lbl" text-anchor="middle">&#8722;10</text>
+  <text x="306" y="97" class="lbl" text-anchor="middle">1</text>
+  <text x="350" y="97" class="lbl" text-anchor="middle">10</text>
+  <text x="284" y="128" class="lbl-sm">centred (2, 2)</text>
+
+  <rect x="398" y="36" width="206" height="116" rx="4" class="box"></rect>
+  <text x="414" y="60" class="head">the broadcast</text>
+  <text x="414" y="86" class="lbl">X     (2, 2)</text>
+  <text x="414" y="106" class="lbl">mean     (2,)</text>
+  <text x="414" y="130" class="lbl-sm">2 = 2, and the missing</text>
+  <text x="414" y="146" class="lbl-sm">left axis stretches to 2</text>
+
+  <text x="30" y="192" class="lbl-sm">Every pairwise distance in the result is the same as in X. Only the location moved.</text>
+</svg>
+<figcaption>One row of means, applied to every row of the table without ever being copied. The <code>(d,)</code> shape already lines up against the columns, which is exactly where you want it — so, unlike exercise 4, no <code>keepdims</code> is needed.</figcaption>
+</figure>
+
 <p>Two operations: get the column means, subtract them. The interesting part is that the second one is between different shapes and works anyway.</p>
 
 <p>Walk the rule rather than trusting it. The means are <code>(d,)</code>, the table is <code>(n, d)</code>. Lined up from the right, <code>d</code> matches <code>d</code>; the table's <code>n</code> has nothing opposite it, so the missing dimension is treated as 1, and 1 stretches. That is why one row of means gets applied to every row.</p>
@@ -26,15 +150,125 @@
 
 <h2>4 — unit_rows, and the bug that says nothing</h2>
 
+<figure class="diagram" data-solution="4">
+<svg viewBox="0 0 620 214" role="img" aria-label="The table three four, five twelve divided by a column of lengths, five and thirteen, with shape two by one. Each row is divided by its own length, giving 0.6 0.8 and 0.385 0.923, and every row now has length one.">
+  <rect x="30" y="46" width="44" height="28" class="box"></rect>
+  <rect x="74" y="46" width="44" height="28" class="box"></rect>
+  <rect x="30" y="74" width="44" height="28" class="box"></rect>
+  <rect x="74" y="74" width="44" height="28" class="box"></rect>
+  <text x="52" y="65" class="lbl" text-anchor="middle">3</text>
+  <text x="96" y="65" class="lbl" text-anchor="middle">4</text>
+  <text x="52" y="93" class="lbl" text-anchor="middle">5</text>
+  <text x="96" y="93" class="lbl" text-anchor="middle">12</text>
+  <text x="30" y="124" class="lbl-sm">X  (2, 2)</text>
+
+  <text x="136" y="80" class="lbl">&#247;</text>
+
+  <rect x="158" y="46" width="44" height="28" class="box-hl"></rect>
+  <rect x="158" y="74" width="44" height="28" class="box-hl"></rect>
+  <text x="180" y="65" class="lbl-hl" text-anchor="middle">5</text>
+  <text x="180" y="93" class="lbl-hl" text-anchor="middle">13</text>
+  <text x="158" y="124" class="lbl-hl">(2, 1)</text>
+
+  <text x="220" y="80" class="lbl">=</text>
+
+  <rect x="242" y="46" width="64" height="28" class="box"></rect>
+  <rect x="306" y="46" width="64" height="28" class="box"></rect>
+  <rect x="242" y="74" width="64" height="28" class="box"></rect>
+  <rect x="306" y="74" width="64" height="28" class="box"></rect>
+  <text x="274" y="65" class="lbl" text-anchor="middle">0.6</text>
+  <text x="338" y="65" class="lbl" text-anchor="middle">0.8</text>
+  <text x="274" y="93" class="lbl" text-anchor="middle">0.385</text>
+  <text x="338" y="93" class="lbl" text-anchor="middle">0.923</text>
+  <text x="242" y="124" class="lbl-sm">unit rows (2, 2)</text>
+
+  <rect x="392" y="36" width="212" height="120" rx="4" class="box"></rect>
+  <text x="408" y="60" class="head">each row, its own length</text>
+  <text x="408" y="86" class="lbl-sm">row 0 &#247; 5   &#8594; length 1</text>
+  <text x="408" y="106" class="lbl-sm">row 1 &#247; 13  &#8594; length 1</text>
+  <text x="408" y="130" class="lbl-sm">(2, 1) against (2, 2):</text>
+  <text x="408" y="146" class="lbl-sm">1 stretches, 2 = 2</text>
+
+  <text x="30" y="194" class="lbl-sm">A (2,) divisor would send the 5 to column 0 and the 13 to column 1 — silent on a square.</text>
+</svg>
+<figcaption>The lengths have to arrive as a <em>column</em>. <code>keepdims=True</code> keeps the collapsed axis with size 1; inserting it afterwards with <code>[:, np.newaxis]</code> gets you the same <code>(n, 1)</code>. Either way, each row meets its own length.</figcaption>
+</figure>
+
 <p>The arithmetic is <code>normalise</code> from 1.1. Everything hard about this exercise is the shape of the divisor, which is deliberate.</p>
 
 <p>The failure mode is worth naming precisely, because it recurs for the rest of your career: <strong>an operation between compatible-but-wrong shapes is silent.</strong> Numpy cannot know you meant the numbers to go down the rows rather than across the columns. It has one rule, it applies it, and it hands you plausible floats.</p>
 
 <p>The defence is not vigilance, it is a habit: after any reduction whose result goes back into arithmetic with the thing you reduced, look at the shape. Either keep the axis with <code>keepdims</code>, or be able to say why you did not need to.</p>
 
-<p>The zero-row check has the same character as the zero-vector checks in 1.1 and 1.2. A row with no direction cannot be pointed anywhere, and dividing by its length is division by zero — which numpy answers with <code>nan</code> and a warning you will not see.</p>
+<p>The zero-row check has the same character as the zero-vector checks in 1.1 and 1.2. A row with no direction cannot be pointed anywhere, and dividing by its length is division by zero — which numpy answers with <code>nan</code> and a <code>RuntimeWarning</code> that is easy to scroll past.</p>
 
 <h2>5 — gram, and reading a matmul by its shapes</h2>
+
+<figure class="diagram" data-solution="5">
+<svg viewBox="0 0 620 216" role="img" aria-label="The three by two table X, times X transposed, which is two by three, gives a three by three result. Row zero and row two of X are highlighted, along with column two of X transposed and entry zero two of the result, which is one times one plus zero times one, equal to one. The diagonal is one, one, two: each row's length squared.">
+  <rect x="24" y="50" width="36" height="26" class="box-hl"></rect>
+  <rect x="60" y="50" width="36" height="26" class="box-hl"></rect>
+  <rect x="24" y="76" width="36" height="26" class="box"></rect>
+  <rect x="60" y="76" width="36" height="26" class="box"></rect>
+  <rect x="24" y="102" width="36" height="26" class="box-hl"></rect>
+  <rect x="60" y="102" width="36" height="26" class="box-hl"></rect>
+  <text x="42" y="68" class="lbl-hl" text-anchor="middle">1</text>
+  <text x="78" y="68" class="lbl-hl" text-anchor="middle">0</text>
+  <text x="42" y="94" class="lbl" text-anchor="middle">0</text>
+  <text x="78" y="94" class="lbl" text-anchor="middle">1</text>
+  <text x="42" y="120" class="lbl-hl" text-anchor="middle">1</text>
+  <text x="78" y="120" class="lbl-hl" text-anchor="middle">1</text>
+  <text x="24" y="150" class="lbl-sm">X  (3, 2)</text>
+
+  <text x="108" y="94" class="lbl">@</text>
+
+  <rect x="128" y="63" width="36" height="26" class="box"></rect>
+  <rect x="164" y="63" width="36" height="26" class="box"></rect>
+  <rect x="200" y="63" width="36" height="26" class="box-hl"></rect>
+  <rect x="128" y="89" width="36" height="26" class="box"></rect>
+  <rect x="164" y="89" width="36" height="26" class="box"></rect>
+  <rect x="200" y="89" width="36" height="26" class="box-hl"></rect>
+  <text x="146" y="81" class="lbl" text-anchor="middle">1</text>
+  <text x="182" y="81" class="lbl" text-anchor="middle">0</text>
+  <text x="218" y="81" class="lbl-hl" text-anchor="middle">1</text>
+  <text x="146" y="107" class="lbl" text-anchor="middle">0</text>
+  <text x="182" y="107" class="lbl" text-anchor="middle">1</text>
+  <text x="218" y="107" class="lbl-hl" text-anchor="middle">1</text>
+  <text x="128" y="150" class="lbl-sm">X.T  (2, 3)</text>
+
+  <text x="250" y="94" class="lbl">=</text>
+
+  <rect x="270" y="50" width="36" height="26" class="box"></rect>
+  <rect x="306" y="50" width="36" height="26" class="box"></rect>
+  <rect x="342" y="50" width="36" height="26" class="box-hl"></rect>
+  <rect x="270" y="76" width="36" height="26" class="box"></rect>
+  <rect x="306" y="76" width="36" height="26" class="box"></rect>
+  <rect x="342" y="76" width="36" height="26" class="box"></rect>
+  <rect x="270" y="102" width="36" height="26" class="box"></rect>
+  <rect x="306" y="102" width="36" height="26" class="box"></rect>
+  <rect x="342" y="102" width="36" height="26" class="box"></rect>
+  <text x="288" y="68" class="lbl" text-anchor="middle">1</text>
+  <text x="324" y="68" class="lbl" text-anchor="middle">0</text>
+  <text x="360" y="68" class="lbl-hl" text-anchor="middle">1</text>
+  <text x="288" y="94" class="lbl" text-anchor="middle">0</text>
+  <text x="324" y="94" class="lbl" text-anchor="middle">1</text>
+  <text x="360" y="94" class="lbl" text-anchor="middle">1</text>
+  <text x="288" y="120" class="lbl" text-anchor="middle">1</text>
+  <text x="324" y="120" class="lbl" text-anchor="middle">1</text>
+  <text x="360" y="120" class="lbl" text-anchor="middle">2</text>
+  <text x="270" y="150" class="lbl-sm">(3, 3)</text>
+
+  <rect x="400" y="40" width="204" height="110" rx="4" class="box"></rect>
+  <text x="416" y="62" class="head">entry [0, 2]</text>
+  <text x="416" y="88" class="lbl">row 0 &#183; row 2</text>
+  <text x="416" y="110" class="lbl">1&#215;1 + 0&#215;1 = 1</text>
+  <text x="416" y="136" class="lbl-sm">diagonal: lengths squared</text>
+
+  <text x="24" y="184" class="lbl-sm">(3, 2) @ (2, 3) &#8594; (3, 3): the inner 2s must match, and they vanish.</text>
+  <text x="24" y="202" class="lbl-sm">Square, symmetric, and the diagonal is each row's length squared.</text>
+</svg>
+<figcaption><code>@</code> wants columns on its right-hand side, and <code>.T</code> turns rows into columns. Put together, every row meets every row — <em>n</em>&#178; dot products in one operation.</figcaption>
+</figure>
 
 <p>Two facts, combined: <code>.T</code> turns rows into columns, and <code>@</code> pairs rows on the left with columns on the right. Once you see that the second one wants columns and the first one produces them, the exercise is one operation.</p>
 
@@ -44,6 +278,62 @@
 
 <h2>6 — pairwise_distances, and the cost of elegance</h2>
 
+<figure class="diagram" data-solution="6">
+<svg viewBox="0 0 620 244" role="img" aria-label="A pipeline of shapes. X is three by two. Adding a new axis in two different places gives three by one by two and one by three by two. Subtracting them broadcasts to three by three by two, every pair of rows. Squaring, summing along the last axis and taking the root gives the three by three distance matrix: zeros on the diagonal, five and one in the first row, and a symmetric layout.">
+  <defs>
+    <marker id="ar13f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="20" y="30" width="128" height="86" rx="4" class="box"></rect>
+  <text x="36" y="54" class="head">X</text>
+  <text x="36" y="80" class="lbl">(3, 2)</text>
+  <text x="36" y="102" class="lbl-sm">the rows</text>
+  <line x1="152" y1="73" x2="168" y2="73" class="conn" marker-end="url(#ar13f)"></line>
+
+  <rect x="172" y="30" width="128" height="86" rx="4" class="box"></rect>
+  <text x="188" y="54" class="head">two new axes</text>
+  <text x="188" y="80" class="lbl">(3, 1, 2)</text>
+  <text x="188" y="102" class="lbl">(1, 3, 2)</text>
+  <line x1="304" y1="73" x2="320" y2="73" class="conn" marker-end="url(#ar13f)"></line>
+
+  <rect x="324" y="30" width="128" height="86" rx="4" class="box-hl"></rect>
+  <text x="340" y="54" class="head">subtract</text>
+  <text x="340" y="80" class="lbl-hl">(3, 3, 2)</text>
+  <text x="340" y="102" class="lbl-sm">every pair</text>
+  <line x1="456" y1="73" x2="472" y2="73" class="conn" marker-end="url(#ar13f)"></line>
+
+  <rect x="476" y="30" width="128" height="86" rx="4" class="box"></rect>
+  <text x="492" y="54" class="head">square, sum, &#8730;</text>
+  <text x="492" y="80" class="lbl">axis=-1</text>
+  <text x="492" y="102" class="lbl-hl">(3, 3)</text>
+
+  <text x="24" y="176" class="lbl-sm">the answer, (3, 3)</text>
+  <rect x="200" y="140" width="64" height="26" class="box-hl"></rect>
+  <rect x="264" y="140" width="64" height="26" class="box"></rect>
+  <rect x="328" y="140" width="64" height="26" class="box"></rect>
+  <rect x="200" y="166" width="64" height="26" class="box"></rect>
+  <rect x="264" y="166" width="64" height="26" class="box-hl"></rect>
+  <rect x="328" y="166" width="64" height="26" class="box"></rect>
+  <rect x="200" y="192" width="64" height="26" class="box"></rect>
+  <rect x="264" y="192" width="64" height="26" class="box"></rect>
+  <rect x="328" y="192" width="64" height="26" class="box-hl"></rect>
+  <text x="232" y="158" class="lbl-hl" text-anchor="middle">0</text>
+  <text x="296" y="158" class="lbl" text-anchor="middle">5</text>
+  <text x="360" y="158" class="lbl" text-anchor="middle">1</text>
+  <text x="232" y="184" class="lbl" text-anchor="middle">5</text>
+  <text x="296" y="184" class="lbl-hl" text-anchor="middle">0</text>
+  <text x="360" y="184" class="lbl" text-anchor="middle">4.24</text>
+  <text x="232" y="210" class="lbl" text-anchor="middle">1</text>
+  <text x="296" y="210" class="lbl" text-anchor="middle">4.24</text>
+  <text x="360" y="210" class="lbl-hl" text-anchor="middle">0</text>
+  <text x="412" y="172" class="lbl-sm">zero diagonal</text>
+  <text x="412" y="190" class="lbl-sm">equals its transpose</text>
+</svg>
+<figcaption>The same numbers, each given an empty axis in a different place, so that broadcasting stretches both and produces every pair. The <code>(3, 3, 2)</code> in the middle is the cost: <em>d</em> times the memory of the answer, which is what <code>stretch.py</code> measures.</figcaption>
+</figure>
+
 <p>The move is the new axis. Both operands are the same data; inserting an empty dimension in different places makes broadcasting produce every pair rather than element-by-element results.</p>
 
 <p>Then the collapse. The components live on the last axis now, and <code>axis=-1</code> says "the last one" without you having to count. Getting into that habit early pays off once arrays have four and five axes.</p>
@@ -51,6 +341,53 @@
 <p>What this exercise does <em>not</em> tell you is that it does not scale, and that is what <code>stretch.py</code> is for. You build an <code>(n, n, d)</code> array to produce an <code>(n, n)</code> answer, so you pay <em>d</em> times the memory of your result. At <code>d = 128</code> that is a factor of 128, and it is the reason production code uses an algebraic identity instead. The stretch file walks you to it.</p>
 
 <h2>7 — rank_all, and what you have actually built</h2>
+
+<figure class="diagram" data-solution="7">
+<svg viewBox="0 0 620 256" role="img" aria-label="The library rows one zero, zero one and one one are normalised to unit rows. Multiplied by the unit query one zero, they give similarities one, zero and 0.71. Argsort of the negated similarities gives positions zero, two and one, which become the names a, c and b.">
+  <defs>
+    <marker id="ar13g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrowfill"></path>
+    </marker>
+  </defs>
+
+  <rect x="20" y="30" width="128" height="116" rx="4" class="box"></rect>
+  <text x="36" y="54" class="head">unit_rows(X)</text>
+  <text x="36" y="80" class="lbl">[1, 0]</text>
+  <text x="36" y="100" class="lbl">[0, 1]</text>
+  <text x="36" y="120" class="lbl">[.71, .71]</text>
+  <text x="36" y="138" class="lbl-sm">(3, 2)</text>
+  <line x1="152" y1="88" x2="168" y2="88" class="conn" marker-end="url(#ar13g)"></line>
+
+  <rect x="172" y="30" width="128" height="116" rx="4" class="box"></rect>
+  <text x="188" y="54" class="head">@ unit query</text>
+  <text x="188" y="80" class="lbl">q = [1, 0]</text>
+  <text x="188" y="104" class="lbl-sm">(3, 2) @ (2,)</text>
+  <text x="188" y="128" class="lbl-hl">&#8594; (3,)</text>
+  <line x1="304" y1="88" x2="320" y2="88" class="conn" marker-end="url(#ar13g)"></line>
+
+  <rect x="324" y="30" width="128" height="116" rx="4" class="box-hl"></rect>
+  <text x="340" y="54" class="head">similarities</text>
+  <text x="340" y="80" class="lbl-hl">[1, 0, 0.71]</text>
+  <text x="340" y="104" class="lbl-sm">one per row</text>
+  <line x1="456" y1="88" x2="472" y2="88" class="conn" marker-end="url(#ar13g)"></line>
+
+  <rect x="476" y="30" width="128" height="116" rx="4" class="box"></rect>
+  <text x="492" y="54" class="head">argsort(&#8722;sims)</text>
+  <text x="492" y="80" class="lbl">[0, 2, 1]</text>
+  <text x="492" y="104" class="lbl-sm">best first</text>
+
+  <text x="40" y="204" class="lbl-sm">positions [0, 2, 1]  &#8594;  names</text>
+  <rect x="270" y="184" width="36" height="28" class="box-hl"></rect>
+  <rect x="306" y="184" width="36" height="28" class="box"></rect>
+  <rect x="342" y="184" width="36" height="28" class="box"></rect>
+  <text x="288" y="203" class="lbl-hl" text-anchor="middle">a</text>
+  <text x="324" y="203" class="lbl" text-anchor="middle">c</text>
+  <text x="360" y="203" class="lbl" text-anchor="middle">b</text>
+
+  <text x="40" y="240" class="lbl-sm">Three rows or three million: one matmul, one sort, one comprehension.</text>
+</svg>
+<figcaption>For unit vectors the cosine is a plain dot product, so after <code>unit_rows</code> there is nothing left to divide. Reusing it also brings its zero-row guard along — a row with no direction raises instead of quietly ranking last.</figcaption>
+</figure>
 
 <p>Three lessons have now written the same search three times. 1.1 looped a dictionary and returned one name. 1.2 did the same by distance. This one does not loop at all.</p>
 

@@ -1,0 +1,67 @@
+{
+  "solutions": [
+    {
+      "n": 1,
+      "name": "shape_of",
+      "headline": "what .shape is, written by hand",
+      "mechanism": "A shape is two facts about a table: how many rows it has, and how long they are. Count the rows, measure the first one, then check that every other row agrees with it. The empty table has to be handled before any of that, because measuring rows[0] of an empty list raises IndexError before your own check ever runs. Once this is written, .shape stops being magic — numpy records the same two numbers, and refuses, as you do here, to guess when the input is not a rectangle.",
+      "code": "def shape_of(rows: list[list[float]]) -> tuple[int, int]:\n    if not rows:\n        return (0, 0)\n\n    width = len(rows[0])\n    for row in rows:\n        if len(row) != width:\n            raise ValueError(\"Every row must be the same length; this is not a matrix.\")\n    return (len(rows), width)",
+      "why": "Naming the first row's length gives the check and the return value one visible quantity, and any(len(r) != width for r in rows) collapses the loop into one line if you prefer it. Raising on ragged input matters because plain lists never check themselves. Current numpy does refuse np.array([[1, 2], [3]]), but only at the moment you convert, and not at all if something passed dtype=object — then you get an array of Python lists, and the failure turns up much later as a TypeError about lists rather than a complaint about shape. Checking where the data comes in puts the error next to the mistake.",
+      "trap": "Reading len(rows[0]) before checking that rows is non-empty. shape_of([]) then raises IndexError instead of returning (0, 0), and the message points at your indexing rather than at the empty input."
+    },
+    {
+      "n": 2,
+      "name": "row_lengths",
+      "headline": "the axis you name is the one that disappears",
+      "mechanism": "Square every entry, add along axis 1, take the root. The squaring and the root are the magnitude from 1.1; the only new decision is the axis. You start at (n, d) and you want (n,), so the d has to go, and d is axis 1. Deriving it from the shapes like that is right every time, which is more than can be said for remembering whether axis 0 means rows.",
+      "code": "def row_lengths(X: np.ndarray) -> np.ndarray:\n    return np.sqrt(np.sum(X ** 2, axis=1))",
+      "why": "np.linalg.norm(X, axis=1) is the one-call version and the one to reach for in real code — for readability, not robustness. It does not rescale: numpy squares and sums exactly as this does, so a row of 1e-200 comes back with length 0.0 from either version, and a row of 1e200 comes back as inf. Composing square, sum and sqrt yourself once is still worth it, because exercise 6 needs that composition on a three-dimensional array.",
+      "trap": "axis=0 instead of axis=1 gives d column lengths instead of n row lengths. On a square matrix both have shape (n,), so the shape passes and only the values are wrong — [5.83, 12.65] instead of [5, 13] for the docstring example. The test's 4×3 case exists so that mistake shows up as shape (3,) where (4,) was expected."
+    },
+    {
+      "n": 3,
+      "name": "centre",
+      "headline": "one row of means, broadcast down every row",
+      "mechanism": "X.mean(axis=0) collapses the rows and leaves one mean per column, shape (d,). Subtracting (d,) from (n, d) is a broadcast: lined up from the right, d matches d, and the missing left dimension is treated as 1 and stretched across all n rows. So the one row of means is applied to every row of the table, without ever being copied.",
+      "code": "def centre(X: np.ndarray) -> np.ndarray:\n    return X - X.mean(axis=0)",
+      "why": "X.mean(axis=0) and np.mean(X, axis=0) are the same call. keepdims=True would give a (1, d) row, which also broadcasts correctly, but it is not needed: a (d,) array already lines up against the columns, and the columns are where you want it. That is the contrast with exercise 4, where the reduction runs along the other axis and the result has to be turned into a column. Centring moves the data without changing its shape — every pairwise distance is identical before and after — which is why it is safe as the first step of PCA and of regression.",
+      "trap": "axis=1 gives n row means instead of d column means. Subtracting an (n,) array from (n, d) lines n up against d: a broadcast error on a rectangular table, and a silent wrong answer on a square one. It is the same family of bug as exercise 4, arriving one exercise early."
+    },
+    {
+      "n": 4,
+      "name": "unit_rows",
+      "headline": "keep the axis you collapsed",
+      "mechanism": "normalise from 1.1, applied to every row at once. The row lengths are a reduction along axis 1, and keepdims=True leaves that axis in place with size 1, so the lengths come back as a column of shape (n, 1). Dividing (n, d) by (n, 1): d against 1 stretches, n against n matches, and each row is divided by its own length.",
+      "code": "def unit_rows(X: np.ndarray) -> np.ndarray:\n    lengths = np.sqrt(np.sum(X ** 2, axis=1, keepdims=True))\n    if np.any(lengths == 0):\n        raise ValueError(\"A row of length zero has no direction to keep.\")\n    return X / lengths",
+      "why": "Inserting the axis after the fact — row_lengths(X)[:, np.newaxis] — is exactly equivalent: the same column axis, added after the reduction instead of kept during it. Reaching for it is a good sign, because it means the fix came from understanding what was wrong with the shape rather than from remembering a keyword. If you reuse row_lengths that way, compute it once into a variable; calling it twice, once for the check and once for the division, computes every row's length twice. lengths == 0 is correct here, unlike the orthogonality test in 1.2. That test asked whether a number was approximately zero; this guard protects a division, and division only fails at exactly zero.",
+      "trap": "Dividing by the (n,) lengths from exercise 2. On a rectangular table numpy raises and names both shapes. On a square table it raises nothing and hands back plausible floats — rows of length 0.674 and 1.361 where every row should be exactly 1."
+    },
+    {
+      "n": 5,
+      "name": "gram",
+      "headline": "rows on the left, columns on the right",
+      "mechanism": "@ pairs every row of the left-hand matrix with every column of the right-hand one, and each pairing is a dot product. X.T turns the rows of X into columns. So X @ X.T pairs every row of X with every row of X, and entry [i, j] is row i dotted with row j. Read the shapes: (n, d) @ (d, n) — the inner d's must match, because they are the length of the vectors being dotted, and they vanish, leaving (n, n).",
+      "code": "def gram(X: np.ndarray) -> np.ndarray:\n    return X @ X.T",
+      "why": "np.dot(X, X.T) and np.matmul(X, X.T) are the same operation for two-dimensional arrays; @ is the one to write. The result has three properties you can check in your head, and should: it is square, it equals its own transpose because row i · row j is the same number as row j · row i, and its diagonal is each row dotted with itself — its length squared. If any of those fails, the pairing went wrong.",
+      "trap": "X.T @ X instead of X @ X.T. That pairs every column with every column and gives a (d, d) matrix — a real and useful object, the shape of the covariance matrix you will meet in PCA, but not this one. On a square X the shape matches and only the values betray it; the test's 6×4 case turns it into a (4, 4) where (6, 6) was expected."
+    },
+    {
+      "n": 6,
+      "name": "pairwise_distances",
+      "headline": "every pair, by inventing an axis",
+      "mechanism": "X[:, None, :] has shape (n, 1, d) and X[None, :, :] has shape (1, n, d): the same numbers, each with an empty axis in a different place. Subtracting them, broadcasting stretches both empty axes and produces (n, n, d) — every row minus every row, n² small vectors of d components each. Collapsing the last axis to lengths, with square, sum and sqrt, leaves the (n, n) distance matrix.",
+      "code": "def pairwise_distances(X: np.ndarray) -> np.ndarray:\n    diffs = X[:, None, :] - X[None, :, :]\n    return np.sqrt(np.sum(diffs ** 2, axis=-1))",
+      "why": "np.newaxis is None, and is arguably the more readable spelling. axis=-1 and axis=2 are identical for (n, d) input; -1 means \"the last axis\" and keeps meaning it if the rank ever changes. The cost is the (n, n, d) intermediate, which is d times the memory of the answer. stretch.py measures it, and walks you to the identity |a − b|² = a·a − 2(a·b) + b·b, which builds the same matrix from gram(X) and two vectors of squared row lengths and never allocates the intermediate at all.",
+      "trap": "Leaving off the square root. Squared distances rank in the same order as real ones, so a search built on them still works and the mistake can live for a long time: the diagonal is still zero and the matrix is still symmetric. Only the values are wrong — 25 where 5 should be — which is what the test's [0, 1] check catches."
+    },
+    {
+      "n": 7,
+      "name": "rank_all",
+      "headline": "the whole library, one matmul",
+      "mechanism": "Normalise every row with unit_rows and normalise the query; for unit vectors the cosine is a plain dot product, so there is nothing left to divide. (n, d) @ (d,) gives (n,): the matrix-vector case of the same row-against-column pairing, one similarity per library item. np.argsort returns the positions that would sort that array ascending, so negating it puts the best first, and one comprehension turns positions into names.",
+      "code": "def rank_all(query: np.ndarray, X: np.ndarray, names: list[str]) -> list[str]:\n    query_length = np.sqrt(np.sum(query ** 2))\n    if query_length == 0:\n        raise ValueError(\"A zero query has no direction to compare against.\")\n\n    similarities = unit_rows(X) @ (query / query_length)\n    order = np.argsort(-similarities, kind=\"stable\")\n    return [names[i] for i in order]",
+      "why": "Reusing unit_rows is the point, and not for tidiness: its zero-row guard comes along for free. Recomputing the norms inline ranks ordinary input correctly but loses that guard — a zero row gets a similarity of nan and argsort quietly sorts it last, and a zero query makes every similarity nan and hands back the library in stored order as if that were a ranking. kind=\"stable\" makes the order of ties deterministic, which is index order. The default happened to keep that order in testing, but numpy does not promise it. Reversing an ascending argsort with [::-1] also works, but it reverses the order of ties as well.",
+      "trap": "Ranking by the raw dot product without normalising. Long rows win regardless of direction — the flaw 1.1 fixed, reintroduced at scale. The test rescales the library for exactly this reason, one row by 90× and another by 50×: raw dot products then put c first, and a cosine ranking must not move when a row gets longer."
+    }
+  ]
+}

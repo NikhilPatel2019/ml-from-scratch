@@ -36,9 +36,11 @@ def shape_of(rows: list[list[float]]) -> tuple[int, int]:
     Plain Python only — no numpy.
 
     Raise ValueError if the rows are not all the same length. That shape is
-    not a matrix, and numpy will not tell you: np.array on ragged input gives
-    you an array of Python list objects, which then fails somewhere much later
-    with a message about types rather than about shapes.
+    not a matrix. Current numpy refuses it as well, but only at the moment you
+    convert, and not at all if something passed dtype=object — then it quietly
+    builds an array of Python lists, which fails much later with a message
+    about lists rather than about shapes. Plain lists never check themselves,
+    so the check belongs where the data comes in.
     """
     raise NotImplementedError("exercise 1")
 
