@@ -37,7 +37,8 @@
           "id": "1.4",
           "title": "Matrices as transformations",
           "summary": "Matrix multiplication as a function that moves space. This is the one that makes neural networks click.",
-          "status": "planned"
+          "status": "available",
+          "dir": "lessons/01-foundations/04-transformations"
         },
         {
           "id": "1.5",

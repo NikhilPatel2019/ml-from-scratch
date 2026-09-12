@@ -1,0 +1,64 @@
+<div class="prose">
+
+<div data-exercise-rows></div>
+
+<h2>The one that costs people an afternoon</h2>
+
+<p>Exercise 2 is the whole lesson's pinch point, and it is not about transformations at all &#8212; it is about two conventions meeting. A transformation matrix is written to act on a single vector standing up as a column. Your data, since 1.3, lies down: one thing per row.</p>
+
+<div class="codeblock">
+<div class="cap">exercises.py &#8212; the only file you edit</div>
+<pre><code class="language-python">def transform(M: np.ndarray, X: np.ndarray) -&gt; np.ndarray:
+    """EXERCISE 2 &#8212; move every row of your data at once.
+
+    THIS IS THE ONE THAT BITES, and it is worth slowing down for. M is
+    written to act on a single column vector, and your rows are not
+    columns. So a transpose belongs somewhere in this expression, and
+    the way to find where is the way 1.3 taught you &#8212; write the shapes
+    down and line them up:
+
+        (n, d_in) against (d_out, d_in). Which pairing is even defined,
+        and what does the one that works leave you holding?
+    """
+    raise NotImplementedError("exercise 2")</code></pre>
+</div>
+
+<p>Resist trying both orders until one stops raising. On a square matrix both orders run, and only one of them is right &#8212; that is the <code>keepdims</code> bug from 1.3 in a new costume, and the tests use a non-square matrix so it cannot hide.</p>
+
+<h2>Every one is checked for shape</h2>
+
+<p>As in 1.3, the tests assert the shape as well as the values. Here the shapes carry meaning: <code>(d_out, d_in)</code> says what a transformation takes in and gives back, and a stack of layers is readable as a chain of those shapes.</p>
+
+<h2>What the tests check that you might not</h2>
+
+<ul>
+  <li><strong>Weighting by a basis vector picks out a column.</strong> Exercise 1 is checked with <code>[1, 0]</code> and <code>[0, 1]</code> as well as ordinary weights, because that special case is exercise 3 arriving early.</li>
+  <li><strong>Squashing to fewer dimensions is still a transformation.</strong> A <code>(1, 2)</code> matrix turns every row into one number, and the shape of that answer is <code>(n, 1)</code> rather than <code>(n,)</code>.</li>
+  <li><strong>Which way a rotation turns.</strong> Counter-clockwise is the convention, and getting it backwards sends <code>[1, 0]</code> to <code>[0, -1]</code>. The test says so in its message.</li>
+  <li><strong>A rotation preserves every length.</strong> Checked with <code>np.linalg.norm</code> on six random vectors, because a matrix that turns things and also stretches them is not a rotation.</li>
+  <li><strong>45&#176; twice is 90&#176; once.</strong> Composition, one exercise early, and a good check that your matrix is a rotation rather than something that merely gets <code>[1, 0]</code> right.</li>
+  <li><strong>Order, in both exercises that have one.</strong> <code>compose</code> is tested against applying the two transformations one at a time, and the stack in exercise 7 is tested against layers applied in the order they are listed.</li>
+  <li><strong>A real Python <code>bool</code> from exercise 4.</strong> The same trap as 1.2 exercise 6: <code>np.all</code> hands you something that prints <code>True</code> and fails <code>is True</code>.</li>
+</ul>
+
+<h2>Build each one in stages</h2>
+
+<p>Everything after exercise 2 is one or two operations. The habit from 1.3 still pays: write one operation, print its <code>.shape</code>, check it against what you predicted, then add the next.</p>
+
+<p>For this lesson there is a second habit worth adding. When a transformation looks wrong, apply it to <code>[1, 0]</code> and <code>[0, 1]</code> and see where they went. That is two lines, and it tells you what your matrix actually does rather than what you meant it to do.</p>
+
+<h2>Then run the demo</h2>
+
+<p>Once all seven pass, run the file directly. It moves the four corners of a square through a scaling, a shear and a rotation, prints where the basis landed in each case, and then shows the same pair of transformations composed in both orders.</p>
+
+<div class="codeblock">
+<pre><code class="language-bash">python lessons/01-foundations/04-transformations/exercises.py</code></pre>
+</div>
+
+<h2>The stretch, if you want it</h2>
+
+<p><code>stretch.py</code> is optional and not scored, and this one is the most convincing file in the lesson. You collapse a whole stack of layers into a single layer &#8212; without algebra, by asking where the zero vector and the basis vectors go &#8212; and then break the collapse by putting <code>tanh</code> between the layers.</p>
+
+<p>The two numbers you print are the argument for activation functions. Having measured them yourself is different from having been told.</p>
+
+</div>

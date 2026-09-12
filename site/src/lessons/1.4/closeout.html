@@ -1,0 +1,32 @@
+<div class="prose">
+
+<p class="lead">Passing tests is the floor, not the finish. This is the part that decides whether any of it stays with you.</p>
+
+<h2>You are done when</h2>
+
+<p>Not when the tests pass &#8212; when you can answer these out loud, without looking anything up:</p>
+
+<ol class="checkq">
+  <li><code>M</code> is <code>(3, 2)</code>. How many components does its input have, and its output? Which of those two numbers is the row count?</li>
+  <li>Where in a matrix do you look to find where <code>[0, 1]</code> lands? State it as a rule, not as an answer about one matrix.</li>
+  <li>Your data <code>X</code> is <code>(100, 3)</code> and <code>M</code> is <code>(5, 3)</code>. Write the expression that moves every row, and say what shape comes out. What goes wrong in the other order?</li>
+  <li>State the two rules that make a function linear. Which one does <code>f(v) = M @ v + c</code> break, and what happens to the origin under it?</li>
+  <li>Why is a neural network layer affine rather than linear?</li>
+  <li>Without computing anything: does a rotation change the length of a vector? Answer from the picture rather than the arithmetic.</li>
+  <li>Give two transformations you can picture where the other order gives a different answer, and say where one specific point ends up in each case.</li>
+  <li>Ten linear layers with nothing between them are equivalent to how many layers? Say why in one sentence, using the word "composition".</li>
+  <li>What does <code>tanh</code> between the layers change about that answer?</li>
+</ol>
+
+<p>If one of those makes you hesitate, the fix is not to re-read this page. Open a Python prompt, build a 2&#215;2 matrix, and apply it to <code>[1, 0]</code> and <code>[0, 1]</code>. This lesson is learned by watching where two arrows go.</p>
+
+<h2>Write your notes</h2>
+
+<p><code>notes.md</code> in the lesson folder holds the same questions plus one more, asking which bug raised an error and which one handed you plausible numbers. Answer them in your own words &#8212; the <em>things I got wrong</em> section will be the most valuable thing in your repository six months from now.</p>
+
+<div class="callout">
+  <span class="lbl">What this sets up</span>
+  <p>You can move space in any direction you like. Lesson <strong>1.5</strong> asks the opposite question: given where something <em>landed</em>, can you get back to where it started? Sometimes yes, sometimes no &#8212; and the cases where you cannot are the ones that explain what "singular", "rank" and "solving <code>Ax = b</code>" actually mean. Exercise 2 of this lesson, where a <code>(1, 2)</code> matrix squashes every row to a single number, is already an example of a transformation nobody can undo.</p>
+</div>
+
+</div>
