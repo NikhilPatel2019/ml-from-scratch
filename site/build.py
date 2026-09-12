@@ -140,15 +140,20 @@ def test_constraints(lesson_dir: Path) -> dict[str, list[str]]:
     except SyntaxError:
         return {}
 
+    # Two spellings of the same assertion. The early lessons write it inline;
+    # from 1.3 it moved into a `no_loops()` helper, and a test that allows a
+    # comprehension is not banning loops, so that call must not count.
     bans = [(r'"(?:np\.|numpy)" not in', "no numpy"),
             (r'"for " not in', "no loops"),
+            (r'no_loops\((?![^)]*allow_comprehension\s*=\s*True)', "no loops"),
             (r'"sum\(" not in', "no sum()")]
     out: dict[str, list[str]] = {}
     for node in tree.body:
         if not isinstance(node, ast.FunctionDef) or not node.name.startswith("test_"):
             continue
         body = ast.get_source_segment(text, node) or ""
-        found = [label for pattern, label in bans if re.search(pattern, body)]
+        found = list(dict.fromkeys(
+            label for pattern, label in bans if re.search(pattern, body)))
         if found:
             # test_6_cosine_similarity -> cosine_similarity
             out[re.sub(r"^test_\d+_", "", node.name)] = found

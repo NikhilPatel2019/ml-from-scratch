@@ -1,0 +1,69 @@
+<div class="prose">
+
+<p class="lead">The mechanisms, not the implementations. No code here &#8212; that is yours to write, and there is nothing on this page you can copy.</p>
+
+<h2>1 — combine_columns, and why it is done by hand</h2>
+
+<p>The arithmetic here is the same arithmetic you would get from taking a dot product with each row, and no test can tell which one you wrote. The exercise exists because the two readings lead to different places.</p>
+
+<p>The row reading says "the answer is a pile of dot products". True, and it stops there. The column reading says "the answer is the columns, mixed in the proportions <code>v</code> asks for" &#8212; and that keeps paying: it explains where the basis vectors land, it explains why a matrix is completely described by two arrows, and in 1.5 it explains what happens when a matrix has columns that duplicate each other.</p>
+
+<p>Two error cases, and they are not decoration. Rows of different lengths are not a matrix, which 1.3 established. Weights that do not match the number of columns are a question with no answer &#8212; you would be asking for three lots of a column that does not exist.</p>
+
+<h2>2 — transform, and the two conventions</h2>
+
+<p>This is the exercise that costs people an afternoon, and none of the difficulty is about transformations. It is that two communities write the same operation differently, and both are in your code at once.</p>
+
+<p>Mathematics writes the vector standing up, as a column, so a transformation multiplies from the left: <code>M @ v</code>. Data storage lies the vector down, as a row, because a row is a record and records go in tables. Both conventions are entrenched and neither is going to give way, so the translation is a permanent part of the job.</p>
+
+<p>The way through is to stop reading the expression and start reading the shapes. <code>@</code> pairs the last axis of what is on its left with the first axis of what is on its right, and those two numbers have to be equal. You have <code>(n, d_in)</code> and <code>(d_out, d_in)</code>, you want <code>(n, d_out)</code>, and transposing either operand is allowed. There are only a few arrangements; write them out and one of them is the answer.</p>
+
+<p>The failure mode is worth naming because it recurs: on a square matrix both arrangements run without complaint and one of them silently transposes your data. Non-square inputs turn a silent wrong answer into a loud error, which is why the tests use them.</p>
+
+<h2>3 — basis_images, and the shape that surprises</h2>
+
+<p>You can write this one from the sentence in the lesson and be right. Build it instead, by feeding the identity through exercise 2, because the shape that comes back is the part worth meeting.</p>
+
+<p><code>M</code> is <code>(d_out, d_in)</code>. One image per input axis, with each image having <code>d_out</code> components, is <code>(d_in, d_out)</code>. The two are transposes of each other, and the reason is the convention clash from exercise 2 all over again: columns are where the images live in <code>M</code>, and rows are where they live when you ask for them as data.</p>
+
+<p>If your answer is the right shape for the wrong reason, the identity check catches it: every basis vector of <code>np.eye(4)</code> must come back exactly where it started.</p>
+
+<h2>4 — is_linear, and what a counterexample proves</h2>
+
+<p>The two rules are the whole definition, so the code is a direct transcription: make some vectors, check the first rule, check the second, report whether both held.</p>
+
+<p>Three decisions inside it are worth making deliberately. The vectors should come from a seeded generator, so that a run that passes today passes tomorrow for the same reason. The scalar must not be 0 or 1 &#8212; both are fixed points of the second rule for almost any function, so they prove nothing. And the comparison is against a tolerance, never <code>==</code>: floating point makes an exact comparison fail on functions that are perfectly linear, which is 1.2 exercise 6's lesson arriving in a new place.</p>
+
+<p>The return type is the other half of 1.2 exercise 6. <code>np.allclose</code> gives you a real Python <code>bool</code>; <code>np.all</code> gives you a numpy boolean that prints identically, compares equal, and fails <code>is True</code>. The test asserts the type, so that this is a message rather than a mystery.</p>
+
+<p>One thing to be honest with yourself about: a check like this can find a counterexample, and that is all. Passing means "I did not catch it", not "it is linear". That asymmetry &#8212; cheap to disprove, expensive to prove &#8212; is worth carrying well beyond this lesson.</p>
+
+<h2>5 — rotation, and reading a point off a circle</h2>
+
+<p>The temptation is to look the matrix up, and the exercise is worth more than the four numbers it produces. What you are practising is building a transformation out of a decision about where the basis goes, and rotation is the case where that skill has an answer you can check by drawing.</p>
+
+<p>Cosine and sine are not two formulas. They are the two coordinates of the point you arrive at by walking counter-clockwise around the unit circle from <code>[1, 0]</code>. Say that out loud once and the first column of the matrix is not something you derive, it is something you read.</p>
+
+<p>The second column is the exercise. <code>[0, 1]</code> begins a quarter turn ahead of <code>[1, 0]</code>, and a rotation moves everything by the same angle, so it stays a quarter turn ahead. Read that point off the same circle. Doing it at 90&#176; first &#8212; where every number is 0, 1 or &#8722;1 &#8212; lets you check the picture against arithmetic before you commit to the general case.</p>
+
+<p>When it passes, the two properties in the tests are worth understanding rather than just satisfying: a rotation changes no length, and doing 45&#176; twice does what 90&#176; does once. A matrix that gets <code>[1, 0]</code> right and fails either of those is not a rotation.</p>
+
+<h2>6 — compose, and the order that reads backwards</h2>
+
+<p>Two facts meet here. A composition of linear functions is linear, because neither step can bend a straight line. And every linear function is a matrix. Put those together and a single matrix must exist that does both transformations, which is not obvious until you notice it cannot be otherwise.</p>
+
+<p>Everyone gets the order wrong once, because the product reads right to left while the sentence reads left to right. Do not fix that by remembering a rule. Fix it by asking which arrangement the shapes permit: with <code>(k, d_in)</code> first and <code>(d_out, k)</code> second, only one order has the <code>k</code>s meeting, and it is the one that leaves <code>(d_out, d_in)</code>.</p>
+
+<p>That the two orders differ at all is the genuinely new thing in this lesson. Addition, dot products and every arithmetic operation so far have not cared about order. Matrix multiplication does, and the test shows it with a turn and a mirror, which you can check by drawing on paper if the numbers ever look wrong.</p>
+
+<h2>7 — forward, and what you have actually built</h2>
+
+<p>The loop over layers is the job, so the exercise is not about avoiding it. What matters is that the loop runs over the <em>stack</em>, not the data: each layer moves every row at once, which is the difference between something that runs on a batch of five and something that runs on a batch of fifty thousand.</p>
+
+<p>The bias is 1.3's broadcasting, and its shape says so. <code>(d_out,)</code> against <code>(n, d_out)</code> lines up from the right, the missing axis stretches, and one row of numbers is added to every row of the batch. If you find yourself building an <code>(n, d_out)</code> bias, stop and reread the broadcasting rule &#8212; you are copying something the library will do for free.</p>
+
+<p>Now look at what you have when the tests pass: a batch of inputs, matrices that change the dimension as they go, biases, and a defined order. That is a neural network's forward pass, with one thing missing. The missing thing is anything non-linear between the layers, and everything you proved in exercise 6 says why that matters &#8212; the stack, as it stands, is one matrix and one bias in an elaborate costume.</p>
+
+<p><code>stretch.py</code> is where you show that rather than believe it: collapse the stack into a single layer by asking where the zero vector and the basis vectors go, count the parameters you threw away, then put <code>tanh</code> between the layers and watch the collapse stop working.</p>
+
+</div>
