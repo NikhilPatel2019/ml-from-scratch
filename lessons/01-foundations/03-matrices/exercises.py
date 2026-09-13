@@ -171,7 +171,7 @@ def pairwise_distances(X: np.ndarray) -> np.ndarray:
 
     Checks: the diagonal is all zeros, and the matrix equals its own transpose.
     """
-    return np.sqrt(np.sum((X[:, np.newaxis, :] - X[np.newaxis, :, :]) ** 2, axis=2))
+    return np.linalg.norm(X[:, None, :] - X, axis=2)
     raise NotImplementedError("exercise 6")
 
 
